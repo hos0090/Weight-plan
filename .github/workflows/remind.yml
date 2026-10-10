@@ -9,7 +9,6 @@ on:
     - cron: '27 7 * * *'   # w2 10:30 Riyadh
     - cron: '57 8 * * *'   # sc 12:00 Riyadh
     - cron: '57 9 * * *'   # l30 13:00 Riyadh
-    - cron: '12 10 * * *'   # chia 13:15 Riyadh
     - cron: '27 11 * * *'   # lq 14:30 Riyadh
     - cron: '57 12 * * *'   # v2 16:00 Riyadh
     - cron: '57 14 * * *'   # eve 18:00 Riyadh
@@ -23,7 +22,7 @@ on:
   workflow_dispatch:
     inputs:
       id:
-        description: "reminder id (wake b weigh v1 s1 w2 sc l30 chia lq v2 eve d30 walk w3 night sleep) or test"
+        description: "reminder id (wake b weigh v1 s1 w2 sc l30 lq v2 eve d30 walk w3 night sleep) or test"
         required: true
         default: test
 concurrency:
