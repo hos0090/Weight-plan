@@ -1,0 +1,639 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1411"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="خطتي للوزن"><style>html{-webkit-text-size-adjust:100%}:root{padding-top:env(safe-area-inset-top,0px)}body{margin:0}[hidden]{display:none!important}</style></head><body><title>خطتي للوزن</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one phone-width column; sticky day header, scrollable content, fixed bottom tab bar. Deliberately single dark theme: deep emerald night + champagne gold. */
+:root{
+  color-scheme:dark;
+  --bg:#0b1411; --bg2:#0f1b17; --surface:#14231d; --surface2:#1a2d26; --surface3:#21382f;
+  --line:rgba(214,182,120,.16); --line2:rgba(238,242,238,.08);
+  --fg:#eef2ec; --mut:#9db0a6; --mut2:#6f857a;
+  --gold:#d8b878; --gold2:#f1dfb2; --goldink:#2a2112;
+  --ok:#6fd19c; --warn:#e8b25c; --bad:#ec8a7d;
+  --c0:#e8a65e; --c1:#b8a2e6; --c2:#6fd19c; --c3:#7db8ea; --c4:#ec8fa6; --cd:#7fc9d6;
+  --f-display:"El Messiri","IBM Plex Sans Arabic",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:18px; --r2:12px;
+  --glowA:#173127; --glowB:#1b2a1a; --heroA:#1d3a2f; --heroB:#132820; --heroC:#10201a;
+  --chip:rgba(255,255,255,.05); --tabbg:rgba(11,20,17,.88); --badtext:#e9c3bc; --cdtext:#cdeef4; --ringA:#f1dfb2; --ringB:#c79a4e; --track:rgba(255,255,255,.08);
+}
+html[data-skin="beige"]{
+  color-scheme:light;
+  --bg:#f4eee2; --bg2:#fbf8f1; --surface:#fffdf8; --surface2:#f3ecdf; --surface3:#e4d8c1;
+  --line:rgba(146,108,44,.26); --line2:rgba(44,52,40,.10);
+  --fg:#1e2a23; --mut:#5d695f; --mut2:#8b938a;
+  --gold:#9b6f24; --gold2:#71501a; --goldink:#fffaf0;
+  --ok:#22845a; --warn:#b0711a; --bad:#bf4337;
+  --c0:#b4631b; --c1:#6a52a8; --c2:#1f8752; --c3:#2c6ca6; --c4:#b03f5e; --cd:#1f7b8b;
+  --glowA:#eadcbf; --glowB:#efe5d0; --heroA:#fffaf0; --heroB:#f7efdf; --heroC:#efe3cc;
+  --chip:rgba(40,50,40,.05); --tabbg:rgba(251,248,241,.92); --badtext:#9a3a30; --cdtext:#155f6b; --ringA:#c9973f; --ringB:#875a14; --track:rgba(40,50,40,.08);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+body{background:radial-gradient(120% 60% at 100% 0%,var(--glowA) 0%,transparent 60%),radial-gradient(90% 50% at 0% 10%,var(--glowB) 0%,transparent 55%),var(--bg);background-attachment:fixed}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:8px}
+input{font:inherit;color:var(--fg)}
+.app{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:0 110px;min-height:100%}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;margin:0;text-wrap:balance;letter-spacing:0}
+.num{font-variant-numeric:tabular-nums}
+.eyebrow{font-size:12px;color:var(--gold);font-weight:600;letter-spacing:.3px}
+.muted{color:var(--mut)}
+/* ---------- top ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;margin-inline:-16px;padding:14px 16px 12px;background:linear-gradient(var(--bg) 70%,transparent);}
+.toprow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-family:var(--f-display);font-size:15px;color:var(--gold2);display:flex;align-items:center;gap:8px}
+.brand i{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 12px var(--gold)}
+.sync{font-size:11px;color:var(--mut2)}
+/* ---------- hero ---------- */
+.hero{margin-top:6px;border-radius:24px;padding:20px;background:linear-gradient(145deg,var(--heroA) 0%,var(--heroB) 55%,var(--heroC) 100%);border:1px solid var(--line);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:auto -40px -60px auto;width:220px;height:220px;border-radius:50%;border:1px solid rgba(216,184,120,.18)}
+.hero::before{content:"";position:absolute;inset:auto -10px -90px auto;width:260px;height:260px;border-radius:50%;border:1px solid rgba(216,184,120,.09)}
+.herogrid{display:flex;align-items:center;gap:16px;position:relative;z-index:1}
+.hero h1{font-size:28px;line-height:1.25}
+.hero .sub{font-size:13px;color:var(--mut);margin-top:4px}
+.ring{flex:none;width:92px;height:92px;position:relative}
+.ring svg{transform:rotate(-90deg)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--f-display);font-size:22px;color:var(--gold2)}
+.ring small{position:absolute;bottom:18px;left:0;right:0;text-align:center;font-size:10px;color:var(--mut)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;position:relative;z-index:1}
+.chip{font-size:12px;padding:5px 11px;border-radius:999px;background:var(--chip);border:1px solid var(--line2);color:var(--fg);display:inline-flex;gap:6px;align-items:center}
+.chip b{color:var(--gold2);font-weight:600}
+/* day nav */
+.daynav{display:flex;align-items:center;gap:8px;margin:16px 0 4px}
+.daynav button.arrow{width:38px;height:38px;border-radius:12px;background:var(--surface);border:1px solid var(--line2);display:grid;place-items:center;font-size:18px;color:var(--gold2)}
+.daystrip{flex:1;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.daystrip::-webkit-scrollbar{display:none}
+.dpill{flex:none;width:46px;padding:6px 0 7px;border-radius:14px;background:var(--surface);border:1px solid var(--line2);text-align:center}
+.dpill span{display:block;font-size:10px;color:var(--mut)}
+.dpill b{display:block;font-family:var(--f-display);font-size:17px;line-height:1.2}
+.dpill.on{background:var(--gold);border-color:var(--gold)}.dpill.on span,.dpill.on b{color:var(--goldink)}
+.dpill.today:not(.on){border-color:var(--gold)}
+.dpill .dot{display:block;width:5px;height:5px;border-radius:50%;margin:3px auto 0;background:transparent}
+.dpill .dot.full{background:var(--ok)}.dpill .dot.part{background:var(--warn)}
+/* water */
+.water{margin-top:14px;border-radius:var(--r);padding:14px 16px;background:var(--surface);border:1px solid var(--line2)}
+.whead{display:flex;justify-content:space-between;align-items:baseline}
+.whead h3{font-size:16px}
+.cups{display:grid;grid-template-columns:repeat(12,1fr);gap:5px;margin-top:10px}
+.cup{height:34px;border-radius:7px 7px 10px 10px;border:1px solid rgba(127,201,214,.35);background:rgba(127,201,214,.05);position:relative;overflow:hidden}
+.cup.on{background:linear-gradient(180deg,rgba(127,201,214,.55),rgba(80,160,190,.9));border-color:rgba(127,201,214,.9)}
+.wbtns{display:flex;gap:8px;margin-top:10px}
+.wbtns button{flex:1;padding:8px;border-radius:12px;background:var(--surface2);border:1px solid var(--line2);font-size:13px}
+.wbtns button.prim{background:rgba(127,201,214,.14);border-color:rgba(127,201,214,.4);color:var(--cdtext);font-weight:600}
+/* timeline */
+.sec{margin-top:22px;display:flex;justify-content:space-between;align-items:baseline}
+.sec h2{font-size:20px}
+.tl{margin-top:10px;position:relative}
+.tl::before{content:"";position:absolute;top:8px;bottom:8px;right:29px;width:1px;background:linear-gradient(var(--line),var(--line2))}
+.it{display:flex;gap:12px;align-items:stretch;margin-bottom:10px;position:relative}
+.tm{flex:none;width:58px;text-align:center;padding-top:12px}
+.tm b{display:block;font-size:13px;font-weight:600;direction:ltr}
+.tm .nd{display:block;width:11px;height:11px;margin:6px auto 0;border-radius:50%;border:2px solid var(--mut2);background:var(--bg);position:relative;z-index:1}
+.it.done .tm .nd{background:var(--ok);border-color:var(--ok)}
+.it.now .tm .nd{border-color:var(--gold);box-shadow:0 0 0 4px rgba(216,184,120,.18)}
+.card{flex:1;min-width:0;border-radius:var(--r);background:var(--surface);border:1px solid var(--line2);overflow:hidden}
+.it.now .card{border-color:rgba(216,184,120,.55);box-shadow:0 8px 30px -12px rgba(216,184,120,.35)}
+.it.done .card{opacity:.62}
+.cmain{display:flex;gap:10px;padding:12px 12px 12px 14px;align-items:flex-start}
+.cbody{flex:1;min-width:0;text-align:right}
+.ctag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;margin-bottom:5px}
+.ctitle{font-family:var(--f-display);font-size:17px;line-height:1.35;font-weight:600}
+.cqty{font-size:13px;color:var(--mut);margin-top:2px}
+.nowtag{font-size:10px;font-weight:700;color:var(--goldink);background:var(--gold);border-radius:6px;padding:1px 6px;margin-inline-start:6px;vertical-align:middle}
+.check{flex:none;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--mut2);display:grid;place-items:center;margin-top:2px;transition:.15s}
+.check{color:var(--bg)}.check svg{opacity:0}
+.it.done .check{background:var(--ok);border-color:var(--ok)}.it.done .check svg{opacity:1}
+.cact{display:flex;border-top:1px solid var(--line2)}
+.cact button{flex:1;padding:9px 6px;font-size:12.5px;color:var(--gold2);display:flex;justify-content:center;align-items:center;gap:6px}
+.cact button+button{border-right:1px solid var(--line2)}
+.swapped{font-size:11px;color:var(--warn);margin-top:3px}
+.t-meal0 .ctag{background:rgba(232,166,94,.14);color:var(--c0)}
+.t-meal1 .ctag{background:rgba(184,162,230,.14);color:var(--c1)}
+.t-meal2 .ctag{background:rgba(111,209,156,.14);color:var(--c2)}
+.t-meal3 .ctag{background:rgba(125,184,234,.14);color:var(--c3)}
+.t-meal4 .ctag{background:rgba(236,143,166,.14);color:var(--c4)}
+.t-drink .ctag{background:rgba(127,201,214,.12);color:var(--cd)}
+.t-walk .ctag{background:rgba(216,184,120,.14);color:var(--gold)}
+.t-sleep .ctag{background:var(--chip);color:var(--mut)}
+.t-drink .ctitle,.t-sleep .ctitle{font-size:15px}
+/* tabs */
+.tabs{position:fixed;bottom:0;left:0;right:0;z-index:30;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));background:var(--tabbg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line)}
+.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.tab{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:11px;color:var(--mut)}
+.tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
+.tab.on{color:var(--gold)}
+/* generic */
+.panel{border-radius:var(--r);background:var(--surface);border:1px solid var(--line2);padding:16px;margin-top:12px}
+.panel h3{font-size:17px;margin-bottom:6px}
+.row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line2);font-size:14px}
+.row:last-child{border-bottom:0}
+.row span:last-child{color:var(--gold2);font-weight:600;text-align:left}
+.list{list-style:none;margin:0;padding:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;border-radius:14px;background:var(--gold);color:var(--goldink);font-weight:700;font-size:14px}
+.btn.ghost{background:var(--surface2);color:var(--gold2);border:1px solid var(--line)}
+.seg{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:12px}
+.seg button{flex:none;padding:7px 14px;border-radius:999px;background:var(--surface);border:1px solid var(--line2);font-size:13px;color:var(--mut)}
+.seg button.on{background:var(--gold);color:var(--goldink);border-color:var(--gold);font-weight:700}
+/* week */
+.wday{margin-top:12px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line2);overflow:hidden}
+.wdh{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line2)}
+.wdh b{font-family:var(--f-display);font-size:22px;color:var(--gold2);line-height:1}
+.wdh .nm{font-weight:600}.wdh .dt{font-size:12px;color:var(--mut)}
+.wdh .go{margin-inline-start:auto;font-size:12px;color:var(--gold);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+.wm{display:flex;gap:10px;padding:9px 14px;font-size:13.5px;border-bottom:1px solid var(--line2)}
+.wm:last-child{border-bottom:0}
+.wm i{flex:none;width:6px;border-radius:3px}
+.wm .wt{flex:1;min-width:0}.wm .wt b{font-weight:600}.wm .wt div{font-size:12px;color:var(--mut)}
+/* recipes grid */
+.search{margin-top:12px;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line2);border-radius:14px;padding:0 12px}
+.search input{flex:1;background:none;border:0;padding:12px 0;outline:none}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.rtile{text-align:right;border-radius:16px;background:var(--surface);border:1px solid var(--line2);padding:13px;display:flex;flex-direction:column;gap:6px;min-height:118px}
+.rtile .ctag{align-self:flex-start;margin:0}
+.rtile b{font-family:var(--f-display);font-size:15.5px;line-height:1.35;font-weight:600}
+.rtile span{font-size:11.5px;color:var(--mut);margin-top:auto}
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(3,8,6,.6);backdrop-filter:blur(3px);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:60;max-height:92%;display:flex;flex-direction:column;transform:translateY(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.sheet.on{transform:none}
+.sheet .in{max-width:560px;width:100%;margin:0 auto;background:var(--bg2);border:1px solid var(--line);border-bottom:0;border-radius:26px 26px 0 0;display:flex;flex-direction:column;min-height:0;max-height:100%}
+.grab{width:42px;height:5px;border-radius:3px;background:var(--surface3);margin:10px auto 0;flex:none}
+.shead{padding:12px 18px 12px;display:flex;align-items:flex-start;gap:12px;flex:none;border-bottom:1px solid var(--line2)}
+.shead h2{font-size:22px;line-height:1.3}
+.shead .x{margin-inline-start:auto;width:36px;height:36px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;flex:none;font-size:18px;color:var(--mut)}
+.sbody{overflow-y:auto;padding:14px 18px calc(24px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch}
+.plate{border-radius:14px;padding:12px 14px;background:linear-gradient(135deg,rgba(216,184,120,.16),rgba(216,184,120,.06));border:1px solid var(--line);font-size:14px;color:var(--gold2)}
+.plate b{display:block;font-size:11px;color:var(--gold);font-weight:600;margin-bottom:2px}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 2px}
+.h4{font-family:var(--f-display);font-size:16px;color:var(--gold2);margin:18px 0 8px;display:flex;justify-content:space-between;align-items:baseline}
+.h4 small{font-family:var(--f-body);font-size:11px;color:var(--mut)}
+.ing li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line2);font-size:14px;cursor:pointer}
+.ing li .bx{flex:none;width:20px;height:20px;border-radius:6px;border:1.5px solid var(--mut2)}
+.ing li .nm{flex:1;min-width:0}
+.ing li .am{color:var(--gold2);font-weight:600;font-size:13px;text-align:left;max-width:48%}
+.ing li.on .bx{background:var(--ok);border-color:var(--ok)}.ing li.on .nm{text-decoration:line-through;color:var(--mut)}
+.steps li{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line2);cursor:pointer;font-size:14.5px}
+.steps li .sn{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--surface2);border:1px solid var(--line);color:var(--gold2);font-weight:700;font-size:13px}
+.steps li.on .sn{background:var(--ok);color:var(--bg);border-color:var(--ok)}
+.steps li.on p{color:var(--mut)}
+.steps p{margin:3px 0 0}
+.tip{margin-top:14px;padding:12px 14px;border-radius:14px;background:var(--surface);border-right:3px solid var(--gold);font-size:13.5px;color:var(--mut)}
+.nosugar{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--ok);background:rgba(111,209,156,.12);border-radius:999px;padding:3px 10px}
+.opt{display:flex;gap:12px;align-items:center;width:100%;text-align:right;padding:12px;border-radius:14px;background:var(--surface);border:1px solid var(--line2);margin-bottom:8px}
+.opt.cur{border-color:var(--gold)}
+.opt .ot{flex:1;min-width:0}.opt .ot b{font-family:var(--f-display);font-weight:600;font-size:15.5px}.opt .ot div{font-size:12.5px;color:var(--mut)}
+.opt .pk{flex:none;font-size:12px;color:var(--gold);font-weight:600}
+.badge{font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:6px;background:rgba(216,184,120,.16);color:var(--gold)}
+/* progress */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.stat{border-radius:16px;background:var(--surface);border:1px solid var(--line2);padding:12px;text-align:center}
+.stat b{display:block;font-family:var(--f-display);font-size:22px;color:var(--gold2);line-height:1.2}
+.stat span{font-size:11.5px;color:var(--mut)}
+.chart{width:100%;height:auto;display:block;margin-top:6px}
+.wform{display:flex;gap:8px;margin-top:10px}
+.wform input{flex:1;min-width:0;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:center;font-size:16px}
+.wlog .row span:first-child{color:var(--mut)}
+.del{color:var(--mut2);font-size:12px;margin-inline-start:10px}
+/* plan page */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:right;color:var(--gold);font-weight:600;font-size:11.5px;padding:6px 4px;border-bottom:1px solid var(--line)}
+.tbl td{padding:8px 4px;border-bottom:1px solid var(--line2);vertical-align:top}
+.tbl td.g{color:var(--ok);font-weight:600}
+.dotc{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:6px}
+.rules li{padding:6px 0;font-size:13.5px;display:flex;gap:8px}
+.rules li::before{flex:none;font-weight:800}
+.rules li.y::before{content:"✓";color:var(--ok)}.rules li.n::before{content:"✕";color:var(--bad)}
+.rules li.n{color:var(--badtext)}
+.note{font-size:12.5px;color:var(--mut);margin-top:8px}
+.shop li{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line2);cursor:pointer;font-size:14px}
+.shop li .bx{flex:none;width:20px;height:20px;border-radius:6px;border:1.5px solid var(--mut2)}
+.shop li.on .bx{background:var(--ok);border-color:var(--ok)}.shop li.on .nm{text-decoration:line-through;color:var(--mut)}
+.shop li .ct{margin-inline-start:auto;font-size:11.5px;color:var(--mut)}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--gold);color:var(--goldink);font-weight:700;font-size:13px;padding:9px 16px;border-radius:999px;opacity:0;transition:.25s;z-index:80;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.empty{padding:22px;text-align:center;color:var(--mut);font-size:13.5px}
+.tops{display:flex;align-items:center;gap:10px}
+.skin{width:34px;height:34px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;font-size:15px;color:var(--gold2)}
+.push{margin-top:14px;border-radius:var(--r);padding:16px;background:linear-gradient(135deg,rgba(216,184,120,.18),rgba(216,184,120,.05));border:1px solid var(--line)}
+.push h3{font-size:17px}.push p{margin:6px 0 0;font-size:13.5px;color:var(--mut)}
+.push ol{margin:8px 0 0;padding-inline-start:20px;font-size:13.5px;color:var(--fg)}.push ol li{margin-bottom:4px}
+.push .btn{margin-top:12px;width:100%}
+.tg{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line2);font-size:14px}
+.tg:last-child{border-bottom:0}
+.sw{width:46px;height:28px;border-radius:999px;background:var(--surface3);position:relative;flex:none;transition:.2s}
+.sw::after{content:"";position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:var(--fg);transition:.2s}
+.sw.on{background:var(--ok)}.sw.on::after{right:21px;background:#fff}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app" id="app">
+  <div class="top"><div class="toprow"><div class="brand"><i></i>خطتي للوزن</div><div class="tops"><div class="sync" id="sync">جاري التحميل…</div><button class="skin" id="skinBtn" aria-label="تغيير الثيم">☾</button></div></div></div>
+  <main id="view"></main>
+</div>
+<nav class="tabs" aria-label="التنقل"><div class="in">
+  <button class="tab on" data-tab="today"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>يومي</button>
+  <button class="tab" data-tab="week"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>الأسبوع</button>
+  <button class="tab" data-tab="recipes"><svg viewBox="0 0 24 24"><path d="M5 4.5h10.5a3 3 0 0 1 3 3V20H8a3 3 0 0 1-3-3z"/><path d="M8.5 9h6M8.5 12.5h6"/></svg>الطريقة</button>
+  <button class="tab" data-tab="progress"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-9"/><path d="M15 6h5v5"/></svg>تقدّمي</button>
+  <button class="tab" data-tab="plan"><svg viewBox="0 0 24 24"><path d="M12 3l7.5 3v5.5c0 4.5-3.2 8-7.5 9.5-4.3-1.5-7.5-5-7.5-9.5V6z"/><path d="M9 12l2 2 4-4"/></svg>خطتي</button>
+</div></nav>
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="in"><div class="grab"></div><div class="shead"><div id="shTitle"></div><button class="x" id="shX" aria-label="إغلاق">✕</button></div><div class="sbody" id="shBody"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const DATA={"R": {"r_rice": {"t": "الرز: حصتك 100 جم", "cat": "أساسيات", "time": "25 دقيقة", "kcal": "≈ 135", "plate": "رز مطبوخ 100 جم = ثلثين كوب", "ing": [["رز بسمتي", "35 جم (ملعقتين ك ونص)"], ["موية", "90 مل (ثلث كوب)"], ["زيت", "نص ملعقة ص"], ["ملح", "ثمن ملعقة ص"], ["هيل", "حبتين"]], "steps": ["اغسل الرز بموية باردة 3 مرات لين تصفى الموية.", "انقعه بموية 15 دقيقة، وبعدها صفّه.", "بقدر صغير: حط الموية والزيت والملح والهيل على نار عالية لين تغلي.", "حط الرز وقلّبه مرة وحدة، وخله على نار متوسطة بدون غطا لين تنشف الموية من الوجه (5 دقائق تقريبًا).", "غطّ القدر، ونزّل النار على أهدى شي 15 دقيقة.", "طفّ النار وخله مغطى 5 دقائق، وبعدها فكّكه بالشوكة."], "tip": "ميزان المطبخ أهم أداة. وزّن أول أسبوعين لين تتعود عينك. وكُل الرز آخر شي بعد السلطة والبروتين."}, "r_salad": {"t": "السلطة اليومية", "cat": "أساسيات", "time": "7 دقائق", "kcal": "≈ 80", "plate": "صحن كبير مع الغدا", "ing": [["خس", "2 كوب مقطع"], ["خيار", "1 حبة"], ["طماط", "1 حبة"], ["بصل أحمر", "ربع حبة"], ["عصير ليمون", "2 ملعقة ك (نص ليمونة)"], ["زيت زيتون", "1 ملعقة ص"], ["ملح", "ثمن ملعقة ص"], ["سماق + نعناع ناشف", "ربع ملعقة ص لكل واحد"]], "steps": ["اغسل الخضار ونشّفها.", "قطّع الخس قطع صغيرة، والخيار والطماط مكعبات، والبصل شرائح رفيعة.", "بكاسة صغيرة: اخفق الليمون مع زيت الزيتون والملح والسماق والنعناع.", "صب الصوص على السلطة وقلّبها قبل الأكل مباشرة (عشان ما تذبل)."], "tip": "الخضار براحتك، بس الزيت قِسه بالملعقة. ملعقة كبيرة زيادة = 120 سعرة."}, "b_egg": {"t": "بيض مسلوق مع توست", "cat": "فطور", "time": "12 دقيقة", "kcal": "≈ 295", "plate": "2 بيض + 1 شريحة توست أسمر + خيار وطماط", "ing": [["بيض", "2 حبة"], ["توست أسمر", "1 شريحة"], ["خيار", "1 حبة"], ["طماط", "1 حبة"], ["ملح", "ثمن ملعقة ص (نص الربع)"], ["فلفل أسود أو زعتر", "ربع ملعقة ص"]], "steps": ["حط البيض بقدر صغير وغطّه بموية باردة.", "حطه على نار عالية، ولما تغلي الموية نزّل النار متوسطة وخله 9 دقائق.", "طلّع البيض وحطه بموية باردة دقيقتين، وبعدها قشّره.", "حمّص التوست بالمحمصة أو بمقلاة بدون زبدة دقيقة كل جهة.", "قطّع الخيار والطماط، ورش الملح والفلفل على البيض."], "tip": "تبيه مقلي؟ مقلاة غير لاصقة + نص ملعقة ص زيت، دقيقتين على نار متوسطة."}, "b_foul": {"t": "فول بالليمون والكمون", "cat": "فطور", "time": "12 دقيقة", "kcal": "≈ 410", "plate": "فول 1 كوب (200 جم) + 1 بيضة + ربع رغيف بر", "ing": [["فول معلب", "1 كوب (200 جم) مصفّى"], ["موية", "ربع كوب"], ["عصير ليمون", "1 ملعقة ك"], ["كمون", "ربع ملعقة ص"], ["ثوم مهروس", "نص فص"], ["ملح", "ثمن ملعقة ص (نص الربع)"], ["زيت زيتون", "1 ملعقة ص"], ["طماط مقطعة", "نص حبة"], ["بيض", "1 حبة"], ["رغيف بر", "ربع رغيف"]], "steps": ["اسلق البيضة 9 دقائق (مثل وصفة البيض المسلوق).", "صفِّ الفول واغسله بموية عشان يخف ملح العلبة.", "حطه بقدر صغير مع ربع كوب موية على نار متوسطة 5 دقائق.", "اهرسه بالمدقة لين يصير نصه مهروس ونصه حبات.", "حط الليمون والكمون والثوم والملح وقلّب.", "صبه بصحن، وفوقه زيت الزيتون والطماط، والبيضة جنبه مع ربع الرغيف."], "tip": "من المطعم: صحن صغير بدون سمن وبدون زيت زيادة، ونص خبزة بس."}, "b_oat": {"t": "شوفان بالحليب", "cat": "فطور", "time": "7 دقائق", "kcal": "≈ 335", "plate": "شوفان 40 جم + كوب حليب قليل الدسم + نص موزة", "ing": [["شوفان", "40 جم (4 ملاعق ك)"], ["حليب قليل الدسم", "250 مل (كوب)"], ["موز", "نص حبة (أو نص تفاحة)"], ["قرفة", "ربع ملعقة ص"], ["سكر أو عسل", "❌ لا"]], "steps": ["حط الحليب بقدر صغير على نار متوسطة لين يبدأ يطلع بخار (لا تخليه يفور).", "حط الشوفان وحرّك باستمرار 3–4 دقائق لين يثقل.", "صبه بصحن.", "قطّع الموز شرائح فوقه ورش القرفة."], "tip": "تقدر تسويه من الليل: الشوفان والحليب بعلبة مسكرة بالثلاجة، وتاكله بارد الصبح."}, "b_shak": {"t": "شكشوكة", "cat": "فطور", "time": "15 دقيقة", "kcal": "≈ 325", "plate": "2 بيض بالطماط + 1 شريحة توست أسمر", "ing": [["بيض", "2 حبة"], ["طماط كبيرة", "1 حبة مقطعة مكعبات"], ["بصل", "ربع حبة مفرومة"], ["فلفل رومي", "ربع حبة مقطعة"], ["زيت زيتون", "1 ملعقة ص"], ["ملح", "ثمن ملعقة ص (نص الربع)"], ["كمون", "ربع ملعقة ص"], ["فلفل أسود", "ربع ملعقة ص"], ["توست أسمر", "1 شريحة"]], "steps": ["سخّن الزيت بمقلاة صغيرة على نار متوسطة.", "حط البصل وقلّبه دقيقتين لين يذبل.", "حط الفلفل الرومي دقيقة، وبعدها الطماط والملح والكمون والفلفل الأسود.", "خله 5 دقائق مع التحريك لين يصير صوص ثقيل.", "سوّ حفرتين بالملعقة، واكسر بيضة بكل حفرة.", "غطّ المقلاة 4–5 دقائق على نار هادية لين يستوي البياض.", "قدّمها مع التوست المحمص."], "tip": ""}, "b_labneh": {"t": "بيض ولبنة", "cat": "فطور", "time": "12 دقيقة", "kcal": "≈ 325", "plate": "2 بيض مسلوق + 2 ملعقة لبنة + 1 شريحة توست + خيار", "ing": [["بيض", "2 حبة"], ["لبنة قليلة الدسم", "2 ملعقة ك (30 جم)"], ["زيت زيتون", "نص ملعقة ص"], ["زعتر", "نص ملعقة ص"], ["توست أسمر", "1 شريحة"], ["خيار", "1 حبة"], ["فلفل أسود", "رشة (ثمن ملعقة ص)"]], "steps": ["اسلق البيض 9 دقائق، وبعدها بموية باردة وقشّره.", "حط اللبنة بصحن وافردها بظهر الملعقة.", "صب نص ملعقة ص زيت زيتون فوقها ورش الزعتر.", "حمّص التوست، وقطّع الخيار.", "رش الفلفل على البيض (اللبنة فيها ملح، ما تحتاج ملح زيادة)."], "tip": ""}, "b_omelet": {"t": "أومليت بالخضار", "cat": "فطور", "time": "10 دقائق", "kcal": "≈ 275", "plate": "أومليت بيضتين بالخضار + 1 شريحة توست أسمر", "ing": [["بيض", "2 حبة"], ["حليب قليل الدسم", "2 ملعقة ك"], ["فلفل رومي مفروم", "ربع حبة"], ["بصل مفروم", "ربع حبة"], ["طماط مكعبات", "نص حبة"], ["زيت", "نص ملعقة ص"], ["ملح", "ثمن ملعقة ص (نص الربع)"], ["فلفل أسود", "ربع ملعقة ص"], ["توست أسمر", "1 شريحة"]], "steps": ["اخفق البيض مع الحليب والملح والفلفل بالشوكة دقيقة.", "سخّن الزيت بمقلاة غير لاصقة على نار متوسطة.", "حط البصل والفلفل دقيقتين لين يلينون، وبعدها الطماط دقيقة.", "صب البيض فوق الخضار ووزّعه على المقلاة.", "غطّها دقيقتين على نار هادية لين يجمد الوجه.", "اطوِ الأومليت نصين، وقدّمه مع التوست."], "tip": ""}, "b_yog": {"t": "زبادي يوناني بالشوفان", "cat": "فطور", "time": "3 دقائق", "kcal": "≈ 320", "plate": "زبادي يوناني 170 جم + شوفان 30 جم + 5 فراولة", "ing": [["زبادي يوناني", "1 علبة (170 جم)"], ["شوفان", "30 جم (3 ملاعق ك)"], ["فراولة", "5 حبات (أو نص كوب توت)"], ["قرفة", "ربع ملعقة ص"], ["عسل", "❌ لا"]], "steps": ["حط الزبادي بصحن عميق.", "اغسل الفراولة وشيل الورق وقطّعها أرباع.", "حط الشوفان فوق الزبادي، وبعده الفراولة.", "رش القرفة وكُله على طول (عشان الشوفان يبقى مقرمش)."], "tip": "البروتين فيه عالي، ويشبعك لين الظهر."}, "b_halloumi": {"t": "حلوم مشوي مع بيضة", "cat": "فطور", "time": "10 دقائق", "kcal": "≈ 380", "plate": "حلوم 2 شريحة + 1 بيضة + 1 شريحة توست + خيار وطماط", "ing": [["حلوم", "2 شريحة (50 جم)"], ["بيض", "1 حبة"], ["زيت (للبيضة)", "ربع ملعقة ص"], ["توست أسمر", "1 شريحة"], ["خيار + طماط", "1 + 1"], ["نعناع", "4 ورقات"], ["ملح", "❌ لا (الحلوم مالح)"]], "steps": ["اغسل شرائح الحلوم بموية ونشّفها بمنديل (يخف الملح).", "سخّن مقلاة غير لاصقة على نار متوسطة بدون زيت.", "حط الحلوم دقيقتين كل جهة لين يصير ذهبي.", "بنفس المقلاة: ربع ملعقة ص زيت، واقلِ البيضة دقيقتين.", "قدّمه مع التوست والخيار والطماط والنعناع."], "tip": "مرتين بالشهر بس، لأنه مالح ودهونه مشبعة."}, "b_pancake": {"t": "توست بالبيض والجبن", "cat": "فطور", "time": "8 دقائق", "kcal": "≈ 400", "plate": "2 بيض + شريحة جبن لايت + 2 شريحة توست أسمر + خيار", "ing": [["بيض", "2 حبة"], ["جبن شرائح لايت", "1 شريحة"], ["توست أسمر", "2 شريحة"], ["طماط", "3 شرائح"], ["زيت", "نص ملعقة ص"], ["ملح", "ثمن ملعقة ص (نص الربع)"], ["فلفل أسود", "ربع ملعقة ص"], ["خيار", "1 حبة"]], "steps": ["اخفق البيض مع الملح والفلفل.", "سخّن الزيت بمقلاة غير لاصقة على نار متوسطة، وصب البيض.", "لما يجمد (دقيقتين) اطوِه بحجم شريحة التوست.", "حط على شريحة توست: البيض، والجبن، والطماط، وغطّها بالشريحة الثانية.", "حمّص الساندويتش بنفس المقلاة دقيقة كل جهة، أو بالقلاية الهوائية 180 درجة 3 دقائق، لين يذوب الجبن."], "tip": ""}, "l_chicken": {"t": "صدر دجاج مشوي بالليمون", "cat": "غدا", "time": "25 دقيقة + 30 دقيقة تتبيل", "kcal": "≈ 535", "plate": "دجاج 150 جم مطبوخ + رز 100 جم + سلطة", "ing": [["صدر دجاج", "200 جم ني"], ["زيت زيتون", "1 ملعقة ص"], ["عصير ليمون", "1 ملعقة ك"], ["ثوم مهروس", "1 فص"], ["بابريكا", "نص ملعقة ص"], ["كمون", "ربع ملعقة ص"], ["ملح", "ربع ملعقة ص"], ["فلفل أسود", "ربع ملعقة ص"], ["رز بسمتي", "35 جم ني (ملعقتين ك ونص)"]], "steps": ["افتح الصدر بالسكين نصين رفيعين (سماكة إصبع)، عشان ينطبخ بالتساوي وما ينشف.", "اخلط الزيت والليمون والثوم والبهارات والملح بصحن، وقلّب الدجاج فيها.", "غطّه وخله بالثلاجة 30 دقيقة (أو من الليل).", "اطبخ الرز على طريقة صفحة «الرز» (35 جم رز + 90 مل موية + نص ملعقة ص زيت + رشة ملح)، أو اغرف 100 جم من رز البيت.", "سخّن مقلاة جريل على نار عالية لين تصير حامية.", "حط الدجاج 5–6 دقائق كل جهة بدون ما تحركه، لين تطلع خطوط الشوي. (أو بالقلاية الهوائية 190 درجة 14 دقيقة)", "خله يرتاح 3 دقائق، وبعدها قطّعه وقدّمه مع الرز والسلطة."], "tip": "سوّ 3 صدور مرة وحدة، واحفظها بالثلاجة 3 أيام لساندويتشات العشا."}, "l_fish": {"t": "سمك مشوي (سلمون أو هامور)", "cat": "غدا", "time": "20 دقيقة", "kcal": "≈ 495", "plate": "سمك 180 جم مطبوخ + رز 100 جم + خضار", "ing": [["سمك فيليه (سلمون، كنعد، أو هامور)", "220 جم ني"], ["زيت زيتون", "1 ملعقة ص"], ["عصير ليمون", "1 ملعقة ك"], ["ثوم مهروس", "1 فص"], ["كمون + كزبرة ناشفة", "ربع ملعقة ص لكل واحد"], ["بابريكا", "ربع ملعقة ص"], ["ملح", "ربع ملعقة ص"], ["رز بسمتي", "35 جم ني (ملعقتين ك ونص)"], ["خضار (بروكلي، جزر، فلفل)", "1 كوب"]], "steps": ["نشّف السمك بمنديل من الجهتين.", "اخلط الزيت والليمون والثوم والبهارات والملح، وادهن فيها السمك.", "اطبخ الرز على طريقة صفحة «الرز» (35 جم رز + 90 مل موية + نص ملعقة ص زيت + رشة ملح)، أو اغرف 100 جم من رز البيت.", "سخّن مقلاة جريل على نار متوسطة إلى عالية.", "حط السمك 3–4 دقائق كل جهة (السلمون يبدأ من جهة الجلد). أو بالفرن 200 درجة 15 دقيقة.", "السمك يكون جاهز إذا صار يتقشر بالشوكة بسهولة.", "بنفس المقلاة: قلّب الخضار 4 دقائق مع رشة ملح، وقدّمها مع السمك والرز."], "tip": "السلمون والكنعد فيها أوميغا 3، وهي تنزل الدهون الثلاثية."}, "l_fish_oven": {"t": "سمك بالفرن بصوص الكريمة الخفيف", "cat": "غدا", "time": "30 دقيقة", "kcal": "≈ 535", "plate": "سمك 180 جم + صوص كريمة + رز 100 جم + خضار", "ing": [["سمك فيليه", "220 جم ني"], ["كريمة طبخ لايت", "2 ملعقة ك (30 مل)"], ["عصير ليمون", "1 ملعقة ك"], ["ثوم مهروس", "1 فص"], ["شبت أو بقدونس مفروم", "1 ملعقة ك"], ["جزر + بروكلي", "1 كوب"], ["زيت", "نص ملعقة ص"], ["ملح", "ربع ملعقة ص"], ["فلفل أسود", "ربع ملعقة ص"], ["رز بسمتي", "35 جم ني (ملعقتين ك ونص)"]], "steps": ["سخّن الفرن على 200 درجة.", "قطّع الجزر أصابع والبروكلي زهرات، واخلطها بنص ملعقة ص زيت ونص الملح، ووزّعها بصينية صغيرة.", "حط السمك فوق الخضار، ورش عليه باقي الملح والفلفل.", "اخلط الكريمة مع الليمون والثوم والشبت، وصبها على السمك.", "غطّ الصينية بورق قصدير، وحطها بالفرن 15 دقيقة.", "اطبخ الرز على طريقة صفحة «الرز» (35 جم رز + 90 مل موية + نص ملعقة ص زيت + رشة ملح)، أو اغرف 100 جم من رز البيت.", "شيل القصدير وخلها 5 دقائق زيادة، وقدّمها مع الرز."], "tip": "هذي وجبة الكريمة بالشهر: ملعقتين بس."}, "l_fish_fried": {"t": "سمك فيليه مقرمش", "cat": "غدا", "time": "20 دقيقة", "kcal": "≈ 555", "plate": "قطعة سمك 120 جم + رز 100 جم + سلطة", "ing": [["سمك فيليه", "150 جم ني"], ["دقيق بر", "1 ملعقة ك"], ["بهارات سمك", "نص ملعقة ص"], ["ملح", "ربع ملعقة ص"], ["زيت", "بالقلاية: رشتين بخاخ · بالمقلاة: 1 ملعقة ك"], ["ليمون", "ربع حبة"], ["رز بسمتي", "35 جم ني (ملعقتين ك ونص)"]], "steps": ["نشّف السمك بمنديل، وقطّعه قطعتين.", "اخلط الدقيق والبهارات والملح بصحن، وغطّ فيها السمك من كل الجهات.", "القلاية الهوائية (الأفضل): سخّنها 3 دقائق، حط السمك، رشتين زيت بخاخ، 200 درجة 10 دقائق، وقلّبه بالنص.", "أو بالمقلاة: ملعقة ك زيت على نار متوسطة إلى عالية، 3 دقائق كل جهة، وبعدها على منديل.", "اطبخ الرز على طريقة صفحة «الرز» (35 جم رز + 90 مل موية + نص ملعقة ص زيت + رشة ملح)، أو اغرف 100 جم من رز البيت.", "قدّمه مع ليمون والرز والسلطة."], "tip": "لا تقليه بزيت غزير أبد."}, "l_okra": {"t": "بامية بلحم الغنم", "cat": "غدا", "time": "50 دقيقة", "kcal": "≈ 555", "plate": "بامية 1 كوب + لحم غنم 120 جم + رز 100 جم", "ing": [["لحم غنم (فخذ) بدون دهن", "150 جم ني مكعبات"], ["بامية مجمدة", "1 كوب (150 جم)"], ["بصل", "نص حبة مفرومة"], ["ثوم مهروس", "2 فص"], ["طماط", "1 حبة مبشورة"], ["معجون طماط", "1 ملعقة ك"], ["زيت", "1 ملعقة ص"], ["بهارات مشكلة", "نص ملعقة ص"], ["ملح", "ربع ملعقة ص"], ["كزبرة ناشفة", "ربع ملعقة ص"], ["موية", "3 كوب للسلق"], ["رز بسمتي", "35 جم ني (ملعقتين ك ونص)"]], "steps": ["شيل الدهن الظاهر من اللحم بالسكين.", "اسلق اللحم بقدر الضغط مع 3 كوب موية 25 دقيقة (أو بقدر عادي ساعة)، واحفظ المرق.", "برّد المرق شوي وشيل طبقة الدهن اللي فوقه بالملعقة.", "بقدر ثاني: سخّن الزيت على نار متوسطة، وحمّر البصل 3 دقائق، وبعدها الثوم دقيقة.", "حط معجون الطماط والطماط المبشورة والبهارات والكزبرة، وقلّب دقيقتين.", "حط اللحم وكوب ونص من المرق والبامية والملح.", "غطّ القدر وخله على نار هادية 20 دقيقة.", "اطبخ الرز على طريقة صفحة «الرز» (35 جم رز + 90 مل موية + نص ملعقة ص زيت + رشة ملح)، أو اغرف 100 جم من رز البيت."], "tip": "إذا مطبوخة للعائلة: خذ كوب بامية بدون زيت الوجه، و120 جم لحم، و100 جم رز."}, "l_molokhia": {"t": "ملوخية بالدجاج", "cat": "غدا", "time": "35 دقيقة", "kcal": "≈ 495", "plate": "ملوخية 1 كوب + دجاج 120 جم + رز 100 جم", "ing": [["صدر دجاج", "160 جم ني"], ["ملوخية مجمدة", "1 كوب (200 جم)"], ["موية", "3 كوب"], ["هيل + ورق غار", "حبتين + ورقة"], ["ثوم مهروس", "2 فص"], ["كزبرة ناشفة", "نص ملعقة ص"], ["زيت", "1 ملعقة ص"], ["ملح", "ربع ملعقة ص"], ["فلفل أسود", "ربع ملعقة ص"], ["رز بسمتي", "35 جم ني (ملعقتين ك ونص)"]], "steps": ["حط الدجاج والموية والهيل وورق الغار بقدر على نار عالية لين يغلي، وشيل الرغوة.", "نزّل النار متوسطة وخله 20 دقيقة، وطلّع الدجاج وقطّعه.", "خذ كوب من المرق بقدر صغير، وخله يغلي، وحط الملوخية المجمدة والملح والفلفل.", "حرّك لين تذوب وتغلي، وخلها 5 دقائق (لا تغطيها).", "الطشة: بمقلاة صغيرة سخّن الزيت، وحط الثوم والكزبرة 30 ثانية لين تطلع ريحتها (لا تحرقها).", "صب الطشة على الملوخية وقلّب.", "اطبخ الرز على طريقة صفحة «الرز» (35 جم رز + 90 مل موية + نص ملعقة ص زيت + رشة ملح)، أو اغرف 100 جم من رز البيت.", "قدّم كوب ملوخية مع الدجاج والرز."], "tip": ""}, "l_idam_chicken": {"t": "إيدام دجاج بالبطاطس والجزر", "cat": "غدا", "time": "45 دقيقة", "kcal": "≈ 560", "plate": "دجاج 150 جم + إيدام 1 كوب + رز 70 جم", "ing": [["دجاج بدون جلد (صدر أو فخذ)", "200 جم ني"], ["بطاطس صغيرة", "1 حبة (100 جم) مكعبات"], ["جزر", "1 حبة شرائح"], ["بصل", "نص حبة مفرومة"], ["طماط", "2 حبة مبشورة"], ["معجون طماط", "1 ملعقة ك"], ["زيت", "1 ملعقة ص"], ["بهارات مشكلة", "نص ملعقة ص"], ["كمون + كركم", "ربع ملعقة ص لكل واحد"], ["لومي", "1 حبة مثقوبة"], ["ملح", "ربع ملعقة ص"], ["موية", "2 كوب"], ["رز بسمتي", "25 جم ني = 70 جم مطبوخ"]], "steps": ["سخّن الزيت بقدر على نار متوسطة، وحمّر البصل 3 دقائق.", "حط الدجاج والبهارات والكمون والكركم، وقلّبه 5 دقائق لين يتغير لونه.", "حط المعجون والطماط المبشورة وقلّب دقيقتين.", "حط البطاطس والجزر واللومي والملح والموية.", "لما يغلي، غطّه ونزّل النار هادية 30 دقيقة لين تستوي البطاطس.", "اطبخ الرز (25 جم رز + 65 مل موية) على طريقة صفحة «الرز».", "قدّم كوب إيدام مع الدجاج و70 جم رز."], "tip": "الرز 70 جم بس، لأن البطاطس فيها نشويات."}, "l_idam_meat": {"t": "إيدام لحم غنم بالبازلاء", "cat": "غدا", "time": "55 دقيقة", "kcal": "≈ 570", "plate": "لحم غنم 120 جم + إيدام 1 كوب + رز 80 جم", "ing": [["لحم غنم (فخذ) بدون دهن", "150 جم ني مكعبات"], ["بازلاء مجمدة", "نص كوب"], ["جزر", "1 حبة مكعبات"], ["بصل", "نص حبة مفرومة"], ["ثوم مهروس", "1 فص"], ["طماط", "2 حبة مبشورة"], ["معجون طماط", "1 ملعقة ك"], ["زيت", "1 ملعقة ص"], ["بهارات مشكلة", "نص ملعقة ص"], ["ملح", "ربع ملعقة ص"], ["موية", "3 كوب للسلق"], ["رز بسمتي", "27 جم ني = 80 جم مطبوخ"]], "steps": ["شيل الدهن الظاهر من اللحم.", "اسلقه بقدر الضغط مع 3 كوب موية 25 دقيقة، وبرّد المرق وشيل طبقة الدهن من فوق.", "بقدر ثاني: سخّن الزيت وحمّر البصل 3 دقائق، وبعدها الثوم دقيقة.", "حط المعجون والطماط والبهارات دقيقتين.", "حط اللحم والجزر وكوبين من المرق والملح، وخله 15 دقيقة على نار هادية.", "حط البازلاء 5 دقائق.", "اطبخ الرز (27 جم رز + 70 مل موية) على طريقة صفحة «الرز»، وقدّم كوب إيدام مع اللحم والرز."], "tip": "الرز 80 جم، لأن البازلاء فيها نشويات."}, "l_fasolia": {"t": "فاصوليا خضراء بلحم الغنم", "cat": "غدا", "time": "50 دقيقة", "kcal": "≈ 535", "plate": "فاصوليا 1 كوب + لحم غنم 120 جم + رز 100 جم", "ing": [["لحم غنم (فخذ) بدون دهن", "150 جم ني مكعبات"], ["فاصوليا خضراء مجمدة", "1.5 كوب (200 جم)"], ["بصل", "نص حبة مفرومة"], ["ثوم مهروس", "2 فص"], ["طماط", "1 حبة مبشورة"], ["معجون طماط", "1 ملعقة ك"], ["زيت", "1 ملعقة ص"], ["بهارات مشكلة", "نص ملعقة ص"], ["ملح", "ربع ملعقة ص"], ["موية", "3 كوب للسلق"], ["رز بسمتي", "35 جم ني (ملعقتين ك ونص)"]], "steps": ["شيل الدهن الظاهر من اللحم.", "اسلقه بقدر الضغط مع 3 كوب موية 25 دقيقة، وبرّد المرق وشيل الدهن من فوق.", "سخّن الزيت بقدر وحمّر البصل 3 دقائق، والثوم دقيقة.", "حط المعجون والطماط والبهارات، وقلّب دقيقتين.", "حط الفاصوليا واللحم وكوب مرق والملح.", "غطّه 15 دقيقة على نار هادية لين تلين الفاصوليا.", "اطبخ الرز على طريقة صفحة «الرز» (35 جم رز + 90 مل موية + نص ملعقة ص زيت + رشة ملح)، أو اغرف 100 جم من رز البيت."], "tip": ""}, "l_jareesh": {"t": "جريش بالدجاج", "cat": "غدا", "time": "70 دقيقة", "kcal": "≈ 560", "plate": "جريش 1 كوب مطبوخ + دجاج 120 جم + سلطة (بدون رز)", "ing": [["جريش", "40 جم ني (ربع كوب)"], ["صدر دجاج", "160 جم ني"], ["موية", "3 كوب"], ["لبن قليل الدسم", "نص كوب"], ["بصل", "نص حبة شرائح"], ["زيت (بدل السمن)", "1 ملعقة ص"], ["كمون", "ربع ملعقة ص"], ["فلفل أسود", "ربع ملعقة ص"], ["هيل", "حبتين"], ["ملح", "ربع ملعقة ص"]], "steps": ["اغسل الجريش وانقعه ساعة، وبعدها صفّه.", "اسلق الدجاج مع 3 كوب موية والهيل 20 دقيقة، وطلّعه وقطّعه قطع صغيرة، واحفظ المرق.", "حط الجريش بالمرق على نار هادية 35–40 دقيقة، وحرّك كل 5 دقائق عشان ما يلصق.", "لما يثقل، حط اللبن والكمون والفلفل والملح والدجاج، وحرّك 5 دقائق.", "الطشة: سخّن الزيت بمقلاة صغيرة وحمّر البصل 5 دقائق لين يصير ذهبي.", "صب الجريش بصحن، والطشة فوقه، وقدّمه مع السلطة."], "tip": "جريش البيت: كوب واحد، وبدون السمن والطشة الزيادة."}, "l_kabsa": {"t": "كبسة دجاج", "cat": "غدا", "time": "55 دقيقة", "kcal": "≈ 555", "plate": "دجاج 150 جم بدون جلد + رز 100 جم + سلطة", "ing": [["ربع دجاجة بدون جلد", "220 جم ني"], ["رز بسمتي", "35 جم ني"], ["بصل", "نص حبة مفرومة"], ["طماط", "1 حبة مبشورة"], ["معجون طماط", "1 ملعقة ص"], ["زيت", "1 ملعقة ص"], ["بهارات كبسة", "1 ملعقة ص"], ["لومي + هيل", "1 لومية + حبتين"], ["ملح", "ربع ملعقة ص"], ["موية", "2 كوب"]], "steps": ["سخّن الزيت بقدر على نار متوسطة، وحمّر البصل 3 دقائق.", "حط الدجاج وبهارات الكبسة، وقلّبه 5 دقائق.", "حط الطماط والمعجون واللومي والهيل والملح، وبعدها الموية.", "غطّه 30 دقيقة على نار هادية.", "طلّع الدجاج، وحطه بالفرن على الشواية 10 دقائق لين يتحمر.", "قِس 90 مل من المرق، وحطه بقدر صغير مع الرز المغسول والمنقوع.", "خله لين تنشف الموية، وبعدها غطّه على نار هادية 15 دقيقة. قدّمه مع الدجاج والسلطة."], "tip": "كبسة البيت: شيل الجلد، وخذ 150 جم دجاج وثلثين كوب رز، وبدون مكسرات ولا زبيب."}, "l_madhghout": {"t": "مضغوط دجاج", "cat": "غدا", "time": "40 دقيقة", "kcal": "≈ 555", "plate": "دجاج 150 جم بدون جلد + رز 100 جم + سلطة", "ing": [["دجاج بدون جلد", "220 جم ني"], ["رز بسمتي", "35 جم ني منقوع"], ["بصل", "نص حبة مفرومة"], ["طماط", "1 حبة مبشورة"], ["معجون طماط", "1 ملعقة ص"], ["زيت", "1 ملعقة ص"], ["بهارات كبسة", "1 ملعقة ص"], ["لومي + هيل", "1 لومية + حبتين"], ["ملح", "ربع ملعقة ص"], ["موية", "1.5 كوب"]], "steps": ["بقدر الضغط بدون غطا: سخّن الزيت وحمّر البصل 3 دقائق.", "حط الدجاج والبهارات 5 دقائق.", "حط الطماط والمعجون واللومي والهيل والملح والموية.", "سكّر قدر الضغط، وبعد ما يصفّر خله 12 دقيقة، وطفّه وخله يفك الضغط.", "طلّع الدجاج، وقِس 90 مل من المرق.", "حط الرز بالمرق، ولما تنشف الموية غطّه 15 دقيقة على نار هادية.", "قدّم الرز والدجاج فوقه مع السلطة."], "tip": "أسرع من الكبسة، وطعمه قريب منها."}, "l_mandi": {"t": "مندي دجاج بالفرن", "cat": "غدا", "time": "65 دقيقة", "kcal": "≈ 555", "plate": "ربع دجاج بدون جلد (150 جم) + رز 100 جم + سلطة", "ing": [["ربع دجاجة بدون جلد", "220 جم ني"], ["بهارات مندي", "1 ملعقة ص"], ["زيت للدجاج", "نص ملعقة ص"], ["ملح", "ربع ملعقة ص"], ["رز بسمتي", "35 جم ني منقوع"], ["زيت للرز", "نص ملعقة ص"], ["هيل + قرفة عود", "حبتين + قطعة صغيرة"], ["مرق أو موية حارة", "90 مل"]], "steps": ["شرّط الدجاج تشريطين، وادهنه بالبهارات والزيت ونص الملح، وخله ساعة بالثلاجة.", "سخّن الفرن على 200 درجة.", "بصينية صغيرة: حط الرز والهيل والقرفة ونص ملعقة الزيت وباقي الملح والمرق الحار.", "حط شبك فوق الصينية والدجاج عليه (عشان عصارته تنزل على الرز).", "غطّ الكل بورق قصدير محكم، وحطه بالفرن 40 دقيقة.", "شيل القصدير، وشغّل الشواية العلوية 10 دقائق لين يتحمر الدجاج.", "قدّمه مع السلطة أو الدقوس."], "tip": "من المطعم: ربع دجاج بدون الجلد، وثلثين كوب رز بس. اترك الصحن الكبير."}, "l_biryani": {"t": "برياني دجاج", "cat": "غدا", "time": "55 دقيقة", "kcal": "≈ 565", "plate": "دجاج 150 جم + رز 100 جم + زبادي بالخيار", "ing": [["دجاج بدون جلد", "200 جم ني قطع"], ["زبادي للتتبيل", "3 ملاعق ك"], ["بهارات برياني", "1 ملعقة ص"], ["ثوم وزنجبيل مهروس", "نص ملعقة ص لكل واحد"], ["بصل", "نص حبة شرائح"], ["طماط", "1 حبة مقطعة"], ["زيت", "1 ملعقة ص"], ["ملح", "ربع ملعقة ص"], ["رز بسمتي", "35 جم ني منقوع"], ["زعفران أو كركم", "رشة (ثمن ملعقة ص)"], ["للسلطة: زبادي + خيار + نعناع", "3 ملاعق ك + نص خيارة + 4 ورقات"]], "steps": ["تبّل الدجاج بالزبادي والبهارات والثوم والزنجبيل ونص الملح، وخله ساعة.", "سخّن الزيت بقدر وحمّر البصل 5 دقائق لين يصير ذهبي.", "حط الدجاج 5 دقائق، وبعدها الطماط، وغطّه 15 دقيقة على نار هادية.", "اسلق الرز بموية مغلية مع باقي الملح 7 دقائق فقط، وصفّه.", "وزّع الرز فوق الدجاج، ورش الزعفران المذوب بملعقة موية.", "غطّ القدر محكم، وخله على أهدى نار 15 دقيقة.", "السلطة: اخلط الزبادي والخيار المبشور والنعناع."], "tip": ""}, "l_charcoal": {"t": "دجاج مشوي على الفحم", "cat": "غدا", "time": "35 دقيقة + 3 ساعات تتبيل", "kcal": "≈ 555", "plate": "ربع دجاجة بدون جلد = 150 جم لحم صافي + رز 100 جم + سلطة", "ing": [["ربع دجاجة بدون جلد", "250 جم ني بالعظم"], ["زبادي", "2 ملعقة ك"], ["زيت زيتون", "1 ملعقة ص"], ["عصير ليمون", "1 ملعقة ك"], ["ثوم مهروس", "2 فص"], ["بابريكا", "نص ملعقة ص"], ["كركم + بهارات مشكلة", "ربع ملعقة ص لكل واحد"], ["لومي مطحون", "ربع ملعقة ص"], ["ملح", "ربع ملعقة ص"], ["رز بسمتي", "35 جم ني (ملعقتين ك ونص)"], ["صوص: زبادي + ثوم + ليمون", "2 ملعقة ك + نص فص + ملعقة ص"]], "steps": ["شرّط الدجاج 3 شرطات بالسكين عشان تدخل التتبيلة.", "اخلط الزبادي والزيت والليمون والثوم والبهارات والملح، ودلّك فيها الدجاج.", "غطّه بالثلاجة 3 ساعات أو من الليل.", "ولّع الفحم، واتركه لين يصير جمر أبيض بدون لهب (20 دقيقة تقريبًا).", "حط الدجاج على الشواية بعيد عن الجمر شوي، وقلّبه كل 5 دقائق، لمدة 25–30 دقيقة.", "اغرز سكين بأثخن مكان: إذا العصارة صافية (مو وردية) فهو جاهز.", "اطبخ الرز على طريقة صفحة «الرز» (35 جم رز + 90 مل موية + نص ملعقة ص زيت + رشة ملح)، أو اغرف 100 جم من رز البيت.", "اخلط الصوص وقدّمه بدل الثومية."], "tip": "بدون فحم: الفرن على الشواية 220 درجة 35 دقيقة، أو القلاية الهوائية 180 درجة 25 دقيقة."}, "l_tawook": {"t": "شيش طاووق", "cat": "غدا", "time": "25 دقيقة + ساعة تتبيل", "kcal": "≈ 535", "plate": "سيخين = دجاج 150 جم مطبوخ + رز 100 جم + سلطة", "ing": [["صدر دجاج مكعبات 3 سم", "200 جم ني = 12 قطعة لسيخين"], ["زبادي", "2 ملعقة ك"], ["معجون طماط", "1 ملعقة ص"], ["زيت زيتون", "1 ملعقة ص"], ["عصير ليمون", "1 ملعقة ك"], ["ثوم مهروس", "1 فص"], ["بابريكا + بهارات مشكلة", "نص ملعقة ص لكل واحد"], ["ملح", "ربع ملعقة ص"], ["فلفل رومي + بصل", "نص حبة من كل واحد، قطع مربعة"], ["رز بسمتي", "35 جم ني (ملعقتين ك ونص)"]], "steps": ["اخلط الزبادي والمعجون والزيت والليمون والثوم والبهارات والملح.", "قلّب الدجاج فيها، وغطّه بالثلاجة ساعة على الأقل.", "إذا الأسياخ خشب، انقعها بموية 20 دقيقة عشان ما تحترق.", "ركّب بكل سيخ: 6 قطع دجاج وبينها فلفل وبصل.", "اشوِها بالشواية أو الفرن 220 درجة 15–18 دقيقة، وقلّبها بالنص. (أو بالقلاية 200 درجة 12–14 دقيقة)", "اطبخ الرز على طريقة صفحة «الرز» (35 جم رز + 90 مل موية + نص ملعقة ص زيت + رشة ملح)، أو اغرف 100 جم من رز البيت."], "tip": "للعشا (ساندويتش): سيخ واحد 120 جم + رغيف بر صغير + خس وطماط + 2 ملعقة ك زبادي بالثوم."}, "l_broast": {"t": "بروست مشوي بالقلاية الهوائية", "cat": "غدا", "time": "35 دقيقة", "kcal": "≈ 555", "plate": "دجاج 150 جم + رز 100 جم أو بطاطس ودجز 100 جم + سلطة", "ing": [["صدر أو فخذ بدون جلد", "200 جم ني (3 قطع)"], ["بهارات بروست", "نص ملعقة ص"], ["ثوم بودرة + بابريكا", "ربع ملعقة ص لكل واحد"], ["ملح", "ربع ملعقة ص"], ["دقيق", "1 ملعقة ك"], ["بيض مخفوق", "1 حبة"], ["بقسماط", "20 جم (3 ملاعق ك)"], ["زيت بخاخ", "رشتين"], ["بدل الرز: بطاطس", "1 صغيرة (100 جم) + نص ملعقة ص زيت"]], "steps": ["تبّل الدجاج بالبهارات والثوم والبابريكا والملح، وخله 30 دقيقة.", "جهّز 3 صحون: الدقيق، والبيض المخفوق، والبقسماط.", "مرّر كل قطعة على الدقيق، وبعدها البيض، وبعدها البقسماط، واضغطها عشان يلصق.", "سخّن القلاية 3 دقائق على 190 درجة.", "صف القطع بدون ما تلمس بعض، ورشتين زيت بخاخ.", "اطبخها 16–18 دقيقة، وقلّبها بالنص.", "الودجز: قطّع البطاطس أصابع، واخلطها بنص ملعقة ص زيت ورشة ملح، 200 درجة 18 دقيقة."], "tip": "يطلع مقرمش مثل البروست، بس سعراته تقريبًا نص البروست المقلي."}, "l_shawarma_plate": {"t": "صحن شاورما دجاج", "cat": "غدا", "time": "25 دقيقة + ساعتين تتبيل", "kcal": "≈ 555", "plate": "شاورما 150 جم + رز 100 جم + خيار وطماط + صوص زبادي", "ing": [["صدر أو فخذ بدون جلد شرائح رفيعة", "200 جم ني"], ["زبادي", "2 ملعقة ك"], ["زيت", "1 ملعقة ص"], ["خل أو ليمون", "1 ملعقة ك"], ["بهارات شاورما", "1 ملعقة ص"], ["ثوم مهروس", "1 فص"], ["ملح", "ربع ملعقة ص"], ["رز بسمتي", "35 جم ني (ملعقتين ك ونص)"], ["صوص: زبادي + ثوم + ليمون", "3 ملاعق ك + نص فص + ملعقة ص"], ["خيار + طماط", "1 + 1"]], "steps": ["اخلط الزبادي والزيت والخل والبهارات والثوم والملح، وقلّب الدجاج فيها.", "غطّه بالثلاجة ساعتين أو من الليل.", "سخّن مقلاة واسعة على نار عالية بدون زيت زيادة.", "حط الدجاج وخله دقيقتين بدون تحريك لين يتحمر، وبعدها قلّبه 6–8 دقائق لين يستوي ويصير أطرافه مقرمشة.", "اطبخ الرز على طريقة صفحة «الرز» (35 جم رز + 90 مل موية + نص ملعقة ص زيت + رشة ملح)، أو اغرف 100 جم من رز البيت.", "اخلط مكونات الصوص.", "قدّم الدجاج فوق الرز مع الخيار والطماط والصوص."], "tip": "الثومية فيها زيت كثير (ملعقة ك = 100 سعرة). صوص الزبادي نفس الطعم بربع السعرات."}, "l_fajita": {"t": "فاهيتا دجاج", "cat": "غدا", "time": "20 دقيقة", "kcal": "≈ 550", "plate": "دجاج 150 جم + فلفل وبصل + 1 تورتيلا بر + سلطة (بدون رز)", "ing": [["صدر دجاج شرائح", "200 جم ني"], ["فلفل ألوان شرائح", "1 كوب"], ["بصل شرائح", "نص حبة"], ["زيت", "1 ملعقة ص"], ["بابريكا + كمون", "نص ملعقة ص لكل واحد"], ["ثوم بودرة + شطة", "ربع ملعقة ص لكل واحد"], ["ملح", "ربع ملعقة ص"], ["عصير ليمون", "1 ملعقة ك"], ["خبز تورتيلا بر", "1 حبة (40 جم)"], ["زبادي (بدل الصوص)", "2 ملعقة ك"]], "steps": ["اخلط البهارات والملح والليمون، وقلّب الدجاج فيها.", "سخّن الزيت بمقلاة واسعة على نار عالية.", "حط الدجاج 6 دقائق مع التحريك لين يستوي، وطلّعه بصحن.", "بنفس المقلاة: الفلفل والبصل 4 دقائق (يبقون مقرمشين شوي).", "رجّع الدجاج وقلّب دقيقة.", "سخّن التورتيلا بمقلاة ناشفة 20 ثانية كل جهة.", "حط الزبادي على التورتيلا، والدجاج والخضار فوقه، ولفّها."], "tip": "هالوجبة بدون رز، التورتيلا هي النشويات."}, "l_awsal": {"t": "أوصال غنم", "cat": "غدا", "time": "20 دقيقة + ساعتين تتبيل", "kcal": "≈ 575", "plate": "سيخين = لحم غنم 120 جم + رز 100 جم + طماط وفلفل مشوي", "ing": [["لحم غنم (فخذ) منزوع الدهن مكعبات 3 سم", "150 جم ني = 10 قطع لسيخين"], ["بصل مبشور", "1 ملعقة ك"], ["زيت زيتون", "1 ملعقة ص"], ["كمون + فلفل أسود", "ربع ملعقة ص لكل واحد"], ["ملح", "ربع ملعقة ص"], ["طماط + فلفل أخضر", "1 + 1 للشوي"], ["رز بسمتي", "35 جم ني (ملعقتين ك ونص)"]], "steps": ["شيل أي دهن باقي على قطع اللحم.", "اخلط البصل المبشور والزيت والكمون والفلفل والملح، وقلّب اللحم فيها.", "غطّه بالثلاجة ساعتين أو من الليل.", "ركّب اللحم بسيخين (5 قطع بالسيخ)، وسيخ ثالث للطماط والفلفل.", "اشوِه على جمر الفحم أو الشواية 8–10 دقائق، وقلّبه كل دقيقتين.", "اطبخ الرز على طريقة صفحة «الرز» (35 جم رز + 90 مل موية + نص ملعقة ص زيت + رشة ملح)، أو اغرف 100 جم من رز البيت.", "قدّمه مع الطماط والفلفل المشوي."], "tip": "من المطعم: سيخ الأوصال تقريبًا 70–80 جم. خذ سيخين، مع ثلثين كوب رز أو ربع رغيف، وبدون صوصات."}, "l_kebab": {"t": "سيخ كباب غنم", "cat": "غدا", "time": "25 دقيقة", "kcal": "≈ 585", "plate": "سيخين = كباب 120 جم + رز 100 جم + سلطة", "ing": [["لحم غنم مفروم بدون دهن", "150 جم ني (75 جم بالسيخ)"], ["بصل مبشور ومعصور", "ربع حبة"], ["بقدونس مفروم ناعم", "1 ملعقة ك"], ["بهارات مشكلة", "نص ملعقة ص"], ["فلفل أسود", "ربع ملعقة ص"], ["ملح", "ربع ملعقة ص"], ["سماق", "ربع ملعقة ص للتقديم"], ["رز بسمتي", "35 جم ني (ملعقتين ك ونص)"]], "steps": ["اطلب من الجزار يفرم فخذ غنم بعد ما يشيل الدهن.", "اعصر البصل المبشور بيدك عشان تطلع مويته (عشان الكباب ما يطيح من السيخ).", "اعجن اللحم مع البصل والبقدونس والبهارات والملح دقيقتين لين يتماسك.", "قسّمه نصين، وبلّل يدك بموية، وشكّل كل نص على سيخ عريض بطول 15 سم.", "اشوِه بالشواية أو الفرن 220 درجة 12 دقيقة (أو بالقلاية 200 درجة 10 دقائق)، وقلّبه مرة.", "اطبخ الرز على طريقة صفحة «الرز» (35 جم رز + 90 مل موية + نص ملعقة ص زيت + رشة ملح)، أو اغرف 100 جم من رز البيت.", "رش السماق، وقدّمه مع السلطة."], "tip": "بدل الرز تقدر تاخذ رغيف بر صغير."}, "l_pasta": {"t": "مكرونة بر بالدجاج والطماط", "cat": "غدا", "time": "25 دقيقة", "kcal": "≈ 530", "plate": "مكرونة 100 جم مطبوخة + دجاج 120 جم + صوص طماط", "ing": [["مكرونة بر", "40 جم ناشفة = 100 جم مطبوخة"], ["صدر دجاج مكعبات", "160 جم ني"], ["صوص طماط بدون سكر", "1 كوب"], ["ثوم مهروس", "1 فص"], ["زيت زيتون", "1 ملعقة ص"], ["ريحان أو أوريغانو ناشف", "نص ملعقة ص"], ["ملح", "ربع ملعقة ص"], ["فلفل أسود", "ربع ملعقة ص"], ["جبن بارميزان مبشور", "1 ملعقة ك (اختياري)"]], "steps": ["اغلي 1 لتر موية مع رشة ملح، وحط المكرونة 10 دقائق (أو حسب الكيس)، وصفّها.", "سخّن الزيت بمقلاة على نار متوسطة إلى عالية.", "حط الدجاج 6 دقائق لين يتحمر من كل الجهات.", "حط الثوم دقيقة، وبعدها صوص الطماط والريحان والملح والفلفل.", "خله يغلي 5 دقائق على نار هادية.", "حط المكرونة بالصوص وقلّب دقيقة.", "رش البارميزان وقدّمه."], "tip": "بدون كريمة وبدون صوص أبيض."}, "d_lentil": {"t": "شوربة عدس", "cat": "عشا", "time": "30 دقيقة", "kcal": "≈ 380", "plate": "شوربة 1.5 كوب + 1 شريحة توست + سلطة", "ing": [["عدس أحمر", "ربع كوب (50 جم)"], ["بصل", "نص حبة مفرومة"], ["جزر", "1 صغيرة مبشورة"], ["زيت", "1 ملعقة ص"], ["كمون", "نص ملعقة ص"], ["كركم", "ربع ملعقة ص"], ["ملح", "ربع ملعقة ص"], ["فلفل أسود", "ربع ملعقة ص"], ["موية", "2 كوب"], ["ليمون", "ربع حبة"], ["توست أسمر", "1 شريحة"]], "steps": ["اغسل العدس بمصفاة لين تصفى الموية.", "سخّن الزيت بقدر على نار متوسطة، وحط البصل والجزر 3 دقائق.", "حط الكمون والكركم 30 ثانية.", "حط العدس والموية والملح والفلفل، ولما يغلي نزّل النار هادية.", "غطّه 20 دقيقة لين يذوب العدس، وحرّك كل شوي.", "اخلطه بالخلاط اليدوي لين ينعم (أو اتركه كذا).", "قدّمه مع ليمون والتوست المحمص والسلطة."], "tip": "سوّ ثلاث أضعاف الكمية، واحفظها بالثلاجة 3 أيام."}, "d_oat_soup": {"t": "شوربة شوفان بالدجاج", "cat": "عشا", "time": "30 دقيقة", "kcal": "≈ 360", "plate": "صحن شوربة كبير (دجاج 100 جم + شوفان 30 جم) · بدون خبز", "ing": [["شوفان", "30 جم (3 ملاعق ك)"], ["صدر دجاج مكعبات صغيرة", "130 جم ني"], ["بصل", "ربع حبة مفرومة"], ["طماط", "1 حبة مبشورة"], ["زيت", "1 ملعقة ص"], ["هيل", "حبتين"], ["بهارات مشكلة", "ربع ملعقة ص"], ["ملح", "ربع ملعقة ص"], ["فلفل أسود", "ربع ملعقة ص"], ["موية", "3 كوب"], ["ليمون + بقدونس", "ربع حبة + ملعقة ك"]], "steps": ["سخّن الزيت بقدر على نار متوسطة، وحمّر البصل دقيقتين.", "حط الدجاج والبهارات والهيل، وقلّبه 5 دقائق.", "حط الطماط دقيقتين، وبعدها الموية والملح والفلفل.", "لما يغلي، نزّل النار متوسطة وخله 10 دقائق.", "حط الشوفان بالتدريج وأنت تحرّك، وخله 10 دقائق لين تثقل الشوربة.", "قدّمها مع ليمون وبقدونس."], "tip": "الشوفان هو النشويات، فما معها خبز. وتشبع لين الصبح."}, "d_vegsoup": {"t": "شوربة خضار بالدجاج", "cat": "عشا", "time": "30 دقيقة", "kcal": "≈ 330", "plate": "صحن شوربة كبير (دجاج 100 جم) + 1 شريحة توست", "ing": [["صدر دجاج مكعبات", "130 جم ني"], ["جزر", "1 حبة مكعبات"], ["فاصوليا خضراء", "نص كوب"], ["كرفس", "عود واحد مقطع"], ["بصل", "نص حبة"], ["طماط", "1 حبة مبشورة"], ["ثوم", "1 فص"], ["زيت", "1 ملعقة ص"], ["بهارات مشكلة", "نص ملعقة ص"], ["ملح", "ربع ملعقة ص"], ["فلفل أسود", "ربع ملعقة ص"], ["موية", "3 كوب"], ["توست أسمر", "1 شريحة"]], "steps": ["سخّن الزيت بقدر، وحمّر البصل والثوم 3 دقائق.", "حط الدجاج والبهارات 5 دقائق.", "حط الجزر والكرفس والفاصوليا والطماط، وقلّب دقيقتين.", "حط الموية والملح والفلفل، ولما يغلي غطّه على نار هادية 20 دقيقة.", "قدّمها مع التوست المحمص."], "tip": "سعراتها قليلة وتشبع. ممتازة لما تحس بجوع زيادة."}, "d_burger": {"t": "برجر لحم غنم بالبيت", "cat": "عشا", "time": "15 دقيقة", "kcal": "≈ 480", "plate": "قرص 120 جم مطبوخ + خبز برجر أسمر + خس وطماط", "ing": [["لحم غنم مفروم بدون دهن", "150 جم ني (قرص واحد)"], ["ملح", "ثمن ملعقة ص (نص الربع)"], ["فلفل أسود", "ربع ملعقة ص"], ["بصل بودرة", "ربع ملعقة ص"], ["خبز برجر أسمر", "1 حبة"], ["خس + طماط + بصل", "ورقتين + شريحتين + شريحة"], ["كاتشب أو خردل", "1 ملعقة ك"], ["جبن شرائح لايت", "1 شريحة (اختياري)"]], "steps": ["اعجن اللحم مع الملح والفلفل والبصل البودرة نص دقيقة (لا تعجنه كثير عشان ما يقسى).", "شكّله قرص سماكته 1.5 سم، واضغط بإبهامك بالنص (عشان ما ينتفخ).", "سخّن مقلاة جريل على نار عالية بدون زيت.", "حط القرص 4 دقائق، واقلبه مرة وحدة، و4 دقائق ثانية. حط الجبن آخر دقيقة.", "حمّص الخبز بنفس المقلاة 30 ثانية.", "ركّب: الخبز، والصوص، والخس، والقرص، والطماط، والبصل."], "tip": "من المطعم: برجر عادي (مو دبل)، بدون صوص، وبدون بطاطس ولا غازي."}, "d_chickburger": {"t": "برجر دجاج مشوي", "cat": "عشا", "time": "15 دقيقة", "kcal": "≈ 430", "plate": "صدر دجاج 120 جم + خبز برجر أسمر + خس وطماط", "ing": [["صدر دجاج", "160 جم ني"], ["زيت", "نص ملعقة ص"], ["بابريكا + ثوم بودرة", "ربع ملعقة ص لكل واحد"], ["ملح", "ثمن ملعقة ص (نص الربع)"], ["فلفل أسود", "ربع ملعقة ص"], ["خبز برجر أسمر", "1 حبة"], ["خس + طماط", "ورقتين + شريحتين"], ["خردل أو زبادي بالثوم", "1 ملعقة ك"]], "steps": ["افتح الصدر رفيع، أو اضربه بالمدقة لين تصير سماكته 1 سم.", "ادهنه بالزيت والبهارات والملح والفلفل.", "سخّن مقلاة جريل على نار متوسطة إلى عالية.", "اشوِه 4 دقائق كل جهة.", "حمّص الخبز 30 ثانية.", "ركّب البرجر مع الخس والطماط والصوص."], "tip": ""}, "d_shawarma": {"t": "ساندويتش شاورما دجاج", "cat": "عشا", "time": "15 دقيقة + ساعتين تتبيل", "kcal": "≈ 450", "plate": "شاورما 120 جم + رغيف بر صغير أو صاج + خس وطماط", "ing": [["صدر أو فخذ بدون جلد شرائح رفيعة", "160 جم ني"], ["زبادي", "1 ملعقة ك"], ["زيت", "نص ملعقة ص"], ["خل أو ليمون", "2 ملعقة ص"], ["بهارات شاورما", "نص ملعقة ص"], ["ثوم مهروس", "نص فص"], ["ملح", "ثمن ملعقة ص (نص الربع)"], ["رغيف بر أو خبز صاج", "1 صغير"], ["خس + طماط + خيار", "حسب الرغيف"], ["صوص زبادي بالثوم", "2 ملعقة ك"]], "steps": ["تبّل الدجاج بالزبادي والزيت والخل والبهارات والثوم والملح، وخله ساعتين.", "سخّن مقلاة على نار عالية.", "حط الدجاج دقيقتين بدون تحريك، وبعدها قلّبه 6 دقائق لين يتحمر.", "افرد الصوص على الخبز، وحط الدجاج والخضار.", "لفّه، وحمّصه بالمقلاة دقيقة كل جهة."], "tip": "من المطعم: ساندويتش عادي واحد (مو صاروخ ولا دبل)، بدون ثومية وبدون بطاطس."}, "d_sandwich": {"t": "ساندويتش صدر دجاج مشوي", "cat": "عشا", "time": "15 دقيقة", "kcal": "≈ 420", "plate": "دجاج 120 جم + رغيف بر صغير + خس وطماط", "ing": [["صدر دجاج", "160 جم ني"], ["زيت زيتون", "نص ملعقة ص"], ["عصير ليمون", "2 ملعقة ص"], ["ثوم مهروس", "نص فص"], ["بابريكا", "ربع ملعقة ص"], ["ملح", "ثمن ملعقة ص (نص الربع)"], ["رغيف بر صغير", "1 (60 جم)"], ["خس + طماط + خيار", "ورقتين + شريحتين + نص خيارة"], ["لبنة أو زبادي بالثوم", "1 ملعقة ك"]], "steps": ["افتح الصدر رفيع، وتبّله بالزيت والليمون والثوم والبابريكا والملح.", "سخّن مقلاة جريل على نار عالية.", "اشوِه 4–5 دقائق كل جهة.", "خله دقيقتين وقطّعه شرائح.", "افرد اللبنة بالرغيف، وحط الدجاج والخضار ولفّه."], "tip": "لو عندك صدر مشوي من الغدا، سخّنه بس."}, "d_quesadilla": {"t": "كاساديا دجاج بالجبن", "cat": "عشا", "time": "12 دقيقة", "kcal": "≈ 430", "plate": "تورتيلا بر محشية دجاج 100 جم + جبن 30 جم + سلطة", "ing": [["خبز تورتيلا بر", "1 حبة (40 جم)"], ["دجاج مشوي مقطع", "100 جم مطبوخ (130 جم ني)"], ["جبن موزاريلا لايت مبشور", "30 جم (ربع كوب)"], ["فلفل رومي + بصل مفروم", "ربع حبة من كل واحد"], ["بهارات فاهيتا", "ربع ملعقة ص"], ["زيت", "❌ بدون"], ["سلطة", "صحن صغير"]], "steps": ["إذا الدجاج ني: اشوِه مثل صدر الدجاج المشوي وقطّعه صغير.", "اخلط الدجاج مع الفلفل والبصل والبهارات.", "افرد التورتيلا، وحط على نصها: نص الجبن، والدجاج، وباقي الجبن.", "اطوِها نصين واضغطها.", "مقلاة غير لاصقة بدون زيت على نار متوسطة، 2–3 دقائق كل جهة لين يذوب الجبن.", "قطّعها 3 مثلثات وقدّمها مع السلطة."], "tip": ""}, "d_salad": {"t": "سلطة دجاج (سيزر خفيفة)", "cat": "عشا", "time": "20 دقيقة", "kcal": "≈ 400", "plate": "دجاج 120 جم + خس وخضار + صوص زبادي + توست", "ing": [["صدر دجاج", "160 جم ني"], ["زيت + بابريكا للدجاج", "نص ملعقة ص + ربع ملعقة ص"], ["ملح", "ثمن ملعقة ص (نص الربع)"], ["خس روماني", "2 كوب مقطع"], ["خيار + طماط كرزي", "نص حبة + 6 حبات"], ["ذرة", "2 ملعقة ك"], ["زبادي", "2 ملعقة ك"], ["عصير ليمون", "1 ملعقة ك"], ["خردل", "نص ملعقة ص"], ["ثوم مهروس", "نص فص"], ["توست أسمر", "1 شريحة"]], "steps": ["ادهن الصدر بالزيت والبابريكا والملح، واشوِه 5 دقائق كل جهة، وقطّعه شرائح.", "قطّع التوست مكعبات، وحمّصها بالقلاية 180 درجة 4 دقائق (أو بالمقلاة).", "الصوص: اخفق الزبادي والليمون والخردل والثوم.", "حط الخس والخيار والطماط والذرة بصحن كبير.", "فوقها الدجاج ومكعبات التوست، وصب الصوص."], "tip": "صوص السيزر الجاهز تقريبًا 150 سعرة بالملعقتين، والزبادي 30."}, "d_hummus": {"t": "حمص بالدجاج", "cat": "عشا", "time": "10 دقائق", "kcal": "≈ 450", "plate": "حمص 4 ملاعق + دجاج 100 جم + نص رغيف بر + خضار", "ing": [["حمص (متبل) جاهز", "4 ملاعق ك (60 جم)"], ["دجاج مشوي قطع", "100 جم مطبوخ"], ["زيت زيتون", "نص ملعقة ص"], ["بابريكا + كمون", "ربع ملعقة ص لكل واحد"], ["رغيف بر", "نص رغيف"], ["خيار + جزر", "1 + 1 أصابع"]], "steps": ["سخّن الدجاج المشوي بالمقلاة دقيقتين مع الكمون والبابريكا.", "افرد الحمص بصحن، وسوّ بالنص حفرة بظهر الملعقة.", "حط الدجاج بالنص، ونص ملعقة ص زيت زيتون فوقه.", "قدّمه مع أصابع الخيار والجزر ونص الرغيف."], "tip": ""}, "d_falafel": {"t": "فلافل بالقلاية الهوائية", "cat": "عشا", "time": "12 دقيقة", "kcal": "≈ 420", "plate": "4 حبات فلافل + نص رغيف بر + سلطة كبيرة + طحينة", "ing": [["فلافل مجمد", "4 حبات"], ["رغيف بر", "نص رغيف"], ["طحينة", "1 ملعقة ك"], ["عصير ليمون", "1 ملعقة ك"], ["موية", "2 ملعقة ك"], ["ملح", "رشة (ثمن ملعقة ص)"], ["سلطة", "صحن كبير"]], "steps": ["سخّن القلاية 3 دقائق على 200 درجة.", "حط الفلافل بدون زيت 10 دقائق، وقلّبها بالنص.", "الصوص: اخلط الطحينة والليمون والموية والملح لين ينعم.", "قدّم الفلافل مع نص الرغيف والسلطة والصوص."], "tip": "إذا شريتها مقلية: 4 حبات بالكثير، وتنحسب وجبة المقلي حقت الأسبوع."}, "d_tuna": {"t": "سلطة تونة", "cat": "عشا", "time": "7 دقائق", "kcal": "≈ 350", "plate": "علبة تونة + سلطة كبيرة + 1 شريحة توست", "ing": [["تونة بالموية", "1 علبة (120 جم مصفّاة)"], ["خس", "2 كوب"], ["خيار + طماط", "1 + 1"], ["ذرة", "2 ملعقة ك"], ["بصل أحمر", "ربع حبة شرائح"], ["عصير ليمون", "1 ملعقة ك"], ["زيت زيتون", "1 ملعقة ص"], ["ملح", "❌ لا (التونة فيها ملح)"], ["فلفل أسود", "ربع ملعقة ص"], ["توست أسمر", "1 شريحة"]], "steps": ["صفِّ التونة من الموية جيدًا.", "قطّع الخس والخيار والطماط والبصل.", "اخلط الخضار مع الذرة.", "حط التونة فوقها، وصب الليمون وزيت الزيتون والفلفل.", "قدّمها مع التوست المحمص."], "tip": "تونة الزيت تزيد تقريبًا 150 سعرة. خذها دايم بالموية."}}, "C": {"b_egg": ["بيض مع توست", "2 بيض + 1 شريحة توست أسمر + خيار وطماط", "b_egg"], "b_foul": ["فول وبيض", "فول 1 كوب (200 جم) + 1 بيضة + ربع رغيف بر", "b_foul"], "b_oat": ["شوفان بالحليب", "شوفان 40 جم + 1 كوب حليب + نص موزة", "b_oat"], "b_shak": ["شكشوكة", "2 بيض بالطماط + 1 شريحة توست أسمر", "b_shak"], "b_labneh": ["بيض ولبنة", "2 بيض + 2 ملعقة لبنة + 1 شريحة توست", "b_labneh"], "b_omelet": ["أومليت بالخضار", "2 بيض + فلفل وبصل وطماط + 1 شريحة توست", "b_omelet"], "b_yog": ["زبادي يوناني بالشوفان", "زبادي 170 جم + شوفان 30 جم + 5 فراولة", "b_yog"], "b_halloumi": ["حلوم مشوي", "حلوم 2 شريحة + 1 بيضة + 1 شريحة توست", "b_halloumi"], "b_pancake": ["توست بالبيض والجبن", "2 بيض + جبن لايت + 2 شريحة توست أسمر", "b_pancake"], "s_dates": ["تمر ولوز", "تمرة وحدة + 5 لوزات", "snacks"], "s_apple": ["تفاح ولوز", "1 تفاحة + 10 حبات لوز", "snacks"], "s_orange": ["برتقال", "1 برتقالة", "snacks"], "s_yog": ["زبادي بالفراولة", "زبادي يوناني 170 جم + 5 فراولة", "snacks"], "s_kiwi": ["كيوي", "2 حبة كيوي", "snacks"], "s_melon": ["بطيخ", "2 كوب مقطّع", "snacks"], "s_maamoul": ["معمول", "1 حبة معمول صغيرة", "snacks"], "z_laban": ["لبن وخيار", "1 كوب لبن قليل الدسم + 2 خيار", "snacks"], "z_egg": ["بيض مسلوق وخضار", "1 بيضة + 1 جزرة + 1 خيارة", "snacks"], "z_pop": ["فشار", "3 أكواب (30 جم حب + نص ملعقة ص زيت) بدون زبدة", "snacks"], "z_smooth": ["سموذي", "1 كوب حليب + نص موزة + ملعقة شوفان", "snacks"], "z_hummus": ["خضار مع حمص", "2 ملعقة حمص + جزرة + خيارة", "snacks"], "z_grape": ["زبادي وعنب", "1 علبة زبادي + 15 حبة عنب", "snacks"], "z_pear": ["كمثرى ولوز", "1 كمثرى + 10 حبات لوز", "snacks"], "z_mango": ["مانجو", "نص حبة", "snacks"], "z_melon": ["بطيخ", "2 كوب مقطّع", "snacks"], "z_qudama": ["قضامة", "ربع كوب (30 جم)", "snacks"], "z_ricecake": ["نص رغيف بالجبن", "نص رغيف بر + جبن مثلثات لايت + خيارة", "snacks"], "l_charcoal": ["دجاج مشوي على الفحم", "ربع دجاج بدون جلد (150 جم) + رز 100 جم + دقوس", "l_charcoal"], "l_chicken": ["صدر دجاج مشوي ورز", "دجاج 150 جم + رز 100 جم + سلطة", "l_chicken"], "l_fish": ["سمك مشوي (سلمون أو هامور)", "سمك 180 جم + رز 100 جم + خضار", "l_fish"], "l_fish_oven": ["سمك بالفرن بصوص الكريمة", "سمك 180 جم + كريمة 2 ملعقة + رز 100 جم", "l_fish_oven"], "l_fish_fried": ["سمك فيليه مقلي", "قطعة 120 جم + رز 100 جم + سلطة · <b>المقلي الوحيد بالأسبوع</b>", "l_fish_fried"], "l_okra": ["بامية بلحم الغنم", "بامية 1 كوب + لحم غنم 120 جم + رز 100 جم", "l_okra"], "l_kabsa": ["كبسة دجاج", "دجاج 150 جم بدون جلد + رز 100 جم + سلطة", "l_kabsa"], "l_tawook": ["شيش طاووق", "سيخين = دجاج 150 جم + رز 100 جم + سلطة", "l_tawook"], "l_awsal": ["أوصال غنم", "سيخين = لحم 120 جم + رز 100 جم + طماط مشوي", "l_awsal"], "l_kebab": ["سيخ كباب غنم", "سيخين = كباب 120 جم + رز 100 جم + سلطة", "l_kebab"], "l_broast": ["بروست مشوي", "دجاج 150 جم + رز 100 جم أو ودجز 100 جم + سلطة", "l_broast"], "l_fajita": ["فاهيتا دجاج", "دجاج 150 جم + فلفل + 1 تورتيلا بر (بدون رز)", "l_fajita"], "l_mandi": ["مندي دجاج", "ربع دجاج بدون جلد 150 جم + رز 100 جم", "l_mandi"], "l_pasta": ["مكرونة بالدجاج", "مكرونة بر 100 جم + دجاج 120 جم + صوص طماط", "l_pasta"], "l_molokhia": ["ملوخية بالدجاج", "ملوخية 1 كوب + دجاج 120 جم + رز 100 جم", "l_molokhia"], "l_shawarma_plate": ["صحن شاورما دجاج", "شاورما 150 جم + رز 100 جم + خيار وطماط + صوص زبادي", "l_shawarma_plate"], "l_idam_chicken": ["إيدام دجاج", "دجاج 150 جم + إيدام 1 كوب + رز 70 جم", "l_idam_chicken"], "l_idam_meat": ["إيدام لحم غنم بالبازلاء", "لحم غنم 120 جم + إيدام 1 كوب + رز 80 جم", "l_idam_meat"], "l_fasolia": ["فاصوليا بلحم الغنم", "فاصوليا 1 كوب + لحم غنم 120 جم + رز 100 جم", "l_fasolia"], "l_jareesh": ["جريش بالدجاج", "جريش 1 كوب + دجاج 120 جم + سلطة (بدون رز)", "l_jareesh"], "l_biryani": ["برياني دجاج", "دجاج 150 جم + رز 100 جم + زبادي بالخيار", "l_biryani"], "l_madhghout": ["مضغوط دجاج", "دجاج 150 جم بدون جلد + رز 100 جم + سلطة", "l_madhghout"], "l_family": ["غدا الأهل 👨‍👩‍👧", "سلطة أول + 2 كاس موية · صحن واحد · لحم أكثر ورز ثلث كوب", "routine"], "d_lentil": ["شوربة عدس", "شوربة 1.5 كوب + 1 شريحة توست + سلطة", "d_lentil"], "d_burger": ["برجر لحم غنم", "قرص 120 جم + خبز برجر أسمر + خس وطماط", "d_burger"], "d_falafel": ["فلافل", "4 حبات + نص رغيف بر + سلطة كبيرة", "d_falafel"], "d_tuna": ["سلطة تونة", "1 علبة تونة بالموية + سلطة + 1 شريحة توست", "d_tuna"], "d_sandwich": ["ساندويتش صدر دجاج", "دجاج 120 جم + رغيف بر صغير + خس وطماط", "d_sandwich"], "d_shawarma": ["ساندويتش شاورما", "شاورما 120 جم + رغيف بر صغير · بدون ثومية", "d_shawarma"], "d_chickburger": ["برجر دجاج مشوي", "صدر 120 جم + خبز برجر أسمر + خس", "d_chickburger"], "d_vegsoup": ["شوربة خضار بالدجاج", "صحن كبير (دجاج 100 جم) + 1 شريحة توست", "d_vegsoup"], "d_hummus": ["حمص بالدجاج", "حمص 4 ملاعق + دجاج 100 جم + نص رغيف", "d_hummus"], "d_salad": ["سلطة دجاج", "دجاج 120 جم + خس وخضار + صوص زبادي + توست", "d_salad"], "d_oat_soup": ["شوربة شوفان بالدجاج", "صحن كبير (دجاج 100 جم + شوفان 30 جم)", "d_oat_soup"], "d_quesadilla": ["كاساديا دجاج", "تورتيلا بر + دجاج 100 جم + جبن 30 جم + سلطة", "d_quesadilla"], "d_foul": ["فول", "فول 1 كوب + 1 بيضة + نص رغيف بر + خضار", "b_foul"], "d_eggs": ["بيض وتوست", "2 بيض + 1 شريحة توست أسمر + خضار", "b_egg"], "d_tawook_wrap": ["ساندويتش شيش طاووق", "سيخ 120 جم + رغيف بر صغير + خس وطماط", "l_tawook"]}, "W": [["b_egg", "s_dates", "l_okra", "z_laban", "d_lentil"], ["b_foul", "s_apple", "l_tawook", "z_egg", "d_burger"], ["b_oat", "s_orange", "l_idam_chicken", "z_pop", "d_falafel"], ["b_shak", "s_yog", "l_fish", "z_hummus", "d_shawarma"], ["b_labneh", "s_kiwi", "l_kabsa", "z_qudama", "d_salad"], ["b_omelet", "s_dates", "l_fish_oven", "z_smooth", "d_quesadilla"], ["b_egg", "s_maamoul", "l_family", "z_melon", "d_eggs"], ["b_yog", "s_apple", "l_broast", "z_laban", "d_oat_soup"], ["b_foul", "s_dates", "l_idam_meat", "z_grape", "d_tawook_wrap"], ["b_halloumi", "s_orange", "l_molokhia", "z_pop", "d_hummus"], ["b_egg", "s_kiwi", "l_fajita", "z_ricecake", "d_lentil"], ["b_pancake", "s_melon", "l_jareesh", "z_egg", "d_tuna"], ["b_shak", "s_dates", "l_fish_fried", "z_pear", "d_chickburger"], ["b_egg", "s_maamoul", "l_family", "z_mango", "d_sandwich"], ["b_omelet", "s_dates", "l_mandi", "z_laban", "d_quesadilla"], ["b_foul", "s_apple", "l_fasolia", "z_smooth", "d_vegsoup"], ["b_labneh", "s_yog", "l_charcoal", "z_hummus", "d_falafel"], ["b_oat", "s_orange", "l_fish", "z_qudama", "d_lentil"], ["b_egg", "s_kiwi", "l_fish_fried", "z_pear", "d_salad"], ["b_shak", "s_dates", "l_awsal", "z_egg", "d_eggs"], ["b_egg", "s_maamoul", "l_family", "z_melon", "d_oat_soup"], ["b_yog", "s_dates", "l_madhghout", "z_laban", "d_lentil"], ["b_foul", "s_orange", "l_okra", "z_pop", "d_sandwich"], ["b_halloumi", "s_apple", "l_biryani", "z_grape", "d_hummus"], ["b_egg", "s_kiwi", "l_kebab", "z_ricecake", "d_tuna"], ["b_pancake", "s_melon", "l_fish", "z_pear", "d_shawarma"], ["b_shak", "s_dates", "l_pasta", "z_egg", "d_chickburger"], ["b_egg", "s_maamoul", "l_family", "z_mango", "d_foul"]], "ALT": {"b_egg": "b_labneh", "b_foul": "b_shak", "b_oat": "b_yog", "b_shak": "b_omelet", "b_labneh": "b_egg", "b_omelet": "b_pancake", "b_yog": "b_oat", "b_halloumi": "b_egg", "b_pancake": "b_omelet", "s_dates": "s_apple", "s_apple": "s_orange", "s_orange": "s_kiwi", "s_yog": "s_apple", "s_kiwi": "s_melon", "s_melon": "s_orange", "s_maamoul": "s_dates", "z_laban": "z_egg", "z_egg": "z_hummus", "z_pop": "z_qudama", "z_smooth": "z_laban", "z_hummus": "z_egg", "z_grape": "z_pear", "z_pear": "z_grape", "z_mango": "z_melon", "z_melon": "z_mango", "z_qudama": "z_pop", "z_ricecake": "z_laban", "l_okra": "l_molokhia", "l_tawook": "l_charcoal", "l_idam_chicken": "l_kabsa", "l_fish": "l_fish_oven", "l_kabsa": "l_madhghout", "l_fish_oven": "l_fish", "l_broast": "l_tawook", "l_idam_meat": "l_idam_chicken", "l_molokhia": "l_idam_chicken", "l_fajita": "l_shawarma_plate", "l_jareesh": "l_kabsa", "l_fish_fried": "l_fish", "l_mandi": "l_madhghout", "l_fasolia": "l_okra", "l_charcoal": "l_tawook", "l_awsal": "l_kebab", "l_madhghout": "l_mandi", "l_biryani": "l_kabsa", "l_kebab": "l_awsal", "l_pasta": "l_chicken", "d_lentil": "d_oat_soup", "d_burger": "d_chickburger", "d_falafel": "d_hummus", "d_shawarma": "d_tawook_wrap", "d_salad": "d_sandwich", "d_quesadilla": "d_shawarma", "d_eggs": "d_foul", "d_oat_soup": "d_lentil", "d_tawook_wrap": "d_shawarma", "d_hummus": "d_falafel", "d_tuna": "d_salad", "d_chickburger": "d_sandwich", "d_sandwich": "d_chickburger", "d_vegsoup": "d_lentil", "d_foul": "d_eggs"}, "SN": {"s_dates": {"t": "تمر ولوز", "q": "تمرة وحدة + 5 لوزات", "k": "≈ 60", "steps": ["خذ تمرة وحدة وشيل النواة.", "عدّ 5 لوزات (نية أو محمصة بدون ملح).", "كُلها على مهل مع كاس موية."], "tip": "التمر سكر سريع، عشان كذا تمرة وحدة بس ومعها لوز يبطّئ امتصاصه."}, "s_apple": {"t": "تفاح ولوز", "q": "1 تفاحة + 10 حبات لوز", "k": "≈ 165", "steps": ["اغسل التفاحة وكُلها بقشرها (القشر فيه الألياف).", "عدّ 10 لوزات بيدك، ولا تاكل من الكيس."], "tip": ""}, "s_orange": {"t": "برتقال", "q": "1 برتقالة", "k": "≈ 65", "steps": ["قشّرها وكُلها حبة كاملة.", "لا تعصرها: العصير سكر بدون ألياف."], "tip": ""}, "s_yog": {"t": "زبادي بالفراولة", "q": "زبادي يوناني 170 جم + 5 فراولة", "k": "≈ 140", "steps": ["حط علبة الزبادي اليوناني بصحن.", "اغسل 5 فراولات وقطّعها فوقه.", "بدون عسل وبدون سكر."], "tip": ""}, "s_kiwi": {"t": "كيوي", "q": "2 حبة كيوي", "k": "≈ 90", "steps": ["قص كل كيوية نصين.", "كُلها بالملعقة."], "tip": ""}, "s_melon": {"t": "بطيخ", "q": "2 كوب مقطّع (300 جم)", "k": "≈ 90", "steps": ["قطّع البطيخ مكعبات.", "املأ كوبين بس، والباقي رجعه للثلاجة."], "tip": ""}, "s_maamoul": {"t": "معمول", "q": "1 حبة معمول صغيرة", "k": "≈ 130", "steps": ["حبة وحدة صغيرة يوم الجمعة بس.", "كُلها مع القهوة السعودية لو تبي."], "tip": "هذي الحلا الوحيد بالأسبوع."}, "z_laban": {"t": "لبن وخيار", "q": "1 كوب لبن قليل الدسم + 2 خيار", "k": "≈ 130", "steps": ["صب كوب لبن قليل الدسم (250 مل) بارد.", "قطّع خيارتين أصابع."], "tip": ""}, "z_egg": {"t": "بيض مسلوق وخضار", "q": "1 بيضة + 1 جزرة + 1 خيارة", "k": "≈ 110", "steps": ["بيضة مسلوقة 9 دقائق.", "قطّع الجزرة والخيارة أصابع.", "رشة ملح صغيرة على البيضة."], "tip": "اسلق 6 بيضات أول الأسبوع وخلها بالثلاجة جاهزة."}, "z_pop": {"t": "فشار بالبيت", "q": "3 أكواب (30 جم حب)", "k": "≈ 110", "steps": ["حط نص ملعقة ص زيت و30 جم حب فشار (3 ملاعق ك) بقدر.", "غطّ القدر على نار متوسطة.", "هز القدر كل شوي لين يوقف الطقطقة (3 دقائق تقريبًا).", "رش ثمن ملعقة ص ملح. بدون زبدة."], "tip": "فشار السينما والمايكرويف فيه زبدة وملح كثير."}, "z_smooth": {"t": "سموذي", "q": "كوب حليب + نص موزة + ملعقة شوفان", "k": "≈ 200", "steps": ["بالخلاط: كوب حليب قليل الدسم (250 مل).", "نص موزة، وملعقة ك شوفان، و3 مكعبات ثلج.", "اخلطه 30 ثانية واشربه على طول."], "tip": "بدون سكر ولا عسل. الموز يكفي حلاوة."}, "z_hummus": {"t": "خضار مع حمص", "q": "2 ملعقة ك حمص + جزرة + خيارة", "k": "≈ 110", "steps": ["حط ملعقتين حمص (متبل) جاهز بصحن صغير.", "قطّع الجزر والخيار أصابع واغمسها فيه."], "tip": ""}, "z_grape": {"t": "زبادي وعنب", "q": "1 علبة زبادي + 15 حبة عنب", "k": "≈ 150", "steps": ["علبة زبادي (170 جم).", "اغسل 15 حبة عنب وعدّها."], "tip": ""}, "z_pear": {"t": "كمثرى ولوز", "q": "1 كمثرى + 10 لوزات", "k": "≈ 170", "steps": ["اغسل الكمثرى وكُلها بقشرها.", "10 لوزات معدودة."], "tip": ""}, "z_mango": {"t": "مانجو", "q": "نص حبة (100 جم)", "k": "≈ 100", "steps": ["قص المانجو نصين جنب النواة.", "خذ نص واحد، وقطّعه مربعات بالسكين وهو بقشره."], "tip": ""}, "z_melon": {"t": "بطيخ", "q": "2 كوب مقطّع (300 جم)", "k": "≈ 90", "steps": ["قطّع البطيخ مكعبات.", "املأ كوبين بس."], "tip": ""}, "z_qudama": {"t": "قضامة", "q": "ربع كوب (30 جم)", "k": "≈ 120", "steps": ["صب ربع كوب بصحن صغير.", "لا تاكل من الكيس مباشرة."], "tip": "تقدر تسويها بالقلاية: حمص معلب مصفّى ومنشّف، رشة زيت وبهارات، 200 درجة 15 دقيقة."}, "z_ricecake": {"t": "نص رغيف بالجبن", "q": "نص رغيف بر + جبن مثلثات لايت + خيارة", "k": "≈ 160", "steps": ["افرد قطعة جبن مثلثات لايت على نص رغيف بر.", "قطّع خيارة جنبه."], "tip": ""}}, "DR": {"water": {"t": "الموية", "q": "3 لتر باليوم = 12 كاس (250 مل)", "when": "طول اليوم", "sugar": "بدون سكر", "ing": [], "steps": ["كاسين على الريق الساعة 6:30.", "كاسين الساعة 10:30.", "كاس الشيا قبل الغدا.", "والباقي موزعة بين الوجبات، وكاس قبل كل وجبة.", "سجّلها بعدّاد الموية بصفحة اليوم."], "tip": "إذا حسيت بجوع بين الوجبات، اشرب كاسين موية وانتظر 10 دقائق. كثير من الجوع عطش."}, "v60": {"t": "قهوة V60", "q": "كوب 250 مل · مرتين باليوم (8:00 و4:00)", "when": "8:00 و 4:00", "sugar": "بدون سكر", "ing": [["بن مطحون وسط", "15 جم (ملعقتين ك ونص)"], ["موية حارة 92–94 درجة", "250 مل"], ["فلتر V60", "1"], ["حليب (اختياري)", "2 ملعقة ك قليل الدسم بالكثير"]], "steps": ["حط الفلتر بالقمع، وصب عليه موية حارة عشان تروح ريحة الورق، وكب الموية.", "حط البن، وهز القمع شوي عشان يستوي سطحه.", "صب 40 مل موية بس، وخلها 30 ثانية (يطلع غاز البن).", "كمّل صب الموية بحركة دائرية بطيئة على دفعات، لين توصل 250 مل خلال 2:30 إلى 3 دقائق.", "اشربها سوداء."], "tip": "القهوة السوداء تقريبًا صفر سعرات، وتحمي الكبد. السكر والسيرب والكريمة يخربونها. وآخر كوب الساعة 4 عشان نومك."}, "saudi": {"t": "القهوة السعودية", "q": "3 فناجيل · مرة باليوم (12:00)", "when": "12:00 الظهر", "sugar": "بدون سكر", "ing": [["موية", "300 مل"], ["بن شقراء (قهوة سعودية)", "1 ملعقة ك"], ["هيل مطحون", "نص ملعقة ص"], ["زعفران أو قرنفل (اختياري)", "رشة"]], "steps": ["اغلي الموية بالدلة.", "حط البن، وخله يغلي على نار هادية 10 دقائق.", "طفّ النار وخله يركد دقيقتين.", "حط الهيل (والزعفران) بالدلة الثانية، وصب القهوة عليه بهدوء بدون الرواسب.", "خلها دقيقتين، وصب 3 فناجيل."], "tip": "التمر مو مع كل فنجال. تمرة وحدة بسناك الصبح تكفي."}, "chia": {"t": "موية بالشيا", "q": "ملعقة ك شيا + كوب موية (250 مل)", "when": "1:15 قبل الغدا", "sugar": "بدون سكر", "ing": [["بذور شيا", "1 ملعقة ك (12 جم)"], ["موية", "250 مل"], ["ليمون (اختياري)", "عصرة"]], "steps": ["حط الشيا بالكوب وصب الموية.", "حرّك دقيقة عشان ما تتكتل.", "خلها 10 دقائق، وحرّك مرة ثانية.", "اشربها قبل الغدا بربع ساعة."], "tip": "الشيا تنتفخ بالمعدة وتشبعك، فتاكل أقل بالغدا. وتنزل الكوليسترول."}, "hibiscus": {"t": "كركديه بارد", "q": "كوب 300 مل", "when": "6:00 العصر", "sugar": "بدون سكر", "ing": [["كركديه ناشف", "1 ملعقة ك"], ["موية مغلية", "300 مل"], ["نعناع (اختياري)", "3 ورقات"], ["ثلج", "حسب رغبتك"]], "steps": ["حط الكركديه بإبريق أو كوب كبير.", "صب عليه الموية المغلية، وغطّه 10 دقائق.", "صفّه، وبرّده بالثلاجة أو بالثلج.", "حط النعناع واشربه بارد."], "tip": "قد يساعد الضغط شوي. إذا تاخذ دواء ضغط اسأل طبيبك قبل تشربه كل يوم."}, "lemon_mint": {"t": "ليمون بالنعناع", "q": "كوب 300 مل", "when": "6:00 العصر", "sugar": "بدون سكر", "ing": [["ليمون", "عصير نص حبة"], ["نعناع", "6 ورقات"], ["موية باردة", "300 مل"], ["ثلج", "4 مكعبات"]], "steps": ["حط الليمون والنعناع والموية بالخلاط 10 ثواني.", "أو اهرس النعناع بالكوب بملعقة وحط الباقي.", "حط الثلج واشربه."], "tip": "لو تبيه حلو: نقطتين ستيفيا بالكثير، ولا تتعود."}, "chamomile": {"t": "بابونج", "q": "كوب 250 مل", "when": "10:00 الليل", "sugar": "بدون سكر", "ing": [["بابونج", "كيس أو ملعقة ص"], ["موية مغلية", "250 مل"]], "steps": ["صب الموية المغلية على البابونج.", "غطّه 5 دقائق عشان يطلع طعمه.", "شيل الكيس واشربه دافي."], "tip": "يساعدك تنام، ويبعدك عن أكل الليل. تقدر تبدله بينسون."}, "tea": {"t": "الشاي (لو تبي)", "q": "كوب بالكثير باليوم", "when": "الصبح أو الظهر", "sugar": "بدون سكر", "ing": [["شاي أحمر أو أخضر", "كيس"], ["موية مغلية", "250 مل"], ["نعناع (اختياري)", "3 ورقات"]], "steps": ["صب الموية على الكيس وغطّه 3 دقائق.", "شيل الكيس واشربه بدون سكر."], "tip": "لا تشربه مع الأكل مباشرة (يقلل امتصاص الحديد)، ولا بعد العصر لأن فيه كافيين."}}, "PLAN": {"status": [], "rules": [["السكر ومقاومة الإنسولين", ["ترتيب الأكل: سلطة، بعدها البروتين، والرز آخر شي", "الرز مرة باليوم (100 جم) بالغدا، والخبز بر", "المشي بعد العشا ينزل السكر"], ["السكر والعصاير والحلويات", "أكثر من تمرة وحدة باليوم"]], ["الكبد الدهني", ["نزول تقريبًا 1 كجم بالأسبوع", "القهوة السوداء تحمي الكبد", "زيت الزيتون بالملعقة بس"], ["المشروبات المحلاة والعصاير", "المقلي بزيت غزير", "الأعشاب وخلطات التخسيس"]], ["الكوليسترول والدهون", ["شوفان وفول وعدس وحمص", "سمك مرتين بالأسبوع", "غنم مرتين بالأسبوع بالكثير: فخذ بدون دهن"], ["الشحم والسمن والزبدة والكريمة", "الجبن الدسم والحلوم الكثير", "المرتديلا والنقانق"]], ["الضغط", ["الملح نص ملعقة صغيرة باليوم كله", "ليمون وثوم وبهارات بدل الملح"], ["مكعبات المرق والشيبس والصوصات", "الأكل الجاهز كل يوم"]]], "doc": [], "walk": [["1", "30 دقيقة", "6,000", "—"], ["2", "45 دقيقة", "8,000", "—"], ["3 – 6", "ساعة", "10,000", "يومين"], ["7 وبعده", "ساعة", "10,000+", "3 أيام"]], "res": [["قرفصاء على كرسي", "2 × 10", "3 × 15"], ["ضغط على الجدار ثم الركب", "2 × 8", "3 × 12"], ["جسر الأرداف", "2 × 12", "3 × 15"], ["تجديف بقارورتين موية", "2 × 12", "3 × 15"], ["بلانك", "15 ثانية", "40 ثانية"]], "af": [["صدر دجاج", "190°", "14 د"], ["ربع دجاج بدون جلد", "180°", "25 د"], ["بروست بالبقسماط", "190°", "16–18 د"], ["شيش طاووق", "200°", "12–14 د"], ["كباب أو برجر", "200°", "10 د"], ["سمك فيليه", "200°", "10 د"], ["فلافل مجمد", "200°", "10 د"], ["بطاطس ودجز", "200°", "18 د"], ["خضار مشوية", "200°", "12 د"], ["بيض مسلوق", "150°", "13 د"]], "family": ["ابدأ بصحن سلطة وكاسين موية", "صحن واحد بدون إعادة", "لحم أو دجاج كثير، ورز ثلث كوب", "الحلا قطعة صغيرة وحدة أو اتركه", "برا البيت: مشويات (ربع دجاج بدون جلد أو سيخين) + سلطة، بدون ثومية ولا بطاطس ولا غازي", "عشاك ذاك اليوم خفيف"]}, "NAMES": ["السبت", "الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"], "PWA": true, "GH": true, "PUBLIC": true, "VAPID": "BFBczDRaSx47vpk-dVh2FMWbuhIfHxFCMVN1uBXrZiBsp1jJNV7__sHuVaSLiMr5TjEWUaDdkxFpOD7eOvJmoM4", "APPURL": "https://hos0090.github.io/weight-plan/"};
+</script>
+<script>
+(()=>{
+const {R,C,W,ALT,SN,DR,NAMES}=DATA;
+const SKK='wp.skin';
+function getSkin(){try{const v=localStorage.getItem(SKK);if(v)return v;}catch(e){}return (window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches)?'beige':'night';}
+function applySkin(v){document.documentElement.setAttribute('data-skin',v);const b=document.getElementById('skinBtn');if(b)b.textContent=v==='beige'?'☾':'☀';const m=document.querySelector('meta[name=theme-color]');if(m)m.content=v==='beige'?'#f4eee2':'#0b1411';}
+applySkin(getSkin());
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const strip=s=>String(s).replace(/<[^>]+>/g,'');
+const DAYMS=864e5;
+const WD=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const MON=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+const SLOTL=['الفطور','سناك الصبح','الغدا','سناك العصر','العشا'];
+const SLOTK=['b','s','l','z','d'];
+const TARGET=103, HEIGHT=1.83;
+
+/* ---------------- state ---------------- */
+const LS='weightplan.v1';
+const def=()=>({start:'2026-10-10',checks:{},water:{},swaps:{},weights:DATA.SEEDW?[{d:'2026-10-10',kg:DATA.SEEDW}]:[],shop:{},steps:{},ing:{},notif:{water:1,meals:1,coffee:1,drinks:1,walk:1,sleep:1,weigh:1}});
+let S=def();
+try{const raw=localStorage.getItem(LS); if(raw) S=Object.assign(def(),JSON.parse(raw));}catch(e){}
+let dbRef=null, saveT=null, syncState='local';
+function save(){
+  try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}
+  if(typeof syncPrefs==='function') syncPrefs();
+  if(dbRef){clearTimeout(saveT);saveT=setTimeout(async()=>{try{await dbRef.set(JSON.parse(JSON.stringify(S)));setSync('cloud');}catch(e){setSync('local');dbRef=null;}},700);}
+}
+function setSync(k){syncState=k;$('#sync').textContent=k==='cloud'?'✓ محفوظ بحسابك':'محفوظ على هالجهاز';}
+setSync('local');
+(async()=>{
+  try{
+    if(!window.claude||!claude.use) return;
+    const [db,user]=await Promise.all([claude.use('db'),claude.use('user')]);
+    if(!db||!user) return;
+    const id=await user.id(); if(!id) return;
+    const ref=db.doc('data/users/'+id+'/state');
+    const snap=await ref.get();
+    if(snap.exists){const d=snap.data(); S=Object.assign(def(),JSON.parse(JSON.stringify(d))); try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){} render();}
+    dbRef=ref; setSync('cloud');
+  }catch(e){}
+})();
+
+/* ---------------- push (PWA only) ---------------- */
+const PWA=!!DATA.PWA;
+const NCATS=[['water','الموية','💧'],['meals','الوجبات والسناكات','🍽️'],['coffee','القهوة','☕'],['drinks','الشيا والمشروبات','🌱'],['walk','المشي','🚶'],['sleep','البابونج والنوم','🌙'],['weigh','يوم الوزن (السبت)','⚖️']];
+if(!S.notif) S.notif={water:1,meals:1,coffee:1,drinks:1,walk:1,sleep:1,weigh:1};
+const PK='wp.pushep';
+let pushEp=null; try{pushEp=localStorage.getItem(PK);}catch(e){}
+const isStandalone=()=>(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+const isIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent);
+const pushSupported=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
+function pushState(){ if(!PWA) return 'na'; if(pushEp&&window.Notification&&Notification.permission==='granted') return 'on'; if(isIOS()&&!isStandalone()) return 'install'; if(!pushSupported()) return 'unsupported'; if(window.Notification&&Notification.permission==='denied') return 'denied'; return 'off'; }
+if(PWA&&'serviceWorker' in navigator){navigator.serviceWorker.register(DATA.GH?'./sw.js':'/sw.js').catch(()=>{});}
+function b64u(s){const p='='.repeat((4-s.length%4)%4);const b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...b].map(c=>c.charCodeAt(0)));}
+function prunedSwaps(){const out={},t=today();for(const k in S.swaps){const d=parse(k);if((d-t)/DAYMS>=-1&&(d-t)/DAYMS<=21)out[k]=S.swaps[k];}return out;}
+function showCode(){
+  let code='';try{code=localStorage.getItem('wp.pushcode')||'';}catch(e){}
+  openSheet('<div class="eyebrow">خطوة أخيرة</div><h2>رمز التفعيل</h2>',`<p class="muted" style="margin-top:0">انسخ الرمز وأرسله لـClaude بالمحادثة، وهو يشغّل التذكيرات على جوالك. تسويها مرة وحدة بس.</p>
+   <textarea id="pcode" readonly style="width:100%;height:130px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;color:var(--fg);font-size:11px;direction:ltr" onclick="this.select()">${esc(code)}</textarea>
+   <button class="btn" id="copyCode" style="width:100%;margin-top:10px">انسخ الرمز</button>`);
+}
+async function enablePushGH(){
+  try{
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted'){toast('ما سمحت بالتنبيهات');render();return;}
+    const reg=await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub) sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(DATA.VAPID)});
+    const code=btoa(unescape(encodeURIComponent(JSON.stringify(sub))));
+    pushEp=sub.endpoint; try{localStorage.setItem(PK,pushEp);localStorage.setItem('wp.pushcode',code);}catch(e){}
+    try{reg.showNotification('🔔 التنبيهات جاهزة',{body:'أرسل رمز التفعيل لـClaude عشان يبدأ يذكّرك',icon:'icon-192.png',lang:'ar',dir:'rtl'});}catch(e){}
+    render(); showCode();
+  }catch(e){toast('ما زبط التفعيل، جرّب مرة ثانية');}
+}
+async function enablePush(){
+  if(DATA.GH) return enablePushGH();
+  try{
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted'){toast('ما سمحت بالتنبيهات');render();return;}
+    const reg=await navigator.serviceWorker.ready;
+    const key=await (await fetch('/api/vapid')).text();
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub) sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(key)});
+    const r=await fetch('/api/subscribe',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sub,start:S.start,swaps:prunedSwaps(),prefs:S.notif})});
+    if(!r.ok) throw new Error('server');
+    pushEp=sub.endpoint; try{localStorage.setItem(PK,pushEp);}catch(e){}
+    toast('تفعّلت التذكيرات 🔔'); render();
+    fetch('/api/test',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({endpoint:pushEp})});
+  }catch(e){toast('ما زبط التفعيل، جرّب مرة ثانية');}
+}
+let prefT=null;
+function syncPrefs(){ if(!PWA||!pushEp||DATA.GH) return; clearTimeout(prefT); prefT=setTimeout(()=>{fetch('/api/prefs',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({endpoint:pushEp,start:S.start,swaps:prunedSwaps(),prefs:S.notif})}).catch(()=>{});},1200); }
+function pushBanner(){
+  const st=pushState(); if(st==='on'||st==='na') return '';
+  if(st==='install') return `<section class="push"><h3>🔔 خل التطبيق يذكّرك</h3><p>عشان توصلك تنبيهات الموية والوجبات، ثبّت التطبيق على جوالك:</p><ol><li>اضغط زر المشاركة <b>⬆︎</b> تحت بسفاري</li><li>اختر <b>«إضافة إلى الشاشة الرئيسية»</b></li><li>افتح التطبيق من الأيقونة، وفعّل التذكيرات من هنا</li></ol></section>`;
+  if(st==='denied') return `<section class="push"><h3>🔔 التنبيهات مقفلة</h3><p>افتح الإعدادات ← الإشعارات ← خطتي للوزن، وفعّلها.</p></section>`;
+  if(st==='unsupported') return `<section class="push"><h3>🔔 التنبيهات</h3><p>هالمتصفح ما يدعم التنبيهات. على الآيفون تحتاج iOS 16.4 أو أحدث، وتفتح التطبيق من الشاشة الرئيسية.</p></section>`;
+  return `<section class="push"><h3>🔔 فعّل التذكيرات</h3><p>يذكّرك بالموية، وكل وجبة قبلها، والقهوة، والمشي، ويسألك: تغديت؟ شربت موية؟</p><button class="btn" id="enablePush">فعّل التذكيرات</button></section>`;
+}
+function pushSettings(){
+  if(!PWA) return `<div class="panel" id="pnotif"><h3>🔔 التذكيرات</h3><div class="note" style="margin-top:0">${DATA.APPURL?`التنبيهات تشتغل بنسخة الجوال. افتح <b style="user-select:all">${esc(DATA.APPURL)}</b> من سفاري، وضيفه للشاشة الرئيسية.`:'التنبيهات تشتغل بنسخة الجوال، وهي تحت التجهيز.'}</div></div>`;
+  const st=pushState();
+  const tg=NCATS.map(([k,l,i])=>`<div class="tg"><span>${i} ${l}</span><button class="sw ${S.notif[k]?'on':''}" data-ncat="${k}" aria-label="${l}" aria-pressed="${S.notif[k]?'true':'false'}"></button></div>`).join('');
+  if(DATA.GH) return `<div class="panel" id="pnotif"><h3>🔔 التذكيرات</h3>${st==='on'?`<div class="note" style="margin-top:0">مفعّلة على هالجهاز. يوصلك 17 تذكير باليوم: الموية، والوجبات، والقهوة، والشيا، والمشي، والنوم، ويوم الوزن.</div><div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="showCode">اعرض رمز التفعيل</button><button class="btn ghost" id="localTest">جرّب إشعار</button></div>`:pushBanner().replace('<section class="push">','<div>').replace('</section>','</div>')}</div>`;
+  return `<div class="panel" id="pnotif"><h3>🔔 التذكيرات</h3>${st==='on'?`<div class="note" style="margin-top:0">مفعّلة. اختر وش يوصلك:</div>${tg}<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="testPush">أرسل تنبيه تجربة</button></div>`:pushBanner().replace('<section class="push">','<div>').replace('</section>','</div>')}</div>`;
+}
+
+/* ---------------- dates ---------------- */
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);};
+const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d;};
+let sel=today();
+const sinceStart=d=>Math.round((d-parse(S.start))/DAYMS);
+function planIdx(d){const n=sinceStart(d);return ((n%28)+28)%28;}
+function weekNo(d){return Math.max(1,Math.floor(sinceStart(d)/7)+1);}
+const walkMin=d=>{const w=weekNo(d);return w===1?30:w===2?45:60;};
+const resistance=d=>{const w=weekNo(d),wd=d.getDay();if(w<3)return false;if(wd===0||wd===2)return true;return w>=7&&wd===4;};
+const fmtDate=d=>WD[d.getDay()]+' '+d.getDate()+' '+MON[d.getMonth()];
+
+/* ---------------- day model ---------------- */
+function mealKey(d,slot){const k=iso(d);return (S.swaps[k]&&S.swaps[k][slot])||W[planIdx(d)][slot];}
+function dayItems(d){
+  const p=planIdx(d), eve=p%2===0?'hibiscus':'lemon_mint';
+  const items=[
+   {id:'wake',t:'6:30',type:'drink',ref:'water',title:'كاسين موية على الريق',sub:'500 مل · قبل أي شي'},
+   {id:'m0',t:'7:00',type:'meal',slot:0},
+   {id:'v1',t:'8:00',type:'drink',ref:'v60',title:'قهوة V60 الأولى',sub:'كوب 250 مل · سوداء بدون سكر'},
+   {id:'m1',t:'10:00',type:'meal',slot:1},
+   {id:'w2',t:'10:30',type:'drink',ref:'water',title:'كاسين موية',sub:'500 مل'},
+   {id:'sc',t:'12:00',type:'drink',ref:'saudi',title:'قهوة سعودية',sub:'3 فناجيل · بدون سكر'},
+   {id:'chia',t:'1:15',type:'drink',ref:'chia',title:'موية بالشيا قبل الغدا',sub:'ملعقة ك شيا + كوب موية'},
+   {id:'m2',t:'1:30',type:'meal',slot:2},
+   {id:'v2',t:'4:00',type:'drink',ref:'v60',title:'قهوة V60 الثانية',sub:'آخر قهوة باليوم · بدون سكر'},
+   {id:'m3',t:'4:00',type:'meal',slot:3},
+   {id:'eve',t:'6:00',type:'drink',ref:eve,title:DR[eve].t,sub:DR[eve].q},
+   {id:'m4',t:'7:30',type:'meal',slot:4},
+   {id:'walk',t:'8:00',type:'walk',title:'مشي '+(walkMin(d)===60?'ساعة':walkMin(d)+' دقيقة'),sub:(resistance(d)?'+ تمارين المقاومة 20 دقيقة قبله':'بعد العشا بنص ساعة')},
+   {id:'night',t:'10:00',type:'drink',ref:'chamomile',title:'كوب بابونج',sub:'والمطبخ مقفل'},
+   {id:'sleep',t:'11:00',type:'sleep',title:'نوم',sub:'7 ساعات نوم تقلل جوع بكرة'}
+  ];
+  return items;
+}
+const toMin=t=>{let [h,m]=t.split(':').map(Number);if(h<6)h+=12;return h*60+m;};
+function isDone(d,id){const c=S.checks[iso(d)];return !!(c&&c[id]);}
+function dayProgress(d){const its=dayItems(d);const n=its.filter(i=>isDone(d,i.id)).length;return {n,t:its.length};}
+
+/* ---------------- helpers ---------------- */
+function cInfo(k){const c=C[k];return {t:c[0],q:strip(c[1]),link:c[2]};}
+function ring(p,size=92,sw=7){const r=(size-sw)/2,c=2*Math.PI*r;return `<svg width="${size}" height="${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" style="stroke:var(--track)" stroke-width="${sw}" fill="none"/><circle cx="${size/2}" cy="${size/2}" r="${r}" stroke="url(#gg)" stroke-width="${sw}" fill="none" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-p)}"/><defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" style="stop-color:var(--ringA)"/><stop offset="1" style="stop-color:var(--ringB)"/></linearGradient></defs></svg>`;}
+const checkSvg='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),1600);}
+function greet(){const h=new Date().getHours();return h<12?'صباح الخير':h<18?'مساء الخير':'مساء النور';}
+
+/* ---------------- TODAY ---------------- */
+function viewToday(){
+  const d=sel, its=dayItems(d), pr=dayProgress(d), isT=iso(d)===iso(today());
+  const nowM=new Date().getHours()*60+new Date().getMinutes();
+  let nowId=null; if(isT){for(const i of its){if(!isDone(d,i.id)&&toMin(i.t)+45>=nowM){nowId=i.id;break;}}}
+  const n=sinceStart(d), cyc=Math.floor(n/28)+1;
+  const water=S.water[iso(d)]||0;
+  // strip
+  let strip='';const base=new Date(d);base.setDate(base.getDate()-3);
+  for(let i=0;i<7;i++){const x=new Date(base);x.setDate(base.getDate()+i);const p=dayProgress(x);const st=p.n===0?'':p.n>=p.t-1?'full':'part';
+    strip+=`<button class="dpill ${iso(x)===iso(d)?'on':''} ${iso(x)===iso(today())?'today':''}" data-day="${iso(x)}"><span>${WD[x.getDay()].replace('ال','')}</span><b class="num">${x.getDate()}</b><i class="dot ${st}"></i></button>`;}
+  let tl='';
+  for(const it of its){
+    const done=isDone(d,it.id);
+    let cls='',tag='',title='',sub='',acts='',sw='';
+    if(it.type==='meal'){
+      const k=mealKey(d,it.slot), ci=cInfo(k), orig=W[planIdx(d)][it.slot];
+      cls='t-meal'+it.slot; tag=SLOTL[it.slot]; title=ci.t; sub=ci.q;
+      if(k!==orig) sw=`<div class="swapped">بدّلتها بدل: ${esc(cInfo(orig).t)}</div>`;
+      const how = ci.link==='routine'?'نصايح الطلعة':'الطريقة';
+      acts=`<div class="cact"><button data-how="${k}">📖 ${how}</button><button data-swap="${it.slot}">⇄ بدّل الوجبة</button></div>`;
+    }else if(it.type==='drink'){cls='t-drink';tag='مشروب';title=it.title;sub=it.sub;acts=`<div class="cact"><button data-drink="${it.ref}">كيف أسويه؟</button></div>`;}
+    else if(it.type==='walk'){cls='t-walk';tag='حركة · أسبوع '+weekNo(d);title=it.title;sub=it.sub;acts=`<div class="cact"><button data-tabgo="plan" data-anchor="walk">خطة المشي</button></div>`;}
+    else {cls='t-sleep';tag='راحة';title=it.title;sub=it.sub;}
+    tl+=`<div class="it ${cls} ${done?'done':''} ${nowId===it.id?'now':''}"><div class="tm"><b class="num">${it.t}</b><i class="nd"></i></div>
+      <div class="card"><div class="cmain"><div class="cbody"><span class="ctag">${tag}</span><div class="ctitle">${esc(title)}${nowId===it.id?'<span class="nowtag">الحين</span>':''}</div><div class="cqty">${esc(sub)}</div>${sw}</div>
+      <button class="check" data-check="${it.id}" aria-label="تم">${checkSvg}</button></div>${acts}</div></div>`;
+  }
+  let cups='';for(let i=0;i<12;i++)cups+=`<div class="cup ${i<water?'on':''}"></div>`;
+  return `
+  <section class="hero"><div class="herogrid">
+    <div style="flex:1;min-width:0"><div class="eyebrow">${isT?greet()+' · ':''}${fmtDate(d)}</div><h1>اليوم ${planIdx(d)+1} من 28</h1>
+    <div class="sub">الدورة ${cyc} من 3 · الأسبوع ${weekNo(d)} من الخطة</div></div>
+    <div class="ring">${ring(pr.n/pr.t)}<b class="num">${pr.n}/${pr.t}</b><small>خلصتها</small></div></div>
+    <div class="chips"><span class="chip">🔥 <b class="num">≈ 1500</b> سعرة</span><span class="chip">🚶 مشي <b>${walkMin(d)===60?'ساعة':walkMin(d)+' د'}</b></span><span class="chip">💧 <b class="num">${water}/12</b> كاس</span></div>
+  </section>
+  ${pushBanner()}
+  <div class="daynav"><button class="arrow" data-shift="-1" aria-label="اليوم اللي قبله">›</button><div class="daystrip">${strip}</div><button class="arrow" data-shift="1" aria-label="اليوم اللي بعده">‹</button></div>
+  <section class="water"><div class="whead"><h3>الموية</h3><span class="muted num" style="font-size:13px">${(water*0.25).toFixed(2).replace(/\.?0+$/,'')} من 3 لتر</span></div>
+    <div class="cups">${cups}</div><div class="wbtns"><button data-water="-1">− كاس</button><button class="prim" data-water="1">+ كاس (250 مل)</button></div></section>
+  <div class="sec"><h2>جدولك اليوم</h2><span class="muted" style="font-size:12px">اضغط ✓ لما تخلص</span></div>
+  <div class="tl">${tl}</div>`;
+}
+
+/* ---------------- WEEK ---------------- */
+let weekOff=0;
+function viewWeek(){
+  const st=parse(S.start); const n=sinceStart(today()); const wkStart=new Date(st); wkStart.setDate(st.getDate()+ (Math.floor(n/7)+weekOff)*7);
+  let html=`<div class="sec" style="margin-top:8px"><h2>الأسبوع ${Math.floor(n/7)+weekOff+1}</h2><div style="display:flex;gap:6px"><button class="btn ghost" data-wk="-1" style="padding:7px 12px">‹ قبل</button><button class="btn ghost" data-wk="1" style="padding:7px 12px">بعد ›</button></div></div>
+  <div class="seg"><button class="on" data-wview="days">الأيام</button><button data-wview="shop">قائمة المشتريات</button></div><div id="wbody">`;
+  html+=weekDays(wkStart)+`</div>`; return html;
+}
+function weekDays(wkStart){
+  let h='';
+  for(let i=0;i<7;i++){const d=new Date(wkStart);d.setDate(wkStart.getDate()+i);const pr=dayProgress(d);
+    h+=`<div class="wday"><div class="wdh"><b class="num">${planIdx(d)+1}</b><div><div class="nm">${WD[d.getDay()]}</div><div class="dt">${d.getDate()} ${MON[d.getMonth()]} · ${pr.n}/${pr.t}</div></div><button class="go" data-open="${iso(d)}">افتح اليوم</button></div>`;
+    for(let s=0;s<5;s++){const k=mealKey(d,s),ci=cInfo(k);h+=`<div class="wm"><i style="background:var(--c${s})"></i><div class="wt"><b>${esc(ci.t)}</b><div>${SLOTL[s]} · ${esc(ci.q)}</div></div></div>`;}
+    h+=`</div>`;}
+  return h;
+}
+const BASICS=/^(ملح|فلفل أسود|موية|زيت|زيت زيتون|زيت بخاخ|ثوم مهروس|بهارات مشكلة|كمون|بابريكا|كركم|هيل|سكر|عسل)/;
+function weekShop(wkStart){
+  const key=iso(wkStart); const done=(S.shop[key]||{});
+  const cnt={}, basics={};
+  for(let i=0;i<7;i++){const d=new Date(wkStart);d.setDate(wkStart.getDate()+i);
+    for(let s=0;s<5;s++){const k=mealKey(d,s);const link=C[k][2];const r=R[link];if(!r)continue;
+      for(const [nm] of r.ing){let n=nm.replace(/\s*\(.*?\)\s*/g,' ').trim(); if(/شوف وصفة|صفحة/.test(nm)) continue; if(/^(رز بسمتي|رز)/.test(n)) n='رز بسمتي';
+        const tgt=BASICS.test(n)?basics:cnt; tgt[n]=(tgt[n]||0)+1;}}}
+  const li=(o,b)=>Object.keys(o).sort((a,b2)=>o[b2]-o[a]).map(n=>`<li class="${done[n]?'on':''}" data-shopi="${esc(n)}" data-wk="${key}"><span class="bx"></span><span class="nm">${esc(n)}</span>${b?'':`<span class="ct num">${o[n]} ${o[n]===1?'وجبة':'وجبات'}</span>`}</li>`).join('');
+  return `<div class="panel"><h3>للأسبوع هذا</h3><div class="note" style="margin-top:0">مجموعة من وجبات الأسبوع (مع تبديلاتك). أشّر على اللي شريته.</div><ul class="list shop">${li(cnt)}</ul></div>
+  <div class="panel"><h3>أساسيات البيت</h3><ul class="list shop">${li(basics,true)}</ul></div>
+  <div class="panel"><h3>سناكات الأسبوع</h3><div class="note" style="margin-top:0">تفاح، برتقال، كمثرى، كيوي، فراولة، بطيخ، تمر، لوز، زبادي يوناني، لبن قليل الدسم، جزر، خيار، حمص، قضامة، شيا، كركديه، بابونج، بن V60، قهوة سعودية.</div></div>`;
+}
+
+/* ---------------- RECIPES ---------------- */
+let rFilter='all', rQuery='';
+function viewRecipes(){
+  const cats=[['all','الكل'],['فطور','الفطور'],['غدا','الغدا'],['عشا','العشا'],['snack','السناكات'],['drink','المشروبات'],['أساسيات','أساسيات']];
+  let tiles=[];
+  const q=rQuery.trim();
+  const match=t=>!q||t.includes(q);
+  if(rFilter==='all'||['فطور','غدا','عشا','أساسيات'].includes(rFilter)){
+    for(const k in R){const r=R[k];if(rFilter!=='all'&&r.cat!==rFilter)continue;if(!match(r.t))continue;
+      const ci=r.cat==='فطور'?0:r.cat==='غدا'?2:r.cat==='عشا'?4:null;
+      tiles.push(`<button class="rtile ${ci!==null?'t-meal'+ci:'t-sleep'}" data-recipe="${k}"><span class="ctag">${r.cat}</span><b>${esc(r.t)}</b><span>⏱ ${esc(r.time)} · ${esc(r.kcal)}</span></button>`);}
+  }
+  if(rFilter==='all'||rFilter==='snack'){for(const k in SN){const s=SN[k];if(!match(s.t))continue;tiles.push(`<button class="rtile t-meal${k[0]==='s'?1:3}" data-snack="${k}"><span class="ctag">سناك</span><b>${esc(s.t)}</b><span>${esc(s.q)}</span></button>`);}}
+  if(rFilter==='all'||rFilter==='drink'){for(const k in DR){const s=DR[k];if(!match(s.t))continue;tiles.push(`<button class="rtile t-drink" data-drink="${k}"><span class="ctag">مشروب</span><b>${esc(s.t)}</b><span>${esc(s.q)}</span></button>`);}}
+  return `<div class="sec" style="margin-top:8px"><h2>طريقة كل شي</h2><span class="muted" style="font-size:12px">${tiles.length} عنصر</span></div>
+  <div class="search"><span class="muted">⌕</span><input id="rq" placeholder="ابحث: دجاج، عدس، قهوة…" value="${esc(rQuery)}" aria-label="بحث"></div>
+  <div class="seg">${cats.map(([k,l])=>`<button class="${rFilter===k?'on':''}" data-rf="${k}">${l}</button>`).join('')}</div>
+  <div class="rgrid">${tiles.join('')||'<div class="empty">ما فيه نتائج</div>'}</div>`;
+}
+
+/* ---------------- PROGRESS ---------------- */
+function expected(dayN){ if(dayN<=7) return 116-2.5*(dayN/7); return 113.5-(dayN-7)/7; }
+function viewProgress(){
+  const ws=[...S.weights].sort((a,b)=>a.d<b.d?-1:1);
+  const last=ws.length?ws[ws.length-1].kg:0, first=ws.length?ws[0].kg:0;
+  const has=ws.length>0, lost=+(first-last).toFixed(1), left=has?Math.max(0,+(last-TARGET).toFixed(1)):'—', bmi=has?(last/(HEIGHT*HEIGHT)).toFixed(1):'—';
+  // chart
+  const Wd=340,H=170,pl=34,pr=10,pt=14,pb=24, days=91;
+  const ymax=Math.max(117,...ws.map(w=>w.kg))+0.5, ymin=Math.min(101,...ws.map(w=>w.kg))-0.5;
+  const X=dn=>Wd-pr-(dn/days)*(Wd-pl-pr), Y=v=>pt+(ymax-v)/(ymax-ymin)*(H-pt-pb);
+  let exp='';for(let dn=0;dn<=days;dn+=7)exp+=(dn?' L':'M')+X(dn).toFixed(1)+' '+Y(expected(dn)).toFixed(1);
+  const pts=ws.map(w=>[sinceStart(parse(w.d)),w.kg]).filter(p=>p[0]>=0&&p[0]<=days);
+  const line=pts.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
+  let grid='';for(let v=Math.ceil(ymin);v<=ymax;v+=4){grid+=`<line x1="${pl}" x2="${Wd-pr}" y1="${Y(v)}" y2="${Y(v)}" style="stroke:var(--line2)"/><text x="${pl-6}" y="${Y(v)+4}" style="fill:var(--mut2)" font-size="10" text-anchor="end">${v}</text>`;}
+  let xl='';[0,30,60,90].forEach((dn,i)=>{xl+=`<text x="${X(dn)}" y="${H-6}" style="fill:var(--mut2)" font-size="10" text-anchor="middle">${['البداية','شهر 1','شهر 2','شهر 3'][i]}</text>`;});
+  const dots=pts.map(p=>`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="4" style="fill:var(--gold);stroke:var(--bg)" stroke-width="2"/>`).join('');
+  const svg=`<svg class="chart" viewBox="0 0 ${Wd} ${H}">${grid}${xl}<path d="${exp}" style="stroke:var(--ok);opacity:.6" stroke-width="2" stroke-dasharray="5 5" fill="none"/><path d="${line}" style="stroke:var(--gold)" stroke-width="2.5" fill="none"/>${dots}<line x1="${pl}" x2="${Wd-pr}" y1="${Y(TARGET)}" y2="${Y(TARGET)}" style="stroke:var(--gold);opacity:.45" stroke-dasharray="2 4"/><text x="${Wd-pr}" y="${Y(TARGET)-5}" style="fill:var(--gold)" font-size="10" text-anchor="end">الهدف ${TARGET}</text></svg>`;
+  // streak
+  let streak=0;{const t=today();for(let i=0;i<120;i++){const x=new Date(t);x.setDate(t.getDate()-i);const p=dayProgress(x);if(p.n>=p.t-2)streak++;else if(i>0)break;}}
+  const log=ws.slice().reverse().map(w=>`<div class="row"><span class="num">${w.d}</span><span class="num">${w.kg} كجم<button class="del" data-delw="${w.d}">حذف</button></span></div>`).join('');
+  return `<div class="sec" style="margin-top:8px"><h2>تقدّمي</h2></div>
+  <div class="stats"><div class="stat"><b class="num">${has?last:'—'}</b><span>وزنك الحين</span></div><div class="stat"><b class="num">${lost>0?'−'+lost:lost}</b><span>نزلت (كجم)</span></div><div class="stat"><b class="num">${left}</b><span>باقي للهدف</span></div></div>
+  <div class="stats"><div class="stat"><b class="num">${bmi}</b><span>BMI</span></div><div class="stat"><b class="num">${streak}</b><span>أيام ملتزم</span></div><div class="stat"><b class="num">${weekNo(today())}</b><span>أسبوعك</span></div></div>
+  <div class="panel"><h3>الوزن مع الوقت</h3><div class="note" style="margin-top:0">الخط الذهبي وزنك · المتقطع الأخضر المتوقع</div>${svg}
+    <div class="wform"><input id="wkg" type="number" inputmode="decimal" step="0.1" min="40" max="250" placeholder="وزنك اليوم (كجم)" aria-label="وزنك اليوم"><button class="btn" id="wadd">سجّل</button></div>
+    <div class="note">توزن مرة بالأسبوع، الصبح بعد الحمام وقبل الفطور.</div></div>
+  <div class="panel wlog"><h3>السجل</h3>${log||'<div class="empty">ما سجلت وزن للحين</div>'}</div>`;
+}
+
+/* ---------------- PLAN ---------------- */
+function viewPlan(){
+  const P=DATA.PLAN;
+  const st=P.status.map(r=>`<tr><td>${r[0]}</td><td><span class="dotc" style="background:${r[4]==='r'?'var(--bad)':r[4]==='y'?'var(--warn)':'var(--ok)'}"></span>${r[1]}</td><td class="g">${r[2]}</td><td class="muted">${r[3]}</td></tr>`).join('');
+  const rules=P.rules.map(g=>`<div class="panel"><h3>${g[0]}</h3><ul class="list rules">${g[1].map(x=>`<li class="y">${x}</li>`).join('')}${g[2].map(x=>`<li class="n">${x}</li>`).join('')}</ul></div>`).join('');
+  const walk=P.walk.map(r=>`<tr><td>${r[0]}</td><td class="g">${r[1]}</td><td>${r[2]}</td><td class="muted">${r[3]}</td></tr>`).join('');
+  const res=P.res.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="g">${r[2]}</td></tr>`).join('');
+  const af=P.af.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="g">${r[2]}</td></tr>`).join('');
+  return `<div class="sec" style="margin-top:8px"><h2>خطتي</h2></div>
+  <div class="seg" id="planseg">${DATA.PUBLIC?'':'<button data-pj="pstatus">حالتي</button>'}<button data-pj="prules">القواعد</button>${DATA.PUBLIC?'':'<button data-pj="pdoc">الطبيب</button>'}<button data-pj="walk">المشي</button><button data-pj="paf">القلاية</button><button data-pj="pnotif">التذكيرات</button><button data-pj="pset">الإعدادات</button></div>
+  ${DATA.PUBLIC?'':`<div class="panel" id="pstatus"><h3>وين أنت، ووين توصل بعد 3 شهور</h3><div style="overflow-x:auto"><table class="tbl"><tr><th>المؤشر</th><th>الحين</th><th>بعد 3 شهور</th><th>الطبيعي</th></tr>${st}</table></div>
+   <div class="note">أكلك تقريبًا 1500 سعرة باليوم. المتوقع: أول أسبوع 2–3 كجم، وبعدها تقريبًا كيلو كل أسبوع. ولا تنزل تحت 1500 سعرة بدون إشراف طبيب.</div></div>`}
+  <div id="prules">${rules}</div>
+  ${DATA.PUBLIC?'':`<div class="panel" id="pdoc"><h3>قبل تبدأ: مع الطبيب</h3><ul class="list rules">${P.doc.map(x=>`<li class="y">${x}</li>`).join('')}</ul></div>`}
+  <div class="panel" id="walk"><h3>المشي بعد العشا</h3><div style="overflow-x:auto"><table class="tbl"><tr><th>الأسبوع</th><th>المشي</th><th>خطوات اليوم</th><th>المقاومة</th></tr>${walk}</table></div>
+   <h3 style="margin-top:16px">تمارين المقاومة بالبيت (20 دقيقة)</h3><table class="tbl"><tr><th>التمرين</th><th>البداية</th><th>بعد شهرين</th></tr>${res}</table>
+   <div class="note">الأحد والثلاثاء من الأسبوع 3، ومن الأسبوع 7 تضيف الخميس. إذا أوجعتك الركبة ارجع للمدة اللي قبلها أسبوع. وإذا جاك ألم صدر أو دوخة وقف وراجع الطبيب.</div></div>
+  <div class="panel" id="paf"><h3>القلاية الهوائية</h3><table class="tbl"><tr><th>وش تسوي</th><th>الحرارة</th><th>الوقت</th></tr>${af}</table><div class="note">رشتين زيت بخاخ بالكثير · سخّنها 3 دقائق · لا تزحم السلة · قلّب بالنص.</div></div>
+  ${pushSettings()}
+  <div class="panel" id="pset"><h3>الإعدادات</h3>
+   <div class="row"><span>تاريخ بداية الخطة</span><span><input id="startd" type="date" value="${S.start}" style="background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:6px 8px"></span></div>
+   <div class="note">اليوم 1 هو تاريخ البداية، والجدول يمشي 28 يوم ويرجع يتكرر.</div>
+   <div class="row"><span>الحفظ</span><span>${syncState==='cloud'?'بحسابك (يظهر بأي جهاز)':'على هالجهاز بس'}</span></div><div class="row"><span>الثيم</span><span><button class="btn ghost" id="skinBtn2" style="padding:6px 12px">${document.documentElement.getAttribute('data-skin')==='beige'?'بيج ☀ (حوّل لليلي)':'ليلي ☾ (حوّل للبيج)'}</button></span></div>
+   <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="resetToday">امسح علامات اليوم</button><button class="btn ghost" id="resetSwaps">رجّع كل الوجبات الأصلية</button></div></div>`;
+}
+
+/* ---------------- SHEETS ---------------- */
+function openSheet(titleHtml,bodyHtml){ $('#shTitle').innerHTML=titleHtml; $('#shBody').innerHTML=bodyHtml; $('#shBody').scrollTop=0; $('#scrim').classList.add('on'); $('#sheet').classList.add('on'); }
+function closeSheet(){ $('#scrim').classList.remove('on'); $('#sheet').classList.remove('on'); }
+function recipeSheet(link){
+  if(link==='routine'){ openSheet('<div class="eyebrow">غدا الجمعة</div><h2>غدا الأهل</h2>', `<div class="plate"><b>حصتك</b>صحن واحد بدون إعادة: لحم أو دجاج كثير، ورز ثلث كوب، وسلطة كثير</div><ul class="list rules" style="margin-top:12px">${DATA.PLAN.family.map(x=>`<li class="y">${x}</li>`).join('')}</ul>`); return; }
+  const r=R[link]; if(!r) return;
+  const key='r:'+link, st=S.ing[key]||{i:{},s:{}};
+  const ing=r.ing.map(([a,b],i)=>`<li class="${st.i[i]?'on':''}" data-ingi="${i}" data-rk="${link}"><span class="bx"></span><span class="nm">${esc(a)}</span><span class="am">${esc(b)}</span></li>`).join('');
+  const steps=r.steps.map((s,i)=>`<li class="${st.s[i]?'on':''}" data-stepi="${i}" data-rk="${link}"><span class="sn num">${i+1}</span><p>${esc(s)}</p></li>`).join('');
+  openSheet(`<div class="eyebrow">${r.cat}</div><h2>${esc(r.t)}</h2>`,
+   `<div class="plate"><b>حصتك على الصحن</b>${esc(r.plate)}</div>
+    <div class="meta"><span class="chip">⏱ ${esc(r.time)}</span><span class="chip">🔥 ${esc(r.kcal)} سعرة</span></div>
+    <div class="h4">المكونات <small>لشخص واحد · ملعقة ص = 5 مل · ملعقة ك = 15 مل</small></div><ul class="list ing">${ing}</ul>
+    <div class="h4">طريقة التحضير <small>اضغط الخطوة لما تخلصها</small></div><ol class="list steps">${steps}</ol>
+    ${r.tip?`<div class="tip">💡 ${esc(r.tip)}</div>`:''}`);
+}
+function snackSheet(k){const s=SN[k];openSheet(`<div class="eyebrow">سناك</div><h2>${esc(s.t)}</h2>`,`<div class="plate"><b>الكمية</b>${esc(s.q)}</div><div class="meta"><span class="nosugar">✓ بدون سكر مضاف</span><span class="chip">🔥 ${esc(s.k)}</span></div><div class="h4">كيف</div><ol class="list steps">${s.steps.map((x,i)=>`<li><span class="sn num">${i+1}</span><p>${esc(x)}</p></li>`).join('')}</ol>${s.tip?`<div class="tip">💡 ${esc(s.tip)}</div>`:''}`);}
+function drinkSheet(k){const s=DR[k];openSheet(`<div class="eyebrow">مشروب · ${esc(s.when)}</div><h2>${esc(s.t)}</h2>`,`<div class="plate"><b>الكمية</b>${esc(s.q)}</div><div class="meta"><span class="nosugar">✓ ${esc(s.sugar)}</span></div>${s.ing.length?`<div class="h4">المكونات</div><ul class="list ing">${s.ing.map(([a,b])=>`<li><span class="nm">${esc(a)}</span><span class="am">${esc(b)}</span></li>`).join('')}</ul>`:''}<div class="h4">الطريقة</div><ol class="list steps">${s.steps.map((x,i)=>`<li><span class="sn num">${i+1}</span><p>${esc(x)}</p></li>`).join('')}</ol>${s.tip?`<div class="tip">💡 ${esc(s.tip)}</div>`:''}`);}
+function swapSheet(slot){
+  const d=sel, cur=mealKey(d,slot), orig=W[planIdx(d)][slot], alt=ALT[orig];
+  const pre=SLOTK[slot];
+  let keys=Object.keys(C).filter(k=>k[0]===pre&&(R[C[k][2]]||C[k][2]==='snacks'||k==='l_family'));
+  if(slot===2&&d.getDay()!==5) keys=keys.filter(k=>k!=='l_family');
+  const order=[orig]; if(alt&&alt!==orig) order.push(alt); keys.forEach(k=>{if(!order.includes(k))order.push(k);});
+  const opt=k=>{const ci=cInfo(k);const tags=(k===orig?'<span class="badge">الأصلية</span> ':'')+(k===alt?'<span class="badge">البديل المقترح</span> ':'');
+    return `<button class="opt ${k===cur?'cur':''}" data-pick="${k}" data-slot="${slot}"><div class="ot">${tags}<b>${esc(ci.t)}</b><div>${esc(ci.q)}</div></div><span class="pk">${k===cur?'✓ المختارة':'اختر'}</span></button>`;};
+  openSheet(`<div class="eyebrow">${SLOTL[slot]} · ${fmtDate(d)}</div><h2>بدّل الوجبة</h2>`,`<div class="note" style="margin:0 0 10px">كل الخيارات بنفس السعرات تقريبًا، والكمية مكتوبة تحت كل وحدة.</div>${order.map(opt).join('')}`);
+}
+
+/* ---------------- render & events ---------------- */
+let tab='today';
+function render(){
+  const v=$('#view');
+  v.innerHTML= tab==='today'?viewToday(): tab==='week'?viewWeek(): tab==='recipes'?viewRecipes(): tab==='progress'?viewProgress(): viewPlan();
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  applySkin(document.documentElement.getAttribute('data-skin')||'night');
+}
+function go(t,anchor){tab=t;render();window.scrollTo(0,0);if(anchor){const el=document.getElementById(anchor);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('button,[data-ingi],[data-stepi],[data-shopi]'); if(!b) return;
+  const ds=b.dataset;
+  if(ds.tab){go(ds.tab);return;}
+  if(ds.check){const k=iso(sel);S.checks[k]=S.checks[k]||{};S.checks[k][ds.check]=!S.checks[k][ds.check];
+    if(S.checks[k][ds.check]&&(ds.check==='wake'||ds.check==='w2')){S.water[k]=Math.min(12,(S.water[k]||0)+2);}
+    save();render();if(S.checks[k][ds.check])toast('أحسنت ✓');return;}
+  if(ds.water){const k=iso(sel);S.water[k]=Math.max(0,Math.min(12,(S.water[k]||0)+Number(ds.water)));save();render();if(S.water[k]===12&&ds.water==='1')toast('كمّلت 3 لتر 💧');return;}
+  if(ds.day){sel=parse(ds.day);render();return;}
+  if(ds.shift){const x=new Date(sel);x.setDate(x.getDate()+Number(ds.shift));sel=x;render();return;}
+  if(ds.how){const link=C[ds.how][2];if(link==='snacks')snackSheet(ds.how);else recipeSheet(link);return;}
+  if(ds.swap){swapSheet(Number(ds.swap));return;}
+  if(ds.pick){const k=iso(sel),slot=Number(ds.slot),orig=W[planIdx(sel)][slot];S.swaps[k]=S.swaps[k]||{};if(ds.pick===orig)delete S.swaps[k][slot];else S.swaps[k][slot]=ds.pick;save();closeSheet();render();toast('تم التبديل');return;}
+  if(ds.drink){drinkSheet(ds.drink);return;}
+  if(ds.recipe){recipeSheet(ds.recipe);return;}
+  if(ds.snack){snackSheet(ds.snack);return;}
+  if(ds.tabgo){go(ds.tabgo,ds.anchor);return;}
+  if(ds.open){sel=parse(ds.open);go('today');return;}
+  if(ds.wk&&b.tagName==='BUTTON'&&!ds.shopi){weekOff+=Number(ds.wk);render();return;}
+  if(ds.wview){document.querySelectorAll('[data-wview]').forEach(x=>x.classList.toggle('on',x===b));const st=parse(S.start),n=sinceStart(today());const ws=new Date(st);ws.setDate(st.getDate()+(Math.floor(n/7)+weekOff)*7);$('#wbody').innerHTML=ds.wview==='shop'?weekShop(ws):weekDays(ws);return;}
+  if(ds.shopi){const wk=ds.wk;S.shop[wk]=S.shop[wk]||{};S.shop[wk][ds.shopi]=!S.shop[wk][ds.shopi];save();b.classList.toggle('on');return;}
+  if(ds.ingi!==undefined){const key='r:'+ds.rk;S.ing[key]=S.ing[key]||{i:{},s:{}};S.ing[key].i[ds.ingi]=!S.ing[key].i[ds.ingi];b.classList.toggle('on');save();return;}
+  if(ds.stepi!==undefined){const key='r:'+ds.rk;S.ing[key]=S.ing[key]||{i:{},s:{}};S.ing[key].s[ds.stepi]=!S.ing[key].s[ds.stepi];b.classList.toggle('on');save();return;}
+  if(ds.rf){rFilter=ds.rf;render();return;}
+  if(ds.pj){const el=document.getElementById(ds.pj);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return;}
+  if(ds.delw){S.weights=S.weights.filter(w=>w.d!==ds.delw);save();render();return;}
+  if(b.id==='wadd'){const v=parseFloat($('#wkg').value);if(!(v>40&&v<250)){toast('اكتب وزن صحيح');return;}const d=iso(today());S.weights=S.weights.filter(w=>w.d!==d);S.weights.push({d,kg:+v.toFixed(1)});save();render();toast('تم التسجيل');return;}
+  if(b.id==='shX'){closeSheet();return;}
+  if(b.id==='skinBtn'||b.id==='skinBtn2'){const v=document.documentElement.getAttribute('data-skin')==='beige'?'night':'beige';try{localStorage.setItem(SKK,v);}catch(e){}applySkin(v);render();return;}
+  if(b.id==='enablePush'){enablePush();return;}
+  if(b.id==='showCode'){showCode();return;}
+  if(b.id==='copyCode'){const t=$('#pcode');try{navigator.clipboard.writeText(t.value).then(()=>toast('انسخ ✓'),()=>{t.select();toast('حدد الرمز وانسخه');});}catch(e){t.select();}return;}
+  if(b.id==='localTest'){navigator.serviceWorker.ready.then(r=>r.showNotification('🔔 تجربة',{body:'هذا شكل التذكير',icon:'icon-192.png',lang:'ar',dir:'rtl'})).catch(()=>toast('ما زبط'));return;}
+  if(b.id==='testPush'){fetch('/api/test',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({endpoint:pushEp})}).then(r=>toast(r.ok?'انرسل، شيّك إشعاراتك':'ما انرسل')).catch(()=>toast('ما انرسل'));return;}
+  if(ds.ncat){S.notif[ds.ncat]=S.notif[ds.ncat]?0:1;save();render();go('plan','pnotif');return;}
+  if(b.id==='resetToday'){delete S.checks[iso(sel)];delete S.water[iso(sel)];save();render();toast('انمسحت');return;}
+  if(b.id==='resetSwaps'){S.swaps={};save();render();toast('رجعت الوجبات الأصلية');return;}
+});
+$('#scrim').addEventListener('click',closeSheet);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet();});
+document.addEventListener('input',e=>{if(e.target.id==='rq'){rQuery=e.target.value;const pos=e.target.selectionStart;render();const i=$('#rq');i.focus();i.setSelectionRange(pos,pos);}});
+document.addEventListener('change',e=>{if(e.target.id==='startd'&&e.target.value){S.start=e.target.value;save();sel=today();render();toast('تغيّر تاريخ البداية');}});
+render();
+setInterval(()=>{if(tab==='today'&&!$('#sheet').classList.contains('on'))render();},60000);
+})();
+</script>
+</body></html>

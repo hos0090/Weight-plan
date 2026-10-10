@@ -1,0 +1,47 @@
+name: remind
+on:
+  schedule:
+    - cron: '27 3 * * *'   # wake 06:30 Riyadh
+    - cron: '52 3 * * *'   # b 06:55 Riyadh
+    - cron: '57 3 * * 6'   # weigh 07:00 Riyadh
+    - cron: '57 4 * * *'   # v1 08:00 Riyadh
+    - cron: '57 6 * * *'   # s1 10:00 Riyadh
+    - cron: '27 7 * * *'   # w2 10:30 Riyadh
+    - cron: '57 8 * * *'   # sc 12:00 Riyadh
+    - cron: '57 9 * * *'   # l30 13:00 Riyadh
+    - cron: '12 10 * * *'   # chia 13:15 Riyadh
+    - cron: '27 11 * * *'   # lq 14:30 Riyadh
+    - cron: '57 12 * * *'   # v2 16:00 Riyadh
+    - cron: '57 14 * * *'   # eve 18:00 Riyadh
+    - cron: '57 15 * * *'   # d30 19:00 Riyadh
+    - cron: '57 16 * * *'   # walk 20:00 Riyadh
+    - cron: '27 18 * * *'   # w3 21:30 Riyadh
+    - cron: '57 18 * * *'   # night 22:00 Riyadh
+    - cron: '42 19 * * *'   # sleep 22:45 Riyadh
+  workflow_dispatch:
+    inputs:
+      id:
+        description: "reminder id (wake b weigh v1 s1 w2 sc l30 chia lq v2 eve d30 walk w3 night sleep) or test"
+        required: true
+        default: test
+concurrency:
+  group: remind-${{ github.event.schedule || inputs.id }}
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund --silent
+      - run: node scripts/remind.mjs
+        env:
+          SCHED: ${{ github.event.schedule }}
+          INPUT_ID: ${{ inputs.id }}
+          START: ${{ vars.START }}
+          PUSH_SUBS: ${{ secrets.PUSH_SUBS }}
+          VAPID_PUBLIC: BFBczDRaSx47vpk-dVh2FMWbuhIfHxFCMVN1uBXrZiBsp1jJNV7__sHuVaSLiMr5TjEWUaDdkxFpOD7eOvJmoM4
+          VAPID_PRIVATE: ${{ secrets.VAPID_PRIVATE }}
+          VAPID_SUBJECT: https://hos0090.github.io/weight-plan/
