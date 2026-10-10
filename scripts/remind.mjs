@@ -23,7 +23,6 @@ if (FAM) {                                                  // phones that turne
 }
 console.log(`::notice::phones: ${subs.length} (registered in app: ${famSubs.length}${FAM ? '' : ', FAM_CODE secret missing'})`);
 const expired = new Set();
-console.log(`::notice::phones: ${subs.length} (family list ${FAM ? famSubs.length : 'no FAM_CODE secret'})`);
 if (!subs.length) { console.log('::notice::no subscriptions yet'); process.exit(0); }
 webpush.setVapidDetails(process.env.VAPID_SUBJECT, process.env.VAPID_PUBLIC, process.env.VAPID_PRIVATE);
 const nowR = new Date(Date.now() + 3 * 3600e3);            // Asia/Riyadh, UTC+3
