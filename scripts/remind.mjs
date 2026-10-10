@@ -50,9 +50,10 @@ const M = {
 };
 const msg = M[id];
 if (!msg) { console.log('nothing to send for', id); process.exit(0); }
-let ok = 0;
+let ok = 0, failed = 0;
 for (const s of subs) {
   try { await webpush.sendNotification(s, JSON.stringify({ title: msg[0], body: msg[1], tag: id }), { TTL: 1800, urgency: 'high' }); ok++; }
-  catch (e) { console.error('push failed', e.statusCode, e.body); if (e.statusCode === 404 || e.statusCode === 410) console.error('::warning::a subscription expired; re-enable reminders in the app and send the new code'); }
+  catch (e) { console.log(`::error::push failed ${e.statusCode} ${String(e.body||e.message).slice(0,300)}`); failed++; if (e.statusCode === 404 || e.statusCode === 410) console.error('::warning::a subscription expired; re-enable reminders in the app and send the new code'); }
 }
 console.log(`sent ${id} to ${ok}/${subs.length} · day ${idx + 1} · ${Y}-${pad(Mo + 1)}-${pad(D)} ${pad(Math.floor(nowMin / 60))}:${pad(nowMin % 60)} Riyadh`);
+if (failed) process.exit(1);
