@@ -6,7 +6,8 @@ const TIMES = Object.fromEntries(Object.values(SCHED).map(([i, t]) => [i, t]));
 let id = process.env.INPUT_ID || (SCHED[process.env.SCHED || ''] || [])[0];
 if (!id) { console.log('no reminder for schedule', process.env.SCHED); process.exit(0); }
 let subs = [];
-const raw = (process.env.PUSH_SUBS || '').trim();
+let raw = (process.env.PUSH_SUBS || '').trim();
+if (!raw) { try { raw = readFileSync(new URL('./subs.txt', import.meta.url), 'utf8').trim(); } catch {} }
 for (const part of raw.split(/[\s,]+/).filter(Boolean)) {
   try { const t = part.startsWith('{') || part.startsWith('[') ? part : Buffer.from(part, 'base64').toString('utf8'); const v = JSON.parse(t); (Array.isArray(v) ? v : [v]).forEach(x => subs.push(x)); }
   catch { console.error('::warning::one PUSH_SUBS entry could not be read'); }
