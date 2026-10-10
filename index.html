@@ -512,7 +512,7 @@ async function fbPull(){if(!FB||!fam)return false;try{const r=await fetch(fbURL(
 let stepsSync=0;
 const toLatin=v=>String(v||'').replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c)).replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c));
 async function stepsPull(){if(!FB||!fam)return false;try{const r=await fetch(`https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents/steps/${fam}?key=${FB.apiKey}`);if(!r.ok)return false;const j=await r.json(),f=j.fields||{};
-  const dt=toLatin(f.date&&(f.date.stringValue||f.date.integerValue)).replace(/[^0-9-]/g,'').slice(0,10),n=parseInt(toLatin(f.n&&(f.n.stringValue||f.n.integerValue||f.n.doubleValue)).replace(/[^0-9.]/g,''),10);
+  const ut=Date.parse(j.updateTime)||Date.now();const dt=f.date?toLatin(f.date.stringValue||f.date.integerValue).replace(/[^0-9-]/g,'').slice(0,10):iso(new Date(ut)),n=parseInt(toLatin(f.n&&(f.n.stringValue||f.n.integerValue||f.n.doubleValue)).replace(/[^0-9.]/g,''),10);
   stepsSync=Date.parse(j.updateTime)||Date.now();if(!/^\d{4}-\d{2}-\d{2}$/.test(dt)||!(n>=0&&n<200000))return false;if(S.steps[dt]===n)return false;S.steps[dt]=n;save();return true;}catch(e){return false;}}
 const stepsURL=()=>FB&&fam?`https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents/steps/${fam}?key=${FB.apiKey}`:'';
 async function fbPush(){if(!FB||!fam||fbBusy)return;fbBusy=true;try{await fbPull();
