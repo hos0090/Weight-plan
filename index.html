@@ -306,7 +306,7 @@ function b64u(s){const p='='.repeat((4-s.length%4)%4);const b=atob((s+p).replace
 function prunedSwaps(){const out={},t=today();for(const k in S.swaps){const d=parse(k);if((d-t)/DAYMS>=-1&&(d-t)/DAYMS<=21)out[k]=S.swaps[k];}return out;}
 function showCode(){
   let code='';try{code=localStorage.getItem('wp.pushcode')||'';}catch(e){}
-  openSheet('<div class="eyebrow">خطوة أخيرة</div><h2>رمز التفعيل</h2>',`<p class="muted" style="margin-top:0">انسخ الرمز وأرسله لـClaude بالمحادثة، وهو يشغّل التذكيرات على جوالك. تسويها مرة وحدة بس.</p>
+  openSheet('<div class="eyebrow">خطوة أخيرة</div><h2>رمز التفعيل</h2>',`<p class="muted" style="margin-top:0">انسخ الرمز، وحطه في GitHub: المستودع weight-plan ← Settings ← Secrets and variables ← Actions ← New repository secret، والاسم PUSH_SUBS. تسويها مرة وحدة بس.</p>
    <textarea id="pcode" readonly style="width:100%;height:130px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;color:var(--fg);font-size:11px;direction:ltr" onclick="this.select()">${esc(code)}</textarea>
    <button class="btn" id="copyCode" style="width:100%;margin-top:10px">انسخ الرمز</button>`);
 }
@@ -319,7 +319,7 @@ async function enablePushGH(){
     if(!sub) sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(DATA.VAPID)});
     const code=btoa(unescape(encodeURIComponent(JSON.stringify(sub))));
     pushEp=sub.endpoint; try{localStorage.setItem(PK,pushEp);localStorage.setItem('wp.pushcode',code);}catch(e){}
-    try{reg.showNotification('🔔 التنبيهات جاهزة',{body:'أرسل رمز التفعيل لـClaude عشان يبدأ يذكّرك',icon:'icon-192.png',lang:'ar',dir:'rtl'});}catch(e){}
+    try{reg.showNotification('🔔 التنبيهات جاهزة',{body:'حط رمز التفعيل في GitHub عشان تبدأ التذكيرات',icon:'icon-192.png',lang:'ar',dir:'rtl'});}catch(e){}
     render(); showCode();
   }catch(e){toast('ما زبط التفعيل، جرّب مرة ثانية');}
 }

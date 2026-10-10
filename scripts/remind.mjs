@@ -6,7 +6,11 @@ const TIMES = Object.fromEntries(Object.values(SCHED).map(([i, t]) => [i, t]));
 let id = process.env.INPUT_ID || (SCHED[process.env.SCHED || ''] || [])[0];
 if (!id) { console.log('no reminder for schedule', process.env.SCHED); process.exit(0); }
 let subs = [];
-try { const v = JSON.parse(process.env.PUSH_SUBS || '[]'); subs = Array.isArray(v) ? v : [v]; } catch { console.error('PUSH_SUBS is not valid JSON'); process.exit(1); }
+const raw = (process.env.PUSH_SUBS || '').trim();
+for (const part of raw.split(/[\s,]+/).filter(Boolean)) {
+  try { const t = part.startsWith('{') || part.startsWith('[') ? part : Buffer.from(part, 'base64').toString('utf8'); const v = JSON.parse(t); (Array.isArray(v) ? v : [v]).forEach(x => subs.push(x)); }
+  catch { console.error('::warning::one PUSH_SUBS entry could not be read'); }
+}
 if (!subs.length) { console.log('no subscriptions yet'); process.exit(0); }
 webpush.setVapidDetails(process.env.VAPID_SUBJECT, process.env.VAPID_PUBLIC, process.env.VAPID_PRIVATE);
 const nowR = new Date(Date.now() + 3 * 3600e3);
