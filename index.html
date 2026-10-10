@@ -1,7 +1,7 @@
 <!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1411"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="خطتي للوزن"><style>html{-webkit-text-size-adjust:100%}:root{padding-top:env(safe-area-inset-top,0px)}body{margin:0}[hidden]{display:none!important}</style></head><body><title>خطتي للوزن</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: one phone-width column; sticky day header, scrollable content, fixed bottom tab bar. Deliberately single dark theme: deep emerald night + champagne gold. */
 :root{
@@ -378,6 +378,64 @@ html[data-skin="beige"] .hnext{background:rgba(148,105,42,.06)}
 .cact button.del{flex:0 0 46px;color:var(--mut);margin:0;font-size:inherit}.cact button.del .ic{color:var(--mut2);width:15px;height:15px}
 .lnk{color:var(--gold);text-decoration:underline;font-size:12.5px}
 .cact button{white-space:nowrap;gap:5px;padding:10px 4px}.cact:has(button:nth-child(4)) button{font-size:12px}.cact:has(button:nth-child(5)) button:not(.del) .ic{display:none}
+
+/* ===== v11: Najdi night — indigo dusk, saffron, palm; Reem Kufi display; the day dial ===== */
+:root{
+  --bg:#0d1322; --bg2:#121a2c; --surface:#151e33; --surface2:#1b2640; --surface3:#24304d;
+  --line:rgba(224,181,102,.16); --line2:rgba(237,230,214,.07);
+  --fg:#ede6d6; --mut:#97a0b5; --mut2:#667089;
+  --gold:#e0b566; --gold2:#f1dcae; --goldink:#1a1404;
+  --ok:#74b892; --warn:#e3a85a; --bad:#e88a7c;
+  --c0:#e0b566; --c1:#b8a9e0; --c2:#74b892; --c3:#8fb2e0; --c4:#e09aac; --cd:#86c3cf;
+  --glowA:#18233f; --glowB:#141c30; --heroA:#18223a; --heroB:#121a2d; --heroC:#0f1626;
+  --tabbg:rgba(18,26,44,.82); --track:rgba(237,230,214,.07); --ringA:#f1dcae; --ringB:#c9933f;
+  --f-display:"Reem Kufi","IBM Plex Sans Arabic",system-ui,sans-serif;
+}
+html[data-skin="beige"]{
+  --bg:#efe7d6; --bg2:#f7f1e5; --surface:#fbf7ee; --surface2:#f1e8d6; --surface3:#e2d5bb;
+  --line:rgba(27,36,64,.14); --line2:rgba(27,36,64,.07);
+  --fg:#1b2440; --mut:#5c6580; --mut2:#8d93a6;
+  --gold:#a06c1c; --gold2:#7a5112; --goldink:#fffaf0;
+  --ok:#2e7d58; --c0:#a06c1c; --c2:#2e7d58; --c3:#36608f; --c4:#a2495f; --cd:#2a7380;
+  --heroA:#fbf6ec; --heroB:#f4ecdc; --heroC:#ece1cb; --tabbg:rgba(247,241,229,.86); --track:rgba(27,36,64,.07);
+}
+h1,h2,h3,.ctitle,.h4,.mq{font-family:var(--f-display);font-weight:600}
+.sec h2{font-size:22px;font-weight:700}
+.hero.h2{padding:18px 16px 18px;border-radius:32px}
+.hero.h2::before,.hero.h2::after{display:none}
+.hgreet{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);position:relative;z-index:1;padding:0 6px}
+.hgreet span:first-child{color:var(--gold);font-weight:600}
+.dialwrap{position:relative;width:100%;max-width:320px;margin:4px auto 0;aspect-ratio:1}
+.dial{width:100%;height:100%;display:block;overflow:visible}
+.dg0{stop-color:rgba(224,181,102,.10)}.dg1{stop-color:rgba(224,181,102,0)}
+html[data-skin="beige"] .dg0{stop-color:rgba(160,108,28,.10)}
+.dtrack{fill:none;stroke:var(--track);stroke-width:2}
+.dpast{fill:none;stroke:var(--gold);stroke-width:2;opacity:.55}
+.dptrack{fill:none;stroke:var(--track);stroke-width:6;stroke-linecap:round}
+.dprog{fill:none;stroke:var(--gold);stroke-width:6;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:0;animation:dsweep 1.2s var(--ease) both}
+@keyframes dsweep{from{stroke-dashoffset:100}}
+.dtk{stroke:var(--mut2);stroke-width:1;opacity:.6}.dtk.big{stroke-width:1.6;opacity:.9}
+.dlab{fill:var(--mut);font-size:10.5px;text-anchor:middle;font-family:var(--f-body)}
+.dd{fill:var(--bg2);stroke:var(--mut2);stroke-width:1.5}
+.dd.meal{stroke:var(--gold2);stroke-width:1.8}
+.dd.on{fill:var(--gold);stroke:var(--gold)}
+.dd.miss{stroke:var(--bad);opacity:.5}
+.dhand{stroke:var(--gold2);stroke-width:1.5;stroke-linecap:round;opacity:.5}
+.dnow{fill:none;stroke:var(--gold);stroke-width:2.5;filter:drop-shadow(0 0 6px rgba(224,181,102,.7))}
+.dpin{fill:var(--gold)}
+.dcenter{position:absolute;inset:27% 18%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none}
+.dtime{font-family:var(--f-display);font-size:50px;font-weight:600;line-height:1;color:var(--fg);display:flex;align-items:baseline;gap:6px}
+.dtime small{font-family:var(--f-body);font-size:14px;font-weight:500;color:var(--mut)}
+.dpct{margin-top:8px;font-size:13px;color:var(--mut)}.dpct b{color:var(--gold2);font-size:15px;font-weight:600}
+.dsub{margin-top:2px;font-size:11.5px;color:var(--mut2)}
+.hnext{margin-top:8px}
+.tabs{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));padding:6px 6px;border:1px solid var(--line);border-radius:24px;box-shadow:0 18px 40px -18px rgba(0,0,0,.55)}
+.tab.on{color:var(--goldink);background:var(--gold);border-radius:18px}
+.tab{border-radius:18px;padding:7px 0}
+.app{padding-bottom:120px}
+.enter>*{animation:none}
+.motiv .mq{font-weight:500}
+.rtile{position:relative;padding-top:14px}.rti{position:absolute;top:12px;left:12px;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:var(--surface2);color:var(--gold)}.rti .ic{width:16px;height:16px}
 </style>
 
 <script>document.documentElement.setAttribute("dir","rtl");document.documentElement.setAttribute("lang","ar");</script>
@@ -947,6 +1005,30 @@ function guidePanel(){return `<div class="panel" id="pguide"><h3>الحلا وا
  <div class="tip">قطع الحلا ما يجيب دوخة. الدوخة أول الأيام غالبًا من قلة الموية أو ترك وجبة. إذا جاتك دوخة مع عرق ورجفة، كُل 3 تمرات وقيس السكر إذا عندك جهاز، وكلّم طبيبك.</div></div>`;}
 
 let showDone=false,popCup=-1,enterAnim=true,calOpen=false;
+/* the day dial: your day from waking to sleep, laid around a circle */
+function dialSVG(d,its,isT,nowM,pct,doneN,total){
+  const wk=its.find(i=>i.id==='wake'),sl=its.find(i=>i.id==='sleep');const A0=wk?wk.m:480,A1=sl?sl.m:1470,span=Math.max(60,A1-A0);
+  const C=150,R=118,ang=m=>Math.max(0,Math.min(1,(m-A0)/span))*330-165;          // 330° sweep, gap at the bottom
+  const P=(a,r)=>{const t=(a-90)*Math.PI/180;return [C+r*Math.cos(t),C+r*Math.sin(t)];};
+  const arc=(a0,a1,r)=>{const [x0,y0]=P(a0,r),[x1,y1]=P(a1,r);return `M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 ${a1-a0>180?1:0} 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`;};
+  const nowA=isT?ang(nowM):(iso(d)<iso(today())?165:-165);
+  let ticks='';for(let m=Math.ceil(A0/60)*60;m<=A1;m+=60){const a=ang(m),[x0,y0]=P(a,R+14),[x1,y1]=P(a,R+(m%180===0?20:17));ticks+=`<line x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}" class="dtk${m%180===0?' big':''}"/>`;}
+  const lab=(m,txt)=>{const [x,y]=P(ang(m),R+33);return `<text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" class="dlab">${txt}</text>`;};
+  let dots='';for(const it of its){if(it.quiet||it.id==='wake'||it.id==='sleep')continue;const a=ang(it.m),big=it.type==='meal',[x,y]=P(a,R);const dn=isDone(d,it.id),miss=!dn&&isT&&it.m+90<nowM;
+    dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${big?7:4}" class="dd ${dn?'on':miss?'miss':''} ${big?'meal':''}"><title>${esc(it.title||SLOTL[it.slot]||'')} ${it.t}</title></circle>`;}
+  const [hx,hy]=P(nowA,R-22),[tx,ty]=P(nowA,R);
+  const prog=pct>0?`<path d="${arc(-165,-165+330*pct,R-12)}" class="dprog" pathLength="100"/>`:'';
+  return `<svg class="dial" viewBox="0 0 300 300" role="img" aria-label="يومك: خلصت ${doneN} من ${total}">
+    <defs><radialGradient id="dg" cx="50%" cy="45%" r="60%"><stop offset="0" class="dg0"/><stop offset="1" class="dg1"/></radialGradient></defs>
+    <circle cx="150" cy="150" r="${R-26}" fill="url(#dg)"/>
+    <path d="${arc(-165,165,R)}" class="dtrack"/>
+    ${isT?`<path d="${arc(-165,Math.max(-164.9,nowA),R)}" class="dpast"/>`:''}
+    <path d="${arc(-165,165,R-12)}" class="dptrack"/>${prog}
+    ${ticks}${lab(A0,'صحيان')}${lab(Math.round((A0+A1)/2/60)*60,min2t(Math.round((A0+A1)/2/60)*60))}${lab(A1,'نوم')}
+    ${dots}
+    ${isT?`<circle cx="${tx.toFixed(1)}" cy="${ty.toFixed(1)}" r="9" class="dnow"/>`:''}
+  </svg>`;}
+
 function heroNext(d,its,nowM){
   const isT=iso(d)===iso(today());if(!isT)return '';
   const it=its.find(i=>!i.quiet&&!isDone(d,i.id)&&i.m>=nowM-30);
@@ -995,10 +1077,10 @@ function viewToday(){
   const left=core.length-doneN;
   return `
   <section class="hero h2">
-    <div class="htop"><div class="hl"><div class="eyebrow">${isT?greet()+' · ':''}${fmtDate(d)}</div>
-      ${isT?`<div class="clock num"><span dir="ltr">${min2t(nowM)}</span><small>${now.getHours()<12?'ص':'م'}</small></div>`:`<div class="clock">${d.getDate()} ${MON[d.getMonth()]}</div>`}
-      <div class="sub">اليوم ${planIdx(d)+1} من 28 · الأسبوع ${weekNo(d)}</div></div>
-      <div class="ring">${ring(pct,96,6)}<b class="num">${Math.round(pct*100)}<i>%</i></b><small class="num">${doneN}/${core.length}</small></div></div>
+    <div class="hgreet"><span>${isT?greet():fmtDate(d)}</span><span>${isT?fmtDate(d):'اليوم '+(planIdx(d)+1)+' من 28'}</span></div>
+    <div class="dialwrap">${dialSVG(d,its,isT,nowM,pct,doneN,core.length)}
+      <div class="dcenter">${isT?`<b class="dtime"><span dir="ltr">${min2t(nowM)}</span><small>${now.getHours()<12?'ص':'م'}</small></b>`:`<b class="dtime">${d.getDate()} ${MON[d.getMonth()]}</b>`}
+        <span class="dpct"><b class="num">${Math.round(pct*100)}%</b> من يومك</span><span class="dsub">الأسبوع ${weekNo(d)} · اليوم ${planIdx(d)+1}</span></div></div>
     ${heroNext(d,its,nowM)}
     ${heroWeight()}
     <div class="hstats"><div>${IC.flame}<b class="num">1500</b><span>سعرة</span></div><div>${IC.walk}<b class="num">${walkMin(d)}</b><span>دقيقة مشي</span></div><div>${IC.drop}<b class="num">${water}/12</b><span>كاس موية</span></div></div>
@@ -1020,7 +1102,7 @@ let weekOff=0, wview='days';
 function viewWeek(){
   const st=parse(S.start); const n=sinceStart(today()); const wkStart=new Date(st); wkStart.setDate(st.getDate()+ (Math.floor(n/7)+weekOff)*7);
   let html=`<div class="sec" style="margin-top:8px"><h2>الأسبوع ${Math.floor(n/7)+weekOff+1}</h2><div style="display:flex;gap:6px"><button class="btn ghost" id="shareBtn" style="padding:7px 12px">↗ شارك</button><button class="btn ghost" data-wk="-1" style="padding:7px 12px">‹ قبل</button><button class="btn ghost" data-wk="1" style="padding:7px 12px">بعد ›</button></div></div>
-  <div class="seg"><button class="${wview==='days'?'on':''}" data-wview="days">الأيام</button><button class="${wview==='shop'?'on':''}" data-wview="shop">🛒 المشتريات</button></div><div id="wbody">`;
+  <div class="seg"><button class="${wview==='days'?'on':''}" data-wview="days">الأيام</button><button class="${wview==='shop'?'on':''}" data-wview="shop">المشتريات</button></div><div id="wbody">`;
   html+=(wview==='shop'?shopView(wkStart):weekDays(wkStart))+`</div>`; return html;
 }
 function weekDays(wkStart){
@@ -1144,10 +1226,10 @@ function viewRecipes(){
   if(rFilter==='all'||['فطور','غدا','عشا','أساسيات'].includes(rFilter)){
     for(const k in R){const r=R[k];if(rFilter!=='all'&&r.cat!==rFilter)continue;if(!match(r.t))continue;
       const ci=r.cat==='فطور'?0:r.cat==='غدا'?2:r.cat==='عشا'?4:null;
-      tiles.push(`<button class="rtile ${ci!==null?'t-meal'+ci:'t-sleep'}" data-recipe="${k}"><span class="ctag">${r.cat}</span><b>${esc(r.t)}</b><span>⏱ ${esc(r.time)} · ${esc(r.kcal)}</span></button>`);}
+      tiles.push(`<button class="rtile ${ci!==null?'t-meal'+ci:'t-sleep'}" data-recipe="${k}"><span class="rti">${ci===0?IC.sun:ci===2||ci===4?IC.meal:IC.book}</span><span class="ctag">${r.cat}</span><b>${esc(r.t)}</b><span>⏱ ${esc(r.time)} · ${esc(r.kcal)}</span></button>`);}
   }
-  if(rFilter==='all'||rFilter==='snack'){for(const k in SN){const s=SN[k];if(!match(s.t))continue;tiles.push(`<button class="rtile t-meal${k[0]==='s'?1:3}" data-snack="${k}"><span class="ctag">سناك</span><b>${esc(s.t)}</b><span>${esc(s.q)}</span></button>`);}}
-  if(rFilter==='all'||rFilter==='drink'){for(const k in DR){const s=DR[k];if(!match(s.t))continue;tiles.push(`<button class="rtile t-drink" data-drink="${k}"><span class="ctag">مشروب</span><b>${esc(s.t)}</b><span>${esc(s.q)}</span></button>`);}}
+  if(rFilter==='all'||rFilter==='snack'){for(const k in SN){const s=SN[k];if(!match(s.t))continue;tiles.push(`<button class="rtile t-meal${k[0]==='s'?1:3}" data-snack="${k}"><span class="rti">${IC.leaf}</span><span class="ctag">سناك</span><b>${esc(s.t)}</b><span>${esc(s.q)}</span></button>`);}}
+  if(rFilter==='all'||rFilter==='drink'){for(const k in DR){const s=DR[k];if(!match(s.t))continue;tiles.push(`<button class="rtile t-drink" data-drink="${k}"><span class="rti">${/v60|saudi|tea/.test(k)?IC.coffee:k==="water"?IC.drop:IC.glass}</span><span class="ctag">مشروب</span><b>${esc(s.t)}</b><span>${esc(s.q)}</span></button>`);}}
   return `<div class="sec" style="margin-top:8px"><h2>طريقة كل شي</h2><span class="muted" style="font-size:12px">${tiles.length} عنصر</span></div>
   <div class="search"><span class="muted">⌕</span><input id="rq" placeholder="ابحث: دجاج، عدس، قهوة…" value="${esc(rQuery)}" aria-label="بحث"></div>
   <div class="seg">${cats.map(([k,l])=>`<button class="${rFilter===k?'on':''}" data-rf="${k}">${l}</button>`).join('')}</div>
