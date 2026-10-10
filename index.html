@@ -385,18 +385,35 @@ async function fbPush(){if(!FB||!fam||fbBusy)return;fbBusy=true;try{await fbPull
   fbErr=!r.ok;if(r.ok){fbLast=Date.now();fbMsg='';}else{let t='';try{t=(await r.json()).error.message||'';}catch(_){}fbMsg=r.status+' '+t;}}catch(e){fbErr=true;fbMsg='ما فيه إنترنت أو الاتصال انقطع';}fbBusy=false;if(tab==='plan')render();}
 let fbT=null;function fbPushSoon(){if(!FB||!fam)return;clearTimeout(fbT);fbT=setTimeout(fbPush,1200);}
 function newFamCode(){const a='abcdefghijkmnopqrstuvwxyz23456789';let c='';const r=crypto.getRandomValues(new Uint8Array(28));r.forEach(x=>c+=a[x%a.length]);return c;}
-async function fbCreate(){fam=newFamCode();try{localStorage.setItem(FK,fam);}catch(e){}const now=Date.now();S.ts=S.ts||{};Object.keys(flat(S)).forEach(k=>S.ts[k]=now);prevF=flat(S);await fbPush();render();toast(fbErr?'ما زبط الربط، شوف السبب تحت':'تفعّلت المزامنة ✓');}
-function fbLeave(){fam=null;try{localStorage.removeItem(FK);}catch(e){}render();toast('انفصلت المزامنة');}
+async function famFromPass(pw){const enc=new TextEncoder();const key=await crypto.subtle.importKey('raw',enc.encode(pw.trim()),'PBKDF2',false,['deriveBits']);
+  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:enc.encode('weight-plan-family-v1:'+(FB?FB.projectId:'')),iterations:150000,hash:'SHA-256'},key,160);
+  return 'f'+[...new Uint8Array(bits)].map(b=>b.toString(16).padStart(2,'0')).join('');}
+async function fbExists(code){try{const r=await fetch(`https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents/families/${code}?key=${FB.apiKey}`);if(r.status===404)return false;if(!r.ok)throw new Error(String(r.status));return true;}catch(e){throw e;}}
+async function unlock(pw,forceNew){
+  const msg=$('#lkMsg');const set=t=>{if(msg)msg.textContent=t;};
+  if(!pw||pw.trim().length<4){set('كلمة المرور لازم تكون 4 حروف أو أرقام على الأقل');return;}
+  set('جاري الفتح…');
+  let code;try{code=await famFromPass(pw);}catch(e){set('هالمتصفح ما يدعم التشفير. افتح التطبيق من سفاري.');return;}
+  let ex;try{ex=await fbExists(code);}catch(e){set('ما قدرت أوصل للخادم ('+e.message+'). تأكد من الإنترنت وجرب مرة ثانية.');return;}
+  if(!ex&&!forceNew){window.__pendingPw=pw;$('#lkNew').hidden=false;set('ما لقيت خطة بهالكلمة. إذا هذي أول مرة، اضغط «سوّ خطة جديدة». وإذا زوجك سوّاها قبل، تأكد من الكلمة.');return;}
+  fam=code;try{localStorage.setItem(FK,fam);}catch(e){}
+  await fbPull();const now=Date.now();S.ts=S.ts||{};Object.keys(flat(S)).forEach(k=>{if(!S.ts[k])S.ts[k]=now;});prevF=flat(S);
+  await fbPush();render();toast(fbErr?'انفتح، بس المزامنة فيها مشكلة':'انفتح ✓ ومتزامن');
+}
+function fbLeave(){fam=null;try{localStorage.removeItem(FK);}catch(e){}render();}
+function lockView(){return `<section class="hero" style="margin-top:40px"><div class="eyebrow">خطتي للوزن</div><h1>اكتب كلمة المرور</h1><div class="sub">مرة وحدة بس، وبعدها يتذكرها هالجهاز. نفس الكلمة على جوالك وجوال زوجتك، وكل شي يتزامن بينكم لحاله.</div>
+ <form id="lkForm" style="margin-top:16px;display:flex;flex-direction:column;gap:10px;position:relative;z-index:1"><input id="lkPw" type="password" autocomplete="current-password" placeholder="كلمة المرور" aria-label="كلمة المرور" style="background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:14px;font-size:17px;text-align:center"><button class="btn" type="submit">افتح</button><button class="btn ghost" type="button" id="lkNew" hidden>سوّ خطة جديدة بهالكلمة</button></form>
+ <div id="lkMsg" class="note" style="position:relative;z-index:1;min-height:20px"></div></section>`;}
 if(FB&&fam){fbPull().then(c=>{if(c)render();});}
 setInterval(()=>{if(FB&&fam&&document.visibilityState==='visible')fbPull().then(c=>{if(c&&!$('#sheet').classList.contains('on'))render();});},15000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&FB&&fam)fbPull().then(c=>{if(c)render();});});
 function famPanel(){
   if(!FB||!PWA) return '';
-  if(!fam) return `<div class="panel" id="pfam"><h3>👨‍👩‍👧 المزامنة مع العائلة</h3><div class="note" style="margin-top:0">اربط جوالك بجوال زوجتك. أي تبديل وجبة أو علامة أو وزن يظهر عند الثاني خلال ثواني.</div><button class="btn" id="fbCreate" style="margin-top:12px;width:100%">فعّل المزامنة</button></div>`;
+  if(!fam) return '';
   const t=fbLast?new Date(fbLast):null;
   return `<div class="panel" id="pfam"><h3>👨‍👩‍👧 المزامنة مع العائلة</h3><div class="row"><span>الحالة</span><span>${fbErr?'⚠️ ما فيه اتصال':'✓ متزامن'}${t?' · '+t.getHours()+':'+pad(t.getMinutes()):''}</span></div>${fbErr&&fbMsg?`<div class="note" style="direction:ltr;text-align:left">${esc(fbMsg)}</div>`:''}
-   <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="shareBtn3">↗ ادعُ زوجتي</button><button class="btn ghost" id="fbSyncNow">حدّث الحين</button><button class="btn ghost" id="fbLeave">افصل هالجهاز</button></div>
-   <div class="note">زوجتك تفتح رابط الدعوة من جوالها، وبعدها تشوف نفس خطتك وتقدّمك أول بأول.</div></div>`;
+   <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="shareBtn3">↗ أرسل الرابط لزوجتي</button><button class="btn ghost" id="fbSyncNow">حدّث الحين</button><button class="btn ghost" id="fbLeave">اطلع من هالجهاز</button></div>
+   <div class="note">المزامنة تلقائية. زوجتك تفتح نفس الرابط، وتكتب نفس كلمة المرور.</div></div>`;
 }
 
 /* ---------------- sleep, steps, adaptive day ---------------- */
@@ -455,10 +472,10 @@ function sleepStepsStats(){
 /* ---------------- share with family ---------------- */
 function b64uEnc(str){return btoa(unescape(encodeURIComponent(str))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 function b64uDec(str){str=str.replace(/-/g,'+').replace(/_/g,'/');while(str.length%4)str+='=';return decodeURIComponent(escape(atob(str)));}
-function shareURL(){const base=(DATA.APPURL||location.href.split('#')[0]);if(FB&&fam)return base+'#f='+fam;return base+'#p='+b64uEnc(JSON.stringify({s:S.start,w:prunedSwaps()}));}
+function shareURL(){const base=(DATA.APPURL||location.href.split('#')[0]);if(FB&&fam)return base;return base+'#p='+b64uEnc(JSON.stringify({s:S.start,w:prunedSwaps()}));}
 function shareSheet(){
   const url=shareURL();
-  openSheet('<div class="eyebrow">للعائلة</div><h2>شارك الخطة</h2>',`<p class="muted" style="margin-top:0">${FB&&fam?'أرسل الرابط لزوجتك. لما تفتحه ينربط جوالها بجوالك: تشوف وجبات كل يوم وتبديلاتك وتقدّمك وقائمة المشتريات أول بأول.':'أرسل الرابط لزوجتك. يفتح لها نفس أيام الخطة ووجباتك المبدّلة، وطريقة كل وجبة، وقائمة المشتريات. تقدر تثبّته على جوالها مثلك.'}</p>
+  openSheet('<div class="eyebrow">للعائلة</div><h2>شارك الخطة</h2>',`<p class="muted" style="margin-top:0">${FB&&fam?'أرسل الرابط لزوجتك، وقل لها كلمة المرور (لا تكتبها معه بنفس الرسالة). لما تفتحه وتكتب الكلمة، تشوف وجبات كل يوم وتبديلاتك وتقدّمك وقائمة المشتريات أول بأول.':'أرسل الرابط لزوجتك. يفتح لها نفس أيام الخطة ووجباتك المبدّلة، وطريقة كل وجبة، وقائمة المشتريات. تقدر تثبّته على جوالها مثلك.'}</p>
    <textarea id="slink" readonly style="width:100%;height:90px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;color:var(--fg);font-size:11px;direction:ltr" onclick="this.select()">${esc(url)}</textarea>
    <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" id="copyLink" style="flex:1">انسخ الرابط</button>${navigator.share?'<button class="btn ghost" id="nativeShare" style="flex:1">أرسل…</button>':''}</div>
    ${FB&&fam?'':'<div class="note">إذا بدّلت وجبات بعدين، أرسل لها الرابط مرة ثانية عشان يتحدّث عندها.</div>'}`);
@@ -706,6 +723,9 @@ function swapSheet(slot){
 let tab='today';
 function render(){
   const v=$('#view');
+  const locked=FB&&PWA&&!fam; document.querySelector('.tabs').hidden=locked;
+  if(locked){v.innerHTML=lockView();return;}
+  if(FB&&PWA&&fam){$('#sync').textContent=fbErr?'⚠️ غير متزامن':'✓ متزامن';}
   v.innerHTML= tab==='today'?viewToday(): tab==='week'?viewWeek(): tab==='recipes'?viewRecipes(): tab==='progress'?viewProgress(): viewPlan();
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
   applySkin(document.documentElement.getAttribute('data-skin')||'night');
@@ -743,7 +763,7 @@ document.addEventListener('click',e=>{
   if(b.id==='enablePush'){enablePush();return;}
   if(b.id==='showCode'){showCode();return;}
   if(ds.missed!==undefined){missedSheet(Number(ds.missed));return;}
-  if(b.id==='fbCreate'){fbCreate();return;}
+  if(b.id==='lkNew'){unlock(window.__pendingPw||($('#lkPw')||{}).value,true);return;}
   if(b.id==='fbLeave'){fbLeave();return;}
   if(b.id==='fbSyncNow'){fbPush().then(()=>toast(fbErr?'ما فيه اتصال':'تحدّث ✓'));return;}
   if(b.id==='shareBtn3'){shareSheet();return;}
@@ -759,6 +779,7 @@ document.addEventListener('click',e=>{
 });
 $('#scrim').addEventListener('click',closeSheet);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet();});
+document.addEventListener('submit',e=>{if(e.target.id==='lkForm'){e.preventDefault();$('#lkNew').hidden=true;unlock($('#lkPw').value,false);}});
 document.addEventListener('input',e=>{if(e.target.id==='rq'){rQuery=e.target.value;const pos=e.target.selectionStart;render();const i=$('#rq');i.focus();i.setSelectionRange(pos,pos);}});
 document.addEventListener('change',e=>{
   const id=e.target.id;
