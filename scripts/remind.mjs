@@ -22,6 +22,7 @@ if (FAM) {                                                  // phones that turne
   for (const x of famSubs) if (x && x.endpoint && !subs.some(y => y.endpoint === x.endpoint)) subs.push(x);
 }
 const expired = new Set();
+console.log(`::notice::phones: ${subs.length} (family list ${FAM ? famSubs.length : 'no FAM_CODE secret'})`);
 if (!subs.length) { console.log('::notice::no subscriptions yet'); process.exit(0); }
 webpush.setVapidDetails(process.env.VAPID_SUBJECT, process.env.VAPID_PUBLIC, process.env.VAPID_PRIVATE);
 const nowR = new Date(Date.now() + 3 * 3600e3);            // Asia/Riyadh, UTC+3
