@@ -14,6 +14,14 @@ for (const part of raw.split(/[\s,]+/).filter(Boolean)) {
   try { const t = part.startsWith('{') || part.startsWith('[') ? part : Buffer.from(part, 'base64').toString('utf8'); const v = JSON.parse(t); (Array.isArray(v) ? v : [v]).forEach(x => subs.push(x)); }
   catch { console.log('::warning::one subscription entry could not be read'); }
 }
+const FAM = (process.env.FAM || '').trim();
+let famSubs = [];
+if (FAM) {                                                  // phones that turned reminders on register themselves here
+  try { const r = await fetch(`${DOCS}/families/${FAM}?key=${FB.apiKey}`); if (r.ok) { const j = await r.json(); famSubs = JSON.parse(j.fields?.subs?.stringValue || '[]'); } else console.log('::warning::family doc ' + r.status); }
+  catch (e) { console.log('::warning::family subs ' + e.message); }
+  for (const x of famSubs) if (x && x.endpoint && !subs.some(y => y.endpoint === x.endpoint)) subs.push(x);
+}
+const expired = new Set();
 if (!subs.length) { console.log('::notice::no subscriptions yet'); process.exit(0); }
 webpush.setVapidDetails(process.env.VAPID_SUBJECT, process.env.VAPID_PUBLIC, process.env.VAPID_PRIVATE);
 const nowR = new Date(Date.now() + 3 * 3600e3);            // Asia/Riyadh, UTC+3
@@ -64,9 +72,13 @@ for (const sub of subs) {
   const due = items.filter(it => !it.done && it.at > from && it.at <= nowStr && !sent.includes(it.id));
   for (const it of due) {
     try { await webpush.sendNotification(sub, JSON.stringify({ title: it.title, body: it.body, tag: it.id.split(':')[1] }), { TTL: 1800, urgency: 'high' }); total++; sent.push(it.id); }
-    catch (e) { console.log(`::error::push failed ${e.statusCode} ${String(e.body || e.message).slice(0, 300)}`); failed++; if (e.statusCode === 404 || e.statusCode === 410) { console.log('::error::subscription expired: open the app and enable reminders again'); break; } }
+    catch (e) { console.log(`::error::push failed ${e.statusCode} ${String(e.body || e.message).slice(0, 300)}`); failed++; if (e.statusCode === 404 || e.statusCode === 410) { expired.add(sub.endpoint); console.log('::warning::a phone subscription expired and was removed'); failed--; break; } }
   }
   if (due.length && fsOK) await saveSent(id, sent.filter(x => x >= minus(48 * 60).slice(0, 10)).slice(-80));
   console.log(`::notice::${nowStr} Riyadh · source=${source} · due=${due.length} · sent=${total}`);
+}
+if (FAM && expired.size) {
+  const keep = famSubs.filter(x => !expired.has(x.endpoint));
+  await fetch(`${DOCS}/families/${FAM}?key=${FB.apiKey}&updateMask.fieldPaths=subs`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ fields: { subs: { stringValue: JSON.stringify(keep) } } }) }).catch(() => {});
 }
 if (failed) process.exit(1);

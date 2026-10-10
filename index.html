@@ -527,7 +527,7 @@ const isIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent);
 const pushSupported=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
 function pushState(){ if(!PWA) return 'na'; if(pushEp&&window.Notification&&Notification.permission==='granted') return 'on'; if(isIOS()&&!isStandalone()) return 'install'; if(!pushSupported()) return 'unsupported'; if(window.Notification&&Notification.permission==='denied') return 'denied'; return 'off'; }
 if(PWA&&'serviceWorker' in navigator){navigator.serviceWorker.register(DATA.GH?'./sw.js':'/sw.js').catch(()=>{});
-  navigator.serviceWorker.ready.then(r=>r.pushManager.getSubscription()).then(sub=>{if(sub&&sub.endpoint!==pushEp){pushEp=sub.endpoint;try{localStorage.setItem(PK,pushEp);}catch(e){}schedId=null;if(typeof pushSched==='function')pushSched();}}).catch(()=>{});}
+  navigator.serviceWorker.ready.then(r=>r.pushManager.getSubscription()).then(sub=>{if(sub&&DATA.GH&&!window.__subSent){window.__subSent=1;setTimeout(()=>fbAddSub(sub),3000);}if(sub&&sub.endpoint!==pushEp){pushEp=sub.endpoint;try{localStorage.setItem(PK,pushEp);}catch(e){}schedId=null;if(typeof pushSched==='function')pushSched();}}).catch(()=>{});}
 function b64u(s){const p='='.repeat((4-s.length%4)%4);const b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...b].map(c=>c.charCodeAt(0)));}
 function prunedSwaps(){const out={},t=today();for(const k in S.swaps){const d=parse(k);if((d-t)/DAYMS>=-1&&(d-t)/DAYMS<=21)out[k]=S.swaps[k];}return out;}
 function showCode(){
@@ -536,6 +536,10 @@ function showCode(){
    <textarea id="pcode" readonly style="width:100%;height:130px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;color:var(--fg);font-size:11px;direction:ltr" onclick="this.select()">${esc(code)}</textarea>
    <button class="btn" id="copyCode" style="width:100%;margin-top:10px">انسخ الرمز</button>`);
 }
+async function fbAddSub(sub){if(!FB||!fam)return false;try{const u=`https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents/families/${fam}?key=${FB.apiKey}`;
+  const r=await fetch(u);let list=[];if(r.ok){const j=await r.json();try{list=JSON.parse(j.fields.subs.stringValue)||[];}catch(e){list=[];}}else if(r.status!==404)return false;
+  const sj=JSON.parse(JSON.stringify(sub));list=list.filter(x=>x&&x.endpoint!==sj.endpoint);list.push(sj);
+  const w=await fetch(u+'&updateMask.fieldPaths=subs',{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({fields:{subs:{stringValue:JSON.stringify(list)}}})});return w.ok;}catch(e){return false;}}
 async function enablePushGH(){
   try{
     const perm=await Notification.requestPermission();
@@ -545,8 +549,9 @@ async function enablePushGH(){
     if(!sub) sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(DATA.VAPID)});
     const code=btoa(unescape(encodeURIComponent(JSON.stringify(sub))));
     pushEp=sub.endpoint; try{localStorage.setItem(PK,pushEp);localStorage.setItem('wp.pushcode',code);}catch(e){}
-    try{reg.showNotification('🔔 التنبيهات جاهزة',{body:'حط رمز التفعيل في GitHub عشان تبدأ التذكيرات',icon:'icon-192.png',lang:'ar',dir:'rtl'});}catch(e){}
-    render(); showCode();
+    const ok=await fbAddSub(sub);
+    try{reg.showNotification('🔔 التذكيرات جاهزة',{body:ok?'من الحين بيوصلك كل تذكير بوقته':'باقي خطوة: أرسل رمز التفعيل',icon:'icon-192.png',lang:'ar',dir:'rtl'});}catch(e){}
+    schedId=null;pushSched();render();if(ok)toast('تفعّلت التذكيرات 🔔');else showCode();
   }catch(e){toast('ما زبط التفعيل، جرّب مرة ثانية');}
 }
 async function enablePush(){
