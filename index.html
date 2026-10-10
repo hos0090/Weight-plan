@@ -58,6 +58,10 @@ h1,h2,h3{font-family:var(--f-display);font-weight:700;margin:0;text-wrap:balance
 .ring svg{transform:rotate(-90deg)}
 .ring b{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--f-display);font-size:22px;color:var(--gold2)}
 .ring small{position:absolute;bottom:18px;left:0;right:0;text-align:center;font-size:10px;color:var(--mut)}
+.nextup{position:relative;z-index:1;margin-top:14px;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:rgba(216,184,120,.12);border:1px solid var(--line)}
+.nextup .lbl{font-size:11px;font-weight:700;color:var(--goldink);background:var(--gold);border-radius:6px;padding:1px 7px;flex:none}
+.nextup b{flex:1;min-width:0;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nextup .when{flex:none;font-size:12px;color:var(--gold2)}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;position:relative;z-index:1}
 .chip{font-size:12px;padding:5px 11px;border-radius:999px;background:var(--chip);border:1px solid var(--line2);color:var(--fg);display:inline-flex;gap:6px;align-items:center}
 .chip b{color:var(--gold2);font-weight:600}
@@ -610,30 +614,32 @@ function viewToday(){
       <button class="check" data-check="${it.id}" aria-label="تم">${checkSvg}</button></div>${acts}</div></div>`;
   }
   let cups='';for(let i=0;i<12;i++)cups+=`<div class="cup ${i<water?'on':''}"></div>`;
+  const wmsg=water>16?'⚠️ أكثر من 4 لتر. ما تحتاج أكثر إلا إذا عرقت كثير، والزيادة الكبيرة تتعب الجسم.':water>12?'✓ كمّلت الهدف. عادي تزيد شوي لين 4 لتر، خصوصًا مع المشي والحر.':water>=12?'✓ كمّلت هدفك اليوم 3 لتر.':`باقي ${12-water} كاس (${((12-water)*0.25).toString().replace(/\.?0+$/,'')} لتر).`;
   return `
   <section class="hero"><div class="herogrid">
     <div style="flex:1;min-width:0"><div class="eyebrow">${isT?greet()+' · ':''}${fmtDate(d)}</div><h1>اليوم ${planIdx(d)+1} من 28</h1>
     <div class="sub">الدورة ${cyc} من 3 · الأسبوع ${weekNo(d)} من الخطة</div></div>
     <div class="ring">${ring(pr.n/pr.t)}<b class="num">${pr.n}/${pr.t}</b><small>خلصتها</small></div></div>
+    ${nextUp(d,its)}
     <div class="chips"><span class="chip">🔥 <b class="num">≈ 1500</b> سعرة</span><span class="chip">🚶 مشي <b>${walkMin(d)===60?'ساعة':walkMin(d)+' د'}</b></span><span class="chip">💧 <b class="num">${water}/12</b> كاس</span></div>
   </section>
   ${pushBanner()}
   <div class="daynav"><button class="arrow" data-shift="-1" aria-label="اليوم اللي قبله">›</button><div class="daystrip">${strip}</div><button class="arrow" data-shift="1" aria-label="اليوم اللي بعده">‹</button></div>
   ${ad.note?`<section class="push" style="margin-top:14px"><h3>⏰ صحيت متأخر</h3><p>${ad.note}</p></section>`:''}
   <section class="water"><div class="whead"><h3>الموية</h3><span class="muted num" style="font-size:13px">${(water*0.25).toFixed(2).replace(/\.?0+$/,'')} من 3 لتر</span></div>
-    <div class="cups">${cups}</div><div class="wbtns"><button data-water="-1">− كاس</button><button class="prim" data-water="1">+ كاس (250 مل)</button></div></section>
+    <div class="cups">${cups}</div>${water>12?`<div class="note num" style="margin-top:6px">+${water-12} كاس زيادة</div>`:''}<div class="note" style="margin-top:6px">${wmsg}</div><div class="wbtns"><button data-water="-1">− كاس</button><button class="prim" data-water="1">+ كاس (250 مل)</button></div></section>
   ${sleepCard(d)}
   <div class="sec"><h2>جدولك اليوم</h2><span class="muted" style="font-size:12px">اضغط ✓ لما تخلص</span></div>
   <div class="tl">${tl}</div>`;
 }
 
 /* ---------------- WEEK ---------------- */
-let weekOff=0;
+let weekOff=0, wview='days';
 function viewWeek(){
   const st=parse(S.start); const n=sinceStart(today()); const wkStart=new Date(st); wkStart.setDate(st.getDate()+ (Math.floor(n/7)+weekOff)*7);
   let html=`<div class="sec" style="margin-top:8px"><h2>الأسبوع ${Math.floor(n/7)+weekOff+1}</h2><div style="display:flex;gap:6px"><button class="btn ghost" id="shareBtn" style="padding:7px 12px">↗ شارك</button><button class="btn ghost" data-wk="-1" style="padding:7px 12px">‹ قبل</button><button class="btn ghost" data-wk="1" style="padding:7px 12px">بعد ›</button></div></div>
-  <div class="seg"><button class="on" data-wview="days">الأيام</button><button data-wview="shop">قائمة المشتريات</button></div><div id="wbody">`;
-  html+=weekDays(wkStart)+`</div>`; return html;
+  <div class="seg"><button class="${wview==='days'?'on':''}" data-wview="days">الأيام</button><button class="${wview==='shop'?'on':''}" data-wview="shop">🛒 المشتريات</button></div><div id="wbody">`;
+  html+=(wview==='shop'?shopView(wkStart):weekDays(wkStart))+`</div>`; return html;
 }
 function weekDays(wkStart){
   let h='';
@@ -656,6 +662,95 @@ function weekShop(wkStart){
   <div class="panel"><h3>أساسيات البيت</h3><ul class="list shop">${li(basics,true)}</ul></div>
   <div class="panel"><h3>سناكات الأسبوع</h3><div class="note" style="margin-top:0">تفاح، برتقال، كمثرى، كيوي، فراولة، بطيخ، تمر، لوز، زبادي يوناني، لبن قليل الدسم، جزر، خيار، حمص، قضامة، كركديه، بابونج، بن V60، قهوة سعودية.</div></div>`;
 }
+
+/* ---------------- shopping with quantities ---------------- */
+const SNI={s_dates:[['تمر',1,'pc'],['لوز',5,'pc']],s_apple:[['تفاح',1,'pc'],['لوز',10,'pc']],s_orange:[['برتقال',1,'pc']],s_yog:[['زبادي يوناني',170,'g'],['فراولة',5,'pc']],
+ s_kiwi:[['كيوي',2,'pc']],s_melon:[['بطيخ',300,'g']],z_melon:[['بطيخ',300,'g']],s_maamoul:[['معمول',1,'pc']],z_laban:[['لبن قليل الدسم',250,'ml'],['خيار',2,'pc']],
+ z_egg:[['بيض',1,'pc'],['جزر',1,'pc'],['خيار',1,'pc']],z_pop:[['حب فشار',30,'g']],z_smooth:[['حليب قليل الدسم',250,'ml'],['موز',0.5,'pc'],['شوفان',15,'g']],
+ z_hummus:[['حمص متبل',30,'g'],['جزر',1,'pc'],['خيار',1,'pc']],z_grape:[['زبادي',170,'g'],['عنب',15,'pc']],z_pear:[['كمثرى',1,'pc'],['لوز',10,'pc']],z_mango:[['مانجو',0.5,'pc']],
+ z_qudama:[['قضامة',30,'g']],z_ricecake:[['رغيف بر',0.5,'pc'],['جبن مثلثات لايت',1,'pc'],['خيار',1,'pc']]};
+const BOOSTI=[['بذور قرع',5,'g'],['رمان',0.5,'cup'],['جوز (عين جمل)',5,'pc'],['بطيخ',150,'g'],['شوكولاتة داكنة 85%',10,'g'],['جرجير',0.5,'cup'],['ثوم',1,'clove']];
+const UNITS=[['كجم','kg'],['ملعقة ك','tbsp'],['ملعقة ص','tsp'],['ملاعق ك','tbsp'],['ملاعق ص','tsp'],['ملعقة','tbsp'],['ملاعق','tbsp'],['جم','g'],['لتر','l'],['مل','ml'],['كوب','cup'],['حبات','pc'],['حبة','pc'],['فص','clove'],['شرائح','slice'],['شريحة','slice'],['رغيف','loaf'],['علبة','can'],['ورقات','leaf'],['ورقة','leaf'],['عود','stick'],['كيس','bag'],['لومية','pc']];
+const NUMW={'نص':0.5,'ربع':0.25,'ثلث':0.33,'ثمن':0.125,'ثلثين':0.67,'ملعقتين':2,'حبتين':2};
+const BASICRX=/(ملح|فلفل أسود|بهارات|كمون|بابريكا|كركم|هيل|قرفة|لومي|ورق غار|سماق|زعتر|كزبرة ناشفة|موية|زعفران|قرنفل|شطة|ثوم بودرة|بصل بودرة|أوريغانو|ريحان|بيكنج|زيت بخاخ|خل)/;
+function parseAmt(a){a=String(a);const pm=a.match(/\(([\d.]+)\s*(جم|مل)\)/);if(pm)return [parseFloat(pm[1]),pm[2]==='جم'?'g':'ml'];
+  if(/^\s*\d+\s*\+\s*\d+\s*$/.test(a))return null;
+  let m=a.match(/^\s*([\d.]+|نص|ربع|ثلثين|ثلث|ثمن|ملعقتين|حبتين)\s*(.*)$/);if(!m)return null;let n=NUMW[m[1]]!==undefined?NUMW[m[1]]:parseFloat(m[1]);let rest=m[2]||'';
+  if(m[1]==='ملعقتين'){rest='ملعقة '+rest;}if(m[1]==='حبتين')return [2,'pc'];
+  rest=rest.trim();const unit=u=>{if(u==='kg')return [n*1000,'g'];if(u==='l')return [n*1000,'ml'];return [n,u];};for(const [w,u] of UNITS)if(rest.startsWith(w))return unit(u);
+  rest=rest.replace(/\(.*?\)/g,' ');for(const [w,u] of UNITS){if(new RegExp('(^|\\s)'+w+'(\\s|$)').test(rest)||rest.startsWith(w)){if(u==='kg')return [n*1000,'g'];if(u==='l')return [n*1000,'ml'];return [n,u];}}
+  return [n,'pc'];}
+function normName(nm){let n=String(nm).replace(/\(.*?\)/g,' ').replace(/[:،].*$/,'').trim();
+  if(/دجاج/.test(n)||(/صدر|فخذ/.test(n)&&!/غنم|لحم/.test(n)))return 'دجاج بدون جلد (صدر أو فخذ)';if(/^خضار/.test(n))return 'خضار مشكلة مجمدة';if(/غنم/.test(n)&&/مفروم/.test(n))return 'لحم غنم مفروم بدون دهن';if(/غنم|لحم/.test(n)&&!/دجاج/.test(n))return 'لحم غنم (فخذ) بدون دهن';
+  if(/سمك/.test(n))return 'سمك فيليه';if(/رز/.test(n))return 'رز بسمتي';if(/^بيض/.test(n))return 'بيض';if(/توست/.test(n))return 'توست أسمر';if(/خبز برجر/.test(n))return 'خبز برجر أسمر';
+  if(/رغيف|صاج/.test(n))return 'رغيف بر';if(/تورتيلا/.test(n))return 'خبز تورتيلا بر';if(/زبادي يوناني/.test(n))return 'زبادي يوناني';if(/^زبادي/.test(n))return 'زبادي';
+  if(/ليمون/.test(n))return 'ليمون';if(/طماط/.test(n)&&!/معجون|صوص/.test(n))return 'طماط';if(/بصل/.test(n)&&!/بودرة/.test(n))return 'بصل';if(/ثوم/.test(n)&&!/بودرة/.test(n))return 'ثوم';
+  if(/زيت زيتون/.test(n))return 'زيت زيتون';if(/^زيت/.test(n))return 'زيت';if(/خيار/.test(n))return 'خيار';if(/^خس/.test(n))return 'خس';if(/جزر/.test(n))return 'جزر';if(/فلفل رومي|فلفل ألوان/.test(n))return 'فلفل رومي';
+  n=n.replace(/\s+(مكعبات|شرائح|مفرومة|مفروم|مبشورة|مبشور|مقطعة|مقطع|مهروس|مصفّى|مصفاة|مجمدة|مجمد|طازجة|ني|كاملة|للتتبيل|للشوي|للتقديم|للطشة|مخفوقة|محمصة|مطحون|مطحونة|ناشف|بالسيخ).*$/,'').trim();return n;}
+const CATS=[['🥩 لحوم ودواجن وأسماك',/دجاج|غنم|لحم|سمك|تونة/],['🥚 ألبان وبيض',/بيض|زبادي|لبن|حليب|لبنة|جبن|حلوم|كريمة|موزاريلا|بارميزان/],
+ ['🥬 خضار',/خس|خيار|طماط|بصل|فلفل|جزر|بروكلي|بامية|ملوخية|فاصوليا|بازلاء|بطاطس|سبانخ|فطر|كرفس|جرجير|بقدونس|شبت|نعناع|ثوم|ليمون|كزبرة/],
+ ['🍎 فواكه وتمر',/تفاح|برتقال|كمثرى|كيوي|فراولة|توت|بطيخ|عنب|مانجو|موز|تمر|رمان|معمول/],['🍞 خبز وحبوب وبقوليات',/توست|رغيف|خبز|تورتيلا|رز|شوفان|مكرونة|جريش|بقسماط|دقيق|عدس|فول|حمص|فلافل|ذرة|فشار|قضامة|شيا/],
+ ['☕ مشروبات',/بن|قهوة|كركديه|بابونج|شاي/],['🥜 أخرى',/./]];
+function fmtQty(q){const out=[];const add=(v,u)=>{if(!v)return;if(u==='g')out.push(v>=1000?(Math.round(v/100)/10)+' كجم':Math.round(v)+' جم');else if(u==='ml')out.push(v>=1000?(v/1000).toFixed(1).replace('.0','')+' لتر':Math.round(v)+' مل');
+  else{const r=Math.ceil(v*2)/2;const L={pc:'حبة',tbsp:'ملعقة ك',tsp:'ملعقة ص',cup:'كوب',clove:'فص',slice:'شريحة',loaf:'رغيف',can:'علبة',leaf:'ورقة',stick:'عود',bag:'كيس'}[u]||u;out.push(String(r).replace('.5','½').replace(/^0½/,'½')+' '+L);}};
+  for(const u in q)add(q[u],u);return out.join(' + ');}
+function shopData(from,days){const items={},basics=new Set();
+  const addI=(name,v,u)=>{if(/^(للسلطة|سلطة|صوص)$/.test(normName(name)))return;if(BASICRX.test(name)&&!/تونة/.test(name)){basics.add(name.replace(/\(.*?\)/g,'').trim());return;}const n=normName(name);items[n]=items[n]||{q:{},meals:0};if(v!==null&&v!==undefined)items[n].q[u]=(items[n].q[u]||0)+v;items[n].meals++;};
+  for(let i=0;i<days;i++){const d=new Date(from);d.setDate(from.getDate()+i);
+    for(let s=0;s<5;s++){const k=mealKey(d,s);if(k==='l_family')continue;if(SNI[k]){SNI[k].forEach(([n,v,u])=>addI(n,v,u));continue;}
+      const r=R[C[k][2]];if(!r)continue;for(const [nm,am] of r.ing){if(/شوف وصفة|صفحة|❌/.test(nm+am))continue;const p=parseAmt(am);addI(nm,p?p[0]:null,p?p[1]:'pc');}
+      if(s===2&&/سلطة/.test(r.plate||'')&&R.r_salad){for(const [nm,am] of R.r_salad.ing){const p=parseAmt(am);addI(nm,p?p[0]:null,p?p[1]:'pc');}}}
+    addI('بن V60',30,'g');addI('قهوة سعودية (بن شقراء)',1,'tbsp');addI(planIdx(d)%2===0?'كركديه ناشف':'نعناع',planIdx(d)%2===0?1:6,planIdx(d)%2===0?'tbsp':'leaf');addI('بابونج',1,'bag');
+    const b=BOOSTI[planIdx(d)%BOOSTI.length];addI(b[0],b[1],b[2]);}
+  const G={tbsp:15,tsp:5,cup:200};for(const n in items){const q=items[n].q;if(/دجاج|غنم|لحم|سمك|زبادي|لبنة|رز|شوفان|عدس|فول|حمص|جبن|بازلاء|فاصوليا|بامية|ملوخية|سبانخ|مكرونة|جريش|دقيق/.test(n)&&!/مثلثات|شرائح|شريحة/.test(n)){if(q.ml&&!/لبن|حليب/.test(n)){q.g=(q.g||0)+q.ml;delete q.ml;}for(const u in G)if(q[u]){q.g=(q.g||0)+q[u]*G[u];delete q[u];}
+      if(q.g&&q.pc&&/دجاج|غنم|لحم|سمك|رز/.test(n))delete q.pc;}}
+  const CV={'ليمون':{tbsp:['pc',0.5],tsp:['pc',1/6]},'ثوم':{tbsp:['clove',3],tsp:['clove',1]},'بصل':{tbsp:['pc',0.1],tsp:['pc',0.03]},'طماط':{slice:['pc',1/6],cup:['pc',1.5]},
+    'فراولة':{cup:['pc',8]},'رغيف بر':{pc:['loaf',1],g:['loaf',1/60]},'حليب قليل الدسم':{tbsp:['ml',15]},'لبن قليل الدسم':{cup:['ml',200]},'جزر':{cup:['pc',1.5]},'فلفل رومي':{cup:['pc',1]},
+    'بقسماط':{tbsp:['g',8]},'ذرة':{tbsp:['g',15]},'خبز برجر أسمر':{pc:['loaf',1]}};
+  for(const n in items){const q=items[n].q,c=CV[n];if(c)for(const u in c)if(q[u]){const [to,f]=c[u];q[to]=(q[to]||0)+q[u]*f;delete q[u];}
+    if(q.tbsp&&q.tsp){q.tbsp+=q.tsp/3;delete q.tsp;}}
+  const groups=CATS.map(([t])=>({t,list:[]}));
+  Object.keys(items).sort().forEach(n=>{const gi=CATS.findIndex(([,rx])=>rx.test(n));groups[gi].list.push([n,items[n]]);});
+  return {groups:groups.filter(g=>g.list.length),basics:[...basics].sort()};}
+let shopPeriod='week';
+function shopView(wkStart){
+  const t=today();let from,days,label;
+  if(shopPeriod==='day'){from=new Date(sel);days=1;label=fmtDate(sel);}else if(shopPeriod==='week'){from=new Date(wkStart);days=7;label='الأسبوع اللي معروض';}else{from=new Date(t);days=28;label='من اليوم لين 4 أسابيع';}
+  const key=shopPeriod+':'+iso(from);const done=S.shop[key]||{};const {groups,basics}=shopData(from,days);
+  const li=(n,o)=>`<li class="${done[n]?'on':''}" data-shopi="${esc(n)}" data-wk="${key}"><span class="bx"></span><span class="nm">${esc(n)}</span><span class="ct num" style="color:var(--gold2);font-weight:600">${esc(fmtQty(o.q)||'حسب الحاجة')}</span></li>`;
+  const total=groups.reduce((a,g)=>a+g.list.length,0),got=Object.values(done).filter(Boolean).length;
+  return `<div class="seg" style="margin-top:12px">${[['day','اليوم'],['week','الأسبوع'],['month','4 أسابيع']].map(([k,l])=>`<button class="${shopPeriod===k?'on':''}" data-shopp="${k}">${l}</button>`).join('')}</div>
+   <div class="panel" style="padding:12px 16px"><div class="row" style="border:0;padding:0"><span>${label}</span><span class="num">${got}/${total} اشتريتها</span></div><div style="margin-top:8px;height:6px;border-radius:4px;background:var(--surface3);overflow:hidden"><div style="height:100%;width:${total?got/total*100:0}%;background:var(--ok)"></div></div><div class="note">الكميات وزن ني قبل الطبخ، ومحسوبة لشخص واحد مع تبديلاتك. اللحم والدجاج كمّلها لأقرب كيلو أو نص.</div></div>
+   ${groups.map(g=>`<div class="panel"><h3>${g.t}</h3><ul class="list shop">${g.list.map(([n,o])=>li(n,o)).join('')}</ul></div>`).join('')}
+   <div class="panel"><h3>🧂 بهارات وأساسيات البيت</h3><div class="note" style="margin-top:0">تأكد إنها موجودة: ${basics.map(esc).join('، ')}.</div></div>`;
+}
+
+/* ---------------- tracking ---------------- */
+const PILLIDS=d=>['p_centrum','p_gluco','p_mag'].concat(d.getDay()===5?['p_vitd']:[]);
+function trackStats(n){const t=today();const rows={meals:[],water:[],pills:[],walk:[],sleep:[],steps:[]};
+  for(let i=n-1;i>=0;i--){const d=new Date(t);d.setDate(t.getDate()-i);if(sinceStart(d)<0){Object.values(rows).forEach(r=>r.push(null));continue;}const k=iso(d),c=S.checks[k]||{};
+    rows.meals.push(['m0','m1','m2','m3','m4'].filter(x=>c[x]).length/5);rows.water.push(Math.min(1,(S.water[k]||0)/12));
+    const pl=PILLIDS(d);rows.pills.push(pl.filter(x=>c[x]).length/pl.length);rows.walk.push(c.walk?1:0);
+    const h=sleepHours(d);rows.sleep.push(h===null?null:Math.min(1,h/7));const st=S.steps[k];rows.steps.push(st?Math.min(1,st/stepGoal(d)):null);}
+  return rows;}
+function avgv(a){const v=a.filter(x=>x!==null);return v.length?v.reduce((p,c)=>p+c,0)/v.length:null;}
+function trackPanel(){
+  const n=trackN, r=trackStats(n), t=today();
+  const L=[['meals','🍽️ الوجبات'],['water','💧 الموية'],['pills','💊 الحبوب'],['walk','🚶 المشي'],['sleep','🌙 النوم'],['steps','👣 الخطوات']];
+  const col=v=>v===null?'var(--surface3)':v>=0.99?'var(--ok)':v>=0.6?'var(--gold)':v>0?'var(--warn)':'rgba(236,138,125,.55)';
+  const tiles=L.map(([k,l])=>{const a=avgv(r[k]);return `<div class="stat" style="text-align:right"><span>${l}</span><b class="num" style="font-size:20px">${a===null?'—':Math.round(a*100)+'%'}</b><div style="height:5px;border-radius:3px;background:var(--surface3);overflow:hidden;margin-top:4px"><div style="height:100%;width:${(a||0)*100}%;background:${col(a)}"></div></div></div>`;}).join('');
+  let grid='';if(n===7){grid=`<div style="display:grid;grid-template-columns:70px repeat(7,1fr);gap:4px;margin-top:14px;align-items:center;font-size:11px">`+'<span></span>'+[...Array(7)].map((_,i)=>{const d=new Date(t);d.setDate(t.getDate()-6+i);return `<span style="text-align:center;color:var(--mut)">${WD[d.getDay()].replace('ال','').slice(0,3)}</span>`;}).join('')+
+    L.map(([k,l])=>`<span style="color:var(--mut)">${l}</span>`+r[k].map(v=>`<span style="height:18px;border-radius:5px;background:${col(v)}"></span>`).join('')).join('')+`</div>`;}
+  const scored=L.map(([k,l])=>[l,avgv(r[k])]).filter(x=>x[1]!==null).sort((a,b)=>b[1]-a[1]);
+  const tips={'🍽️ الوجبات':'أشّر على كل وجبة لما تخلصها، حتى السناك.','💧 الموية':'كاسين على الريق، وكاس قبل كل وجبة، تكمّل لك نص الهدف.','💊 الحبوب':'خل الحبوب جنب مكان الأكل عشان ما تنساها.','🚶 المشي':'امشِ بعد العشا على طول، قبل ما تجلس.','🌙 النوم':'حاول تنام قبل 11، والجوال برا الغرفة.','👣 الخطوات':'قوم دقيقتين كل ساعة بالدوام، واستخدم الدرج.'};
+  const sum=scored.length?`<div class="tip" style="margin-top:12px">👏 أقوى شي عندك: <b>${scored[0][0]}</b> (${Math.round(scored[0][1]*100)}%).${scored.length>1&&scored[scored.length-1][1]<0.8?`<br>🎯 ركّز على <b>${scored[scored.length-1][0]}</b>: ${tips[scored[scored.length-1][0]]}`:''}</div>`:'<div class="note">ابدأ تأشّر على يومك، ويطلع لك تقرير هنا.</div>';
+  return `<div class="panel"><div class="row" style="border:0;padding:0;align-items:center"><h3 style="margin:0">📊 التزامك</h3><span><button class="btn ghost" data-trackn="7" style="padding:4px 10px;font-size:12px;${n===7?'border-color:var(--gold)':''}">7 أيام</button> <button class="btn ghost" data-trackn="28" style="padding:4px 10px;font-size:12px;${n===28?'border-color:var(--gold)':''}">28 يوم</button></span></div>
+   <div class="stats" style="grid-template-columns:repeat(3,1fr);margin-top:10px">${tiles}</div>${grid}${sum}</div>`;
+}
+let trackN=7;
+function nextUp(d,its){if(iso(d)!==iso(today()))return '';const nm=new Date().getHours()*60+new Date().getMinutes();const it=its.find(i=>!isDone(d,i.id)&&i.m>=nm-30);if(!it)return '';
+  let title=it.title;if(it.type==='meal'){title=SLOTL[it.slot]+': '+cInfo(mealKey(d,it.slot)).t;}const diff=it.m-nm;
+  return `<div class="nextup"><span class="lbl">التالي</span><b>${esc(title)}</b><span class="when num">${diff<=0?'الحين':diff<60?'بعد '+diff+' دقيقة':'الساعة '+it.t}</span></div>`;}
 
 /* ---------------- RECIPES ---------------- */
 let rFilter='all', rQuery='';
@@ -700,6 +795,7 @@ function viewProgress(){
   return `<div class="sec" style="margin-top:8px"><h2>تقدّمي</h2></div>
   <div class="stats"><div class="stat"><b class="num">${has?last:'—'}</b><span>وزنك الحين</span></div><div class="stat"><b class="num">${lost>0?'−'+lost:lost}</b><span>نزلت (كجم)</span></div><div class="stat"><b class="num">${left}</b><span>باقي للهدف</span></div></div>
   <div class="stats"><div class="stat"><b class="num">${bmi}</b><span>BMI</span></div><div class="stat"><b class="num">${streak}</b><span>أيام ملتزم</span></div><div class="stat"><b class="num">${weekNo(today())}</b><span>أسبوعك</span></div></div>
+  ${trackPanel()}
   <div class="panel"><h3>الوزن مع الوقت</h3><div class="note" style="margin-top:0">الخط الذهبي وزنك · المتقطع الأخضر المتوقع</div>${svg}
     <div class="wform"><input id="wkg" type="number" inputmode="decimal" step="0.1" min="40" max="250" placeholder="وزنك اليوم (كجم)" aria-label="وزنك اليوم"><button class="btn" id="wadd">سجّل</button></div>
     <div class="note">توزن مرة بالأسبوع، الصبح بعد الحمام وقبل الفطور.</div></div>
@@ -781,9 +877,9 @@ document.addEventListener('click',e=>{
   const ds=b.dataset;
   if(ds.tab){go(ds.tab);return;}
   if(ds.check){const k=iso(sel);S.checks[k]=S.checks[k]||{};S.checks[k][ds.check]=!S.checks[k][ds.check];
-    if(S.checks[k][ds.check]&&(ds.check==='wake'||ds.check==='w2')){S.water[k]=Math.min(12,(S.water[k]||0)+2);}
+    if(ds.check==='wake'||ds.check==='w2'){S.water[k]=Math.max(0,Math.min(20,(S.water[k]||0)+(S.checks[k][ds.check]?2:-2)));}
     save();render();if(S.checks[k][ds.check])toast('أحسنت ✓');return;}
-  if(ds.water){const k=iso(sel);S.water[k]=Math.max(0,Math.min(12,(S.water[k]||0)+Number(ds.water)));save();render();if(S.water[k]===12&&ds.water==='1')toast('كمّلت 3 لتر 💧');return;}
+  if(ds.water){const k=iso(sel);S.water[k]=Math.max(0,Math.min(20,(S.water[k]||0)+Number(ds.water)));save();render();if(ds.water==='1'){if(S.water[k]===12)toast('كمّلت 3 لتر 💧');else if(S.water[k]===17)toast('أكثر من 4 لتر، يكفي');}return;}
   if(ds.day){sel=parse(ds.day);render();return;}
   if(ds.shift){const x=new Date(sel);x.setDate(x.getDate()+Number(ds.shift));sel=x;render();return;}
   if(ds.how){const link=C[ds.how][2];if(link==='snacks')snackSheet(ds.how);else recipeSheet(link);return;}
@@ -795,7 +891,9 @@ document.addEventListener('click',e=>{
   if(ds.tabgo){go(ds.tabgo,ds.anchor);return;}
   if(ds.open){sel=parse(ds.open);go('today');return;}
   if(ds.wk&&b.tagName==='BUTTON'&&!ds.shopi){weekOff+=Number(ds.wk);render();return;}
-  if(ds.wview){document.querySelectorAll('[data-wview]').forEach(x=>x.classList.toggle('on',x===b));const st=parse(S.start),n=sinceStart(today());const ws=new Date(st);ws.setDate(st.getDate()+(Math.floor(n/7)+weekOff)*7);$('#wbody').innerHTML=ds.wview==='shop'?weekShop(ws):weekDays(ws);return;}
+  if(ds.wview){wview=ds.wview;render();return;}
+  if(ds.shopp){shopPeriod=ds.shopp;render();return;}
+  if(ds.trackn){trackN=Number(ds.trackn);render();return;}
   if(ds.shopi){const wk=ds.wk;S.shop[wk]=S.shop[wk]||{};S.shop[wk][ds.shopi]=!S.shop[wk][ds.shopi];save();b.classList.toggle('on');return;}
   if(ds.ingi!==undefined){const key='r:'+ds.rk;S.ing[key]=S.ing[key]||{i:{},s:{}};S.ing[key].i[ds.ingi]=!S.ing[key].i[ds.ingi];b.classList.toggle('on');save();return;}
   if(ds.stepi!==undefined){const key='r:'+ds.rk;S.ing[key]=S.ing[key]||{i:{},s:{}};S.ing[key].s[ds.stepi]=!S.ing[key].s[ds.stepi];b.classList.toggle('on');save();return;}
