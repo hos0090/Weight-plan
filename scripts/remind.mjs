@@ -21,6 +21,7 @@ if (FAM) {                                                  // phones that turne
   catch (e) { console.log('::warning::family subs ' + e.message); }
   for (const x of famSubs) if (x && x.endpoint && !subs.some(y => y.endpoint === x.endpoint)) subs.push(x);
 }
+console.log(`::notice::phones: ${subs.length} (registered in app: ${famSubs.length}${FAM ? '' : ', FAM_CODE secret missing'})`);
 const expired = new Set();
 console.log(`::notice::phones: ${subs.length} (family list ${FAM ? famSubs.length : 'no FAM_CODE secret'})`);
 if (!subs.length) { console.log('::notice::no subscriptions yet'); process.exit(0); }
