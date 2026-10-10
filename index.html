@@ -389,7 +389,7 @@ html[data-skin="beige"] .hnext{background:rgba(148,105,42,.06)}
   --c0:#e0b566; --c1:#b8a9e0; --c2:#74b892; --c3:#8fb2e0; --c4:#e09aac; --cd:#86c3cf;
   --glowA:#18233f; --glowB:#141c30; --heroA:#18223a; --heroB:#121a2d; --heroC:#0f1626;
   --tabbg:rgba(18,26,44,.82); --track:rgba(237,230,214,.07); --ringA:#f1dcae; --ringB:#c9933f;
-  --f-display:"Reem Kufi","IBM Plex Sans Arabic",system-ui,sans-serif;
+  --f-display:"IBM Plex Sans Arabic",system-ui,sans-serif; --f-kufi:"Reem Kufi","IBM Plex Sans Arabic",system-ui,sans-serif;
 }
 html[data-skin="beige"]{
   --bg:#efe7d6; --bg2:#f7f1e5; --surface:#fbf7ee; --surface2:#f1e8d6; --surface3:#e2d5bb;
@@ -399,7 +399,8 @@ html[data-skin="beige"]{
   --ok:#2e7d58; --c0:#a06c1c; --c2:#2e7d58; --c3:#36608f; --c4:#a2495f; --cd:#2a7380;
   --heroA:#fbf6ec; --heroB:#f4ecdc; --heroC:#ece1cb; --tabbg:rgba(247,241,229,.86); --track:rgba(27,36,64,.07);
 }
-h1,h2,h3,.ctitle,.h4,.mq{font-family:var(--f-display);font-weight:600}
+h1,h2,h3,.ctitle,.h4,.mq{font-family:var(--f-body);font-weight:700}
+.mq{font-weight:600}.ctitle{font-weight:600}
 .sec h2{font-size:22px;font-weight:700}
 .hero.h2{padding:18px 16px 18px;border-radius:32px}
 .hero.h2::before,.hero.h2::after{display:none}
@@ -424,7 +425,7 @@ html[data-skin="beige"] .dg0{stop-color:rgba(160,108,28,.10)}
 .dnow{fill:none;stroke:var(--gold);stroke-width:2.5;filter:drop-shadow(0 0 6px rgba(224,181,102,.7))}
 .dpin{fill:var(--gold)}
 .dcenter{position:absolute;inset:27% 18%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none}
-.dtime{font-family:var(--f-display);font-size:50px;font-weight:600;line-height:1;color:var(--fg);display:flex;align-items:baseline;gap:6px}
+.dtime{font-family:var(--f-kufi);font-size:50px;font-weight:600;line-height:1;color:var(--fg);display:flex;align-items:baseline;gap:6px}
 .dtime small{font-family:var(--f-body);font-size:14px;font-weight:500;color:var(--mut)}
 .dpct{margin-top:8px;font-size:13px;color:var(--mut)}.dpct b{color:var(--gold2);font-size:15px;font-weight:600}
 .dsub{margin-top:2px;font-size:11.5px;color:var(--mut2)}
@@ -436,6 +437,27 @@ html[data-skin="beige"] .dg0{stop-color:rgba(160,108,28,.10)}
 .enter>*{animation:none}
 .motiv .mq{font-weight:500}
 .rtile{position:relative;padding-top:14px}.rti{position:absolute;top:12px;left:12px;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:var(--surface2);color:var(--gold)}.rti .ic{width:16px;height:16px}
+
+.per{font-size:12.5px;font-weight:600;color:var(--gold);margin:16px 70px 8px 0}
+.per:first-child{margin-top:4px}
+.it.rowi{margin-bottom:8px}
+.it.rowi .tm{padding-top:9px}.it.rowi .tm .nd{margin-top:4px}
+.rmain{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 10px}
+.rmain .cic{width:32px;height:32px;border-radius:10px}.rmain .cic .ic{width:17px;height:17px}
+.rbody{flex:1;min-width:0;display:flex;flex-direction:column;text-align:right;gap:1px}
+.rbody b{font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rbody span{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rx{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:var(--mut2)}.rx .ic{width:15px;height:15px}
+.it.rowi .check{width:28px;height:28px}
+.it.rowi .card{border-radius:16px}
+
+.it:not(.rowi):not(.open) .cact{display:none}
+.it:not(.rowi):not(.open) .energy,.it:not(.rowi):not(.open) .swapped{display:none}
+.it:not(.rowi) .cbody{cursor:pointer}
+.it:not(.rowi):not(.open) .cmain{padding-block:11px}
+.it:not(.rowi):not(.open) .cqty{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it:not(.rowi):not(.open) .ctitle::after{content:"";display:inline-block;width:6px;height:6px;border-left:1.5px solid var(--mut2);border-bottom:1.5px solid var(--mut2);transform:rotate(-45deg);margin-inline-start:8px;vertical-align:3px}
+.donebar.later{margin-top:4px}.donebar.later .dbi{background:var(--surface3);color:var(--gold)}
 </style>
 
 <script>document.documentElement.setAttribute("dir","rtl");document.documentElement.setAttribute("lang","ar");</script>
@@ -781,7 +803,7 @@ function qlSheet(kind){sheetFn=()=>qlSheet(kind);const d=sel,k=iso(d),sl=S.sleep
      <label class="flab">صحيت ${iso(d)===iso(today())?'اليوم':'هاليوم'} الساعة<input type="time" id="slWake" value="${sl.wake||''}" style="${inp}"></label>
      ${sl.wake?'<button class="btn ghost" id="wakeReset" style="width:100%;margin-top:8px">رجّع هاليوم للبداية الافتراضية</button>':''}
      <div class="plate" style="margin-top:14px"><b>جدولك على ${min2t(W0)}</b>الفطور ${min2t(T.m0)} · الغدا ${min2t(T.m2)} · العشا ${min2t(T.m4)} · المشي ${min2t(T.walk)} · النوم ${min2t(T.sleep)}${drop.m1?'<br>بدون سناك الصبح':''}${drop.m3?'<br>بدون سناك العصر':''}</div>
-     <label class="flab" style="margin-top:16px">البداية الافتراضية لكل يوم<input type="time" id="dayStart" value="${cfg().dayStart||DEFSTART}" style="${inp}"></label>
+     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px"><label class="flab">تبدأ الخطة يوم<input type="date" id="startd" value="${S.start}" style="${inp}"></label><label class="flab">ويبدأ يومي الساعة<input type="time" id="dayStart" value="${cfg().dayStart||DEFSTART}" style="${inp}"></label></div>
      <div class="note">كل الأوقات (الوجبات، والحبوب، والتذكيرات) تمشي على هالوقت. لو صحيت بدري أو متأخر يوم معيّن، غيّره فوق لهاليوم بس.</div>
      <div class="tip">✓ تغيير بداية اليوم ما فيه خطر، بشرط: 7 ساعات نوم، والعشا قبل النوم بساعتين ونص على الأقل، وحبة الجلوكوفاج مع العشا. لو صحيت بعد 8 الجدول ينضغط: العشا ما يتأخر عن 9 الليل، ويشيل السناك اللي ما له مكان.</div>`);return;}
   if(kind==='sleep'){const hrs=sleepHours(d);
@@ -1004,7 +1026,7 @@ function guidePanel(){return `<div class="panel" id="pguide"><h3>الحلا وا
  <div class="tip">ليش العصير ممنوع حتى الطبيعي؟ كوب العصير فيه سكر 3 أو 4 حبات فاكهة بدون أليافها، ويروح للكبد ويرفع الدهون الثلاثية. كُل الفاكهة حبة.</div>
  <div class="tip">قطع الحلا ما يجيب دوخة. الدوخة أول الأيام غالبًا من قلة الموية أو ترك وجبة. إذا جاتك دوخة مع عرق ورجفة، كُل 3 تمرات وقيس السكر إذا عندك جهاز، وكلّم طبيبك.</div></div>`;}
 
-let showDone=false,popCup=-1,enterAnim=true,calOpen=false;
+let showDone=false,popCup=-1,enterAnim=true,calOpen=false,openIt=null,showLater=false;
 /* the day dial: your day from waking to sleep, laid around a circle */
 function dialSVG(d,its,isT,nowM,pct,doneN,total){
   const wk=its.find(i=>i.id==='wake'),sl=its.find(i=>i.id==='sleep');const A0=wk?wk.m:480,A1=sl?sl.m:1470,span=Math.max(60,A1-A0);
@@ -1064,13 +1086,20 @@ function viewToday(){
     else if(it.type==='treat'){cls='t-treat';tag=d.getDay()===5?'حلا الأسبوع':'حلا اليوم · اختياري';title=it.title;sub=it.sub;acts=`<div class="cact"><button data-treat="1">${IC.cookie}بدائل الحلا</button><button data-del="swt">${IC.swap}غيّره</button></div>`;}
     else if(it.type==='weigh'){cls='t-weigh';tag=it.late?'متأخر':'يوم الوزن';title=it.late?'ما قست وزنك هالأسبوع':'سجّل وزنك';sub=it.sub;acts=`<div class="cact"><button data-ql="weight">${IC.scale}سجّل الحين</button></div>`;}
     else {cls='t-sleep';tag='راحة';title=it.title;sub=it.sub;}
-    return `<div class="it ${cls} ${done?'done':''} ${nowId===it.id?'now':''}" data-it="${it.id}"><div class="tm"><b class="num">${it.t}</b><i class="nd"></i></div>
-      <div class="card"><div class="cmain"><span class="cic">${itemIcon(it)}</span><div class="cbody"><span class="ctag">${tag}${nowId===it.id?'<span class="nowtag">الحين</span>':''}</span><div class="ctitle">${esc(title)}</div><div class="cqty">${esc(sub)}</div>${sw}</div>
+    if(it.type!=='meal'&&it.type!=='weigh'){const open=it.type==='pill'?`data-pill="${it.ref}"`:it.type==='treat'?'data-treat="1"':it.type==='walk'?'data-tabgo="plan" data-anchor="walk"':it.ref?`data-drink="${it.ref}"`:'';
+      const extra=it.id==='eve'?`<button class="rx" data-del="eve" aria-label="غيّره">${IC.swap}</button>`:it.type==='treat'?`<button class="rx" data-del="swt" aria-label="غيّره">${IC.swap}</button>`:(it.id==='lbn'||it.id==='fizz')?`<button class="rx" data-del="${it.id}" aria-label="شيله">${IC.x}</button>`:'';
+      return `<div class="it rowi ${cls} ${done?'done':''} ${nowId===it.id?'now':''}" data-it="${it.id}"><div class="tm"><b class="num">${it.t}</b><i class="nd"></i></div><div class="card"><div class="rmain"><span class="cic">${itemIcon(it)}</span><button class="rbody" ${open}><b>${esc(title)}${nowId===it.id?'<span class="nowtag">الحين</span>':''}</b><span>${esc(sub)}</span>${it.type==='walk'&&S.steps[iso(d)]?`<span class="num">${S.steps[iso(d)].toLocaleString('en')} خطوة</span>`:''}</button>${extra}<button class="check" data-check="${it.id}" aria-label="تم">${checkSvg}</button></div></div></div>`;}
+    return `<div class="it ${cls} ${done?'done':''} ${nowId===it.id?'now':''} ${openIt===it.id||(openIt===null&&nowId===it.id)||it.type==='weigh'?'open':''}" data-it="${it.id}"><div class="tm"><b class="num">${it.t}</b><i class="nd"></i></div>
+      <div class="card"><div class="cmain"><span class="cic">${itemIcon(it)}</span><div class="cbody" data-openit="${it.id}"><span class="ctag">${tag}${nowId===it.id?'<span class="nowtag">الحين</span>':''}</span><div class="ctitle">${esc(title)}</div><div class="cqty">${esc(sub)}</div>${sw}</div>
       <button class="check" data-check="${it.id}" aria-label="تم">${checkSvg}</button></div>${acts}</div></div>`;};
   const collapse=isT&&!showDone&&its.some(i=>isDone(d,i.id));
   let tl='';
   if(collapse||(isT&&showDone&&doneN>0))tl+=`<button class="donebar" data-showdone="${showDone?0:1}"><span class="dbi">${IC.check}</span><span>${showDone?'اطوِ اللي خلصته':`خلصت <b class="num">${doneN}</b> من <b class="num">${core.length}</b>`}</span><span class="dbm">${showDone?'':'اعرضها'}</span></button>`;
-  for(const it of its){if(collapse&&isDone(d,it.id))continue;tl+=card(it);}
+  const PER=[[0,720,'الصبح'],[720,960,'الظهر'],[960,1140,'العصر'],[1140,99999,'الليل']];let lastP=-1;
+  const nowIt=its.find(i=>i.id===nowId);const curP=nowIt?PER.findIndex(([a,b])=>nowIt.m>=a&&nowIt.m<b):-1;let hidden=0;
+  for(const it of its){if(collapse&&isDone(d,it.id))continue;const pi=PER.findIndex(([a,b])=>it.m>=a&&it.m<b);if(isT&&!showLater&&curP>=0&&pi>curP+1){hidden++;continue;}if(pi!==lastP){lastP=pi;tl+=`<div class="per">${PER[pi][2]}</div>`;}tl+=card(it);}
+  if(hidden)tl+=`<button class="donebar later" data-later="1"><span class="dbi">${IC.clock}</span><span>باقي <b class="num">${hidden}</b> بعدين بالليل</span><span class="dbm">اعرضها</span></button>`;
+  else if(isT&&showLater&&curP>=0)tl+=`<button class="donebar later" data-later="0"><span>اطوِ باقي اليوم</span></button>`;
   if(collapse&&doneN===core.length)tl+=`<div class="empty">ما بقى شي اليوم. أحسنت</div>`;
   let cups='';for(let i=0;i<12;i++)cups+=`<div class="cup ${i<water?'on':''} ${i===popCup?'fill':''}"></div>`;popCup=-1;
   const wmsg=water>16?'أكثر من 4 لتر. ما تحتاج أكثر إلا إذا عرقت كثير، والزيادة الكبيرة تتعب الجسم.':water>12?'كمّلت الهدف. عادي تزيد شوي لين 4 لتر، خصوصًا مع المشي والحر.':water>=12?'كمّلت هدفك اليوم 3 لتر.':`باقي ${12-water} كاس (${((12-water)*0.25).toString().replace(/\.?0+$/,'')} لتر).`;
@@ -1088,6 +1117,7 @@ function viewToday(){
   ${pushBanner()}
   <div class="daynav"><button class="arrow" data-shift="-1" aria-label="اليوم اللي قبله">›</button><button class="dbtn ${calOpen?'on':''}" data-cal="1">${IC.cal}<span>${isT?'اليوم · ':''}${fmtDate(d)}</span><i class="chv">${IC.chev}</i></button>${isT?'':'<button class="arrow tday" data-day="'+iso(today())+'">اليوم</button>'}<button class="arrow" data-shift="1" aria-label="اليوم اللي بعده">‹</button></div>
   ${calOpen?`<div class="daystrip open">${strip}</div>`:''}
+  ${sinceStart(today())<0&&isT?`<section class="notice">${IC.cal}<p>خطتك تبدأ ${fmtDate(parse(S.start))} الساعة ${min2t(dayStartMin())}. لين ذاك اليوم تقدر تتصفح الوجبات وتجهّز مشترياتك.</p></section>`:''}
   ${quickLog(d)}
   ${motivCard(d)}
   ${ad.note?`<section class="notice">${IC.clock}<p>${ad.note}</p></section>`:''}
@@ -1294,7 +1324,7 @@ function viewPlan(){
   <div class="panel" id="pset"><h3>الإعدادات</h3>
    <div class="row"><span>تاريخ بداية الخطة</span><span><input id="startd" type="date" value="${S.start}" style="background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:6px 8px"></span></div>
    <div class="note">اليوم 1 هو تاريخ البداية، والجدول يمشي 28 يوم ويرجع يتكرر.</div>
-   <div class="row"><span>بداية يومي (الافتراضية)</span><span><input id="dayStart" type="time" value="${cfg().dayStart||DEFSTART}" style="background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:6px 8px"></span></div>
+   <div class="row"><span>ويبدأ يومي الساعة</span><span><input id="dayStart" type="time" value="${cfg().dayStart||DEFSTART}" style="background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:6px 8px"></span></div>
    <div class="row"><span>يوم الوزن</span><span><select id="wDay" style="background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:6px 8px;color:var(--fg)">${MJDAYS.map((n,i)=>`<option value="${i}" ${i===weighDay()?'selected':''}>${n}</option>`).join('')}</select></span></div>
    <div class="row"><span>الحفظ</span><span>${syncState==='cloud'?'بحسابك (يظهر بأي جهاز)':'على هالجهاز بس'}</span></div><div class="row"><span>الثيم</span><span><button class="btn ghost" id="skinBtn2" style="padding:6px 12px">${document.documentElement.getAttribute('data-skin')==='beige'?'بيج ☀ (حوّل لليلي)':'ليلي ☾ (حوّل للبيج)'}</button></span></div>
    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="shareBtn2">↗ شارك الخطة مع زوجتي</button><button class="btn ghost" id="resetToday">امسح علامات اليوم</button><button class="btn ghost" id="resetSwaps">رجّع كل الوجبات الأصلية</button></div></div>`;
@@ -1354,7 +1384,7 @@ function render(){
 }
 function go(t,anchor){if(tab!==t)enterAnim=true;tab=t;render();window.scrollTo(0,0);if(anchor){const el=document.getElementById(anchor);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}}
 document.addEventListener('click',e=>{
-  const b=e.target.closest('button,[data-ingi],[data-stepi],[data-shopi]'); if(!b) return;
+  const b=e.target.closest('button,[data-ingi],[data-stepi],[data-shopi],[data-openit]'); if(!b) return;
   const ds=b.dataset;
   if(ds.tab){go(ds.tab);return;}
   if(ds.check){const k=iso(sel);S.checks[k]=S.checks[k]||{};const nv=!S.checks[k][ds.check];S.checks[k][ds.check]=nv;
@@ -1369,6 +1399,8 @@ document.addEventListener('click',e=>{
   if(ds.outpick!==undefined){const k=iso(sel),slot=ds.slot;S.outm[k]=Object.assign({},S.outm[k]||{});if(ds.outpick==='')delete S.outm[k][slot];else S.outm[k][slot]=ds.outpick;save();closeSheet();render();toast(ds.outpick===''?'رجعت وجبة البيت':'تمام، بالعافية');return;}
   if(ds.treat){treatSheet();return;}
   if(ds.phdel){if(confirm('تحذف صورة '+ds.phdel+'؟')){photoDel(ds.phdel).then(loadPhotos);}return;}
+  if(ds.later!==undefined){showLater=ds.later==='1';render();return;}
+  if(ds.openit){openIt=openIt===ds.openit?'':ds.openit;render();return;}
   if(ds.cal){calOpen=!calOpen;render();return;}
   if(ds.motiv){motivOff++;render();return;}
   if(ds.showdone!==undefined){showDone=ds.showdone==='1';render();return;}
@@ -1430,7 +1462,7 @@ document.addEventListener('change',e=>{
   if(id==='stIn'){const v=parseInt(e.target.value,10);const k=iso(sel);if(v>0&&v<100000)S.steps[k]=v;else delete S.steps[k];refresh();return;}
   if(id==='dayStart'&&e.target.value){cfg().dayStart=e.target.value;refresh();toast('صار يومك يبدأ '+min2t(hm2min(e.target.value)));return;}
   if(id==='wDay'){cfg().weighDay=e.target.value;refresh();toast('يوم الوزن: '+MJDAYS[+e.target.value]);return;}
-  if(id==='mjDay'||id==='mjDose'||id==='mjFrom'){const m=mjCfg();m[{mjDay:'day',mjDose:'dose',mjFrom:'from'}[id]]=e.target.value;cfg().mj=m;save();render();go('plan','ppills');return;}if(e.target.id==='startd'&&e.target.value){S.start=e.target.value;save();sel=today();render();toast('تغيّر تاريخ البداية');}});
+  if(id==='mjDay'||id==='mjDose'||id==='mjFrom'){const m=mjCfg();m[{mjDay:'day',mjDose:'dose',mjFrom:'from'}[id]]=e.target.value;cfg().mj=m;save();render();go('plan','ppills');return;}if(e.target.id==='startd'&&e.target.value){S.start=e.target.value;save();sel=today();render();if(sheetFn&&$('#sheet').classList.contains('on'))sheetFn();toast('الخطة تبدأ '+fmtDate(parse(S.start)));}});
 window.__wp={buildSched,shopData,fmtQty,weighDue};
 if(window.__sharedOpen){tab='week';}
 setTimeout(()=>{try{pushSched();}catch(e){}},2500);
