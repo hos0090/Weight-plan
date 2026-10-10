@@ -364,6 +364,16 @@ html[data-skin="beige"] .hnext{background:rgba(148,105,42,.06)}
 .mq{margin:0 0 10px;padding-inline-end:34px;font-family:var(--f-display);font-size:16.5px;line-height:1.6;color:var(--gold2)}
 .mt{display:flex;flex-direction:column;gap:2px;padding-top:10px;border-top:1px solid var(--line2);font-size:12.5px;color:var(--mut)}.mt b{display:flex;align-items:center;gap:6px;color:var(--fg);font-weight:600;font-size:13px}.mt .ic{width:15px;height:15px;color:var(--gold)}
 .mnext{position:absolute;top:12px;left:12px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--surface2);color:var(--mut)}.mnext .ic{width:15px;height:15px}
+
+.t-treat .cic{color:var(--c4)}.t-treat .card{border-style:dashed}
+.badges{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.bdg{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;padding:12px 6px;border-radius:16px;background:var(--surface2);border:1px solid var(--line2);opacity:.45;filter:grayscale(1)}
+.bdg span{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--surface3);color:var(--mut);margin-bottom:4px}.bdg b{font-size:12.5px}.bdg small{font-size:10.5px;color:var(--mut)}
+.bdg.on{opacity:1;filter:none;border-color:var(--line)}.bdg.on span{background:var(--gold);color:var(--goldink)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.cmp.one{grid-template-columns:1fr}
+.cmp figure{margin:0;border-radius:14px;overflow:hidden;background:var(--surface2);position:relative}.cmp img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+.cmp figcaption{position:absolute;bottom:6px;right:6px;font-size:11px;padding:2px 8px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff}
+.pth{display:flex;gap:6px;overflow-x:auto;margin-top:8px}.pth button{flex:none;width:58px;position:relative}.pth img{width:58px;height:76px;object-fit:cover;border-radius:10px;display:block}.pth span{font-size:10px;color:var(--mut)}
 </style>
 
 <script>document.documentElement.setAttribute("dir","rtl");document.documentElement.setAttribute("lang","ar");</script>
@@ -388,6 +398,80 @@ const DATA={"R": {"r_rice": {"t": "الرز: حصتك 100 جم", "cat": "أسا�
 <script>
 (()=>{
 const {R,C,W,ALT,SN,DR,NAMES}=DATA;
+/* ---------------- v10: products in the day, eating out, report, badges, photos ---------------- */
+Object.assign(DR,{
+ laban:{t:'لبن المراعي قليل الدسم',q:'كوب 200 مل · مرة وحدة باليوم',when:'مع الغدا',sugar:'بدون سكر',ing:[['لبن المراعي قليل الدسم (الغطا الأخضر الفاتح)','200 مل'],['نعناع ناشف (اختياري)','رشة']],steps:['صب كوب واحد بس، ورجّع العلبة الثلاجة.','اشربه مع الغدا بدل المشروب الغازي.','إذا تغديت لبن أو زبادي بنفس الوجبة، خلّه.'],tip:'كوب واحد باليوم. أكثر من كذا يزيد السعرات بدون ما تحس.'},
+ fizz:{t:'موية فوارة بالليمون',q:'علبة أو كاس كبير',when:'مع العشا',sugar:'بدون سكر',ing:[['موية فوارة سادة (بيرييه أو سان بيليغرينو)','330 مل'],['ليمون','شريحتين'],['نعناع','3 ورقات'],['ثلج','حسب رغبتك']],steps:['صب الموية الفوارة على الثلج.','حط الليمون والنعناع.','اشربها مع العشا بدل أي مشروب غازي.'],tip:'شيّك إن المكتوب «Sparkling water» بدون نكهة محلاة. المنكّه فيه سكر أو محليات.'}
+});
+const SWEETS=[['تمرة وحدة + 5 لوزات','مع القهوة بعد الغدا بنص ساعة'],['مربعين شوكولاتة داكنة 85%','10–20 جم، مثل ليندت 85% أو أي داكنة 85%'],['زبادي يوناني بالفراولة','نص علبة زبادي المراعي اليوناني السادة + 5 فراولات + رشة قرفة'],['عنب مجمّد','15 حبة من الفريزر، تاكلها على مهلك'],['تفاحة بالقرفة','تفاحة مقطعة بالقلاية 8 دقائق على 180، ورشة قرفة'],['جلي بدون سكر','كوب جلي مكتوب عليه Sugar free'],['بطيخ بارد','كوب بطيخ مكعبات من الثلاجة']];
+const dayText=d=>[0,1,2,3,4].map(sl=>{try{const c=C[mealKey(d,sl)];return c[0]+' '+c[1];}catch(e){return '';}}).join(' ');
+const SWK=['تمر','شوكولاتة','زبادي','عنب','تفاح','جلي','بطيخ'];
+function sweetFor(d){if(d.getDay()===5)return ['حلا الأسبوع','حبة معمول وحدة أو قطعة حلا قد كف اليد بعد غدا الأهل، وامشِ بعدها'];const tx=dayText(d);for(let j=0;j<SWEETS.length;j++){const i=(planIdx(d)+j)%SWEETS.length;if(!tx.includes(SWK[i]))return SWEETS[i];}return SWEETS[planIdx(d)%SWEETS.length];}
+const hasLaban=d=>/لبن|زبادي/.test(dayText(d).replace(/لبنة/g,''));
+/* eating out: prices/kcal from published 2026 menus — approximate, vary by city and app */
+const OUT={
+ b:[['ماكدونالدز','مافن بالبيض + قهوة سوداء أو موية','288','14','بدون هاش براون وبدون عصير'],
+    ['البيك','ساندويتش ساج دي لايت','≈ 215–248','7.5','مع موية، وبدون صوص إضافي'],
+    ['صب واي','ساب صدر ديك رومي 6 إنش بخبز القمح','≈ 341','≈ 31 (حسب الحجم)','خضار كثير، وخردل أو صوص حار بدل المايونيز'],
+    ['شاورمر','قرصة شاورما','203','5','بدون ثومية']],
+ l:[['كودو','وجبة الدجاج المشوي «دايت»','333','30','أفضل خيار بالمطاعم: دجاج مشوي مع سلطة، وبدون بطاطس'],
+    ['الطازج','نص دجاجة مشوية + سلطة','≈ 600 (أقل لو شلت الجلد)','15–22','شيل الجلد، وبدون رز وبدون خبز، وطحينة ملعقة بس'],
+    ['صب واي','ساب صدر دجاج مشوي أو دجاج تكا 6 إنش','341–368','≈ 31 (حسب الحجم)','بخبز القمح، وخضار كثير، وصوص قليل الدسم، وبدون شيبس'],
+    ['هرفي','ساندويتش الدجاج المشوي (لحاله)','550','19','اطلبه بدون مايونيز، وبدون بطاطس، ومع موية أو مشروب زيرو'],
+    ['ماكدونالدز','سلطة سيزر بالدجاج + تشيكن راب','190 + 211','24 + 6','نص الصوص بس، وبدون بطاطس'],
+    ['شاورمر','شاورما صاجي + سلطة','408','8','بدون ثومية وبدون بطاطس'],
+    ['البيك','ساندويتش فيليه دجاج + 5 قطع سناك دجاج','373 + 152','6.5 + 5','بدون بطاطس وبدون صوص الثوم، ومع موية']],
+ d:[['كودو','سلطة الدجاج','178','23','الصوص على جنب ونصه بس'],
+    ['الطازج','رول الدجاج المشوي','423','12','بدون بطاطس، ومع سلطة'],
+    ['شاورمر','قرصتين شاورما','≈ 406','10','بدون ثومية'],
+    ['ماكدونالدز','ماك راب الدجاج','410','12','بدون صوص إضافي، ومع موية'],
+    ['صب واي','ساب صدر ديك رومي 6 إنش','≈ 341','≈ 31 (حسب الحجم)','خضار كثير، وبدون شيبس']]
+};
+const outKey=slot=>slot===0?'b':slot===2?'l':slot===4?'d':null;
+function outChosen(d,slot){const o=S.outm&&S.outm[iso(d)];if(!o||o[slot]===undefined||o[slot]==='')return null;const L=OUT[outKey(slot)];return L&&L[+o[slot]]||null;}
+function outSheet(slot){const L=OUT[outKey(slot)];const cur=S.outm&&S.outm[iso(sel)]&&S.outm[iso(sel)][slot];
+  openSheet(`<div class="eyebrow">${SLOTL[slot]} · ${fmtDate(sel)}</div><h2>أنا برا البيت</h2>`,`<div class="note" style="margin:0 0 10px">خيارات من مطاعم موجودة بكل مكان تقريبًا، بنفس سعرات وجبتك أو قريب منها. الأسعار والسعرات تقريبية من قوائمهم المنشورة 2026، وتختلف حسب المدينة والتطبيق.</div>
+   ${L.map(([r,o,k,p,t],i)=>`<button class="opt ${String(cur)===String(i)?'cur':''}" data-outpick="${i}" data-slot="${slot}"><div class="ot"><span class="badge">${esc(r)}</span><b>${esc(o)}</b><div><span class="num">${esc(k)}</span> سعرة · <span class="num">${esc(p)}</span> ريال</div><div style="color:var(--gold2)">${esc(t)}</div></div><span class="pk">${String(cur)===String(i)?'✓ اخترتها':'اختر'}</span></button>`).join('')}
+   ${cur!==undefined&&cur!==''?`<button class="btn ghost" data-outpick="" data-slot="${slot}" style="width:100%;margin-top:6px">رجّع وجبة البيت</button>`:''}
+   <div class="tip">بأي مطعم: مشوي بدل مقلي، والصوص على جنب، وبدون بطاطس، وموية أو مشروب زيرو، وابدأ بالسلطة.</div>`);}
+function treatSheet(){const sw=sweetFor(sel);openSheet(`<div class="eyebrow">${fmtDate(sel)}</div><h2>حلا اليوم</h2>`,`<div class="plate"><b>${esc(sw[0])}</b>${esc(sw[1])}</div>
+  <div class="note">مو إجباري. إذا اشتهيت حلا، هذا اللي تاكله بداله. وإذا ما اشتهيت، خله.</div>
+  <div class="h4">بدائل ثانية بنفس السعرات</div><ul class="list rules">${SWEETS.map(([a,b])=>`<li class="y">${esc(a)}: ${esc(b)}</li>`).join('')}</ul>
+  <div class="h4">مو مسموح</div><ul class="list rules"><li class="n">كل العصيرات، حتى الطازجة واللي مكتوب عليها «بدون سكر مضاف»</li><li class="n">الكيك والكنافة والبسبوسة والآيس كريم والبسكويت</li><li class="n">القهوة المحلاة: لاتيه بسيرب، فرابتشينو، موكا</li><li class="n">الزبادي اليوناني المنكّه، لأن فيه سكر</li></ul>
+  <div class="tip">قطع الحلا ما يجيب دوخة. الدوخة أول الأيام غالبًا من قلة الموية أو ترك وجبة. إذا جاتك دوخة مع عرق ورجفة، كُل 3 تمرات وقيس السكر إذا عندك جهاز، وكلّم طبيبك.</div>`);}
+/* weekly report */
+function weeklyReport(){const r=trackStats(7);const L=[['meals','الوجبات'],['water','الموية'],['pills','الحبوب'],['walk','المشي'],['sleep','النوم'],['steps','الخطوات']];
+  const sc=L.map(([k,l])=>[l,avgv(r[k])]).filter(x=>x[1]!==null);const all=sc.length?sc.reduce((p,c)=>p+c[1],0)/sc.length:null;
+  const ws=[...S.weights].sort((a,b)=>a.d<b.d?-1:1);const t=iso(today());const wk=new Date(today());wk.setDate(wk.getDate()-7);
+  const last=ws.length?ws[ws.length-1]:null;const prev=ws.filter(w=>w.d<=iso(wk)).pop()||ws[0];const lost=last&&prev?+(prev.kg-last.kg).toFixed(1):null;
+  const weak=sc.slice().sort((a,b)=>a[1]-b[1])[0];return {all,lost,weak,sc};}
+function reportPanel(){const w=weeklyReport();if(w.all===null)return '';
+  return `<div class="panel"><h3>تقريرك الأسبوعي</h3><div class="stats" style="margin-top:6px"><div class="stat"><b class="num">${Math.round(w.all*100)}%</b><span>التزامك</span></div><div class="stat"><b class="num">${w.lost===null?'—':(w.lost>0?'−':'')+Math.abs(w.lost)}</b><span>كجم هالأسبوع</span></div><div class="stat"><b style="font-size:16px">${w.weak?esc(w.weak[0]):'—'}</b><span>ركّز على</span></div></div>
+   <div class="note">يوصلك ملخصه كل جمعة الصبح.</div></div>`;}
+/* achievements */
+function badgeList(){const ws=[...S.weights].sort((a,b)=>a.d<b.d?-1:1);const lost=ws.length?ws[0].kg-ws[ws.length-1].kg:0;
+  let walks=0,water=0,streak=0,best=0;const t=today();for(let i=0;i<120;i++){const x=new Date(t);x.setDate(t.getDate()-i);if(sinceStart(x)<0)break;const c=S.checks[iso(x)]||{};if(c.walk)walks++;if((S.water[iso(x)]||0)>=12)water++;}
+  for(let i=119;i>=0;i--){const x=new Date(t);x.setDate(t.getDate()-i);if(sinceStart(x)<0)continue;const p=dayProgress(x);if(p.n>=p.t-2){streak++;best=Math.max(best,streak);}else streak=0;}
+  return [['first','أول خطوة','سجّلت أول وزن',ws.length>0,IC.scale],['d7','أسبوع ملتزم','7 أيام ورا بعض',best>=7,IC.check],['d30','شهر ملتزم','30 يوم ورا بعض',best>=30,IC.cal],
+   ['k2','أول 2 كيلو','نزلت 2 كجم',lost>=2,IC.flame],['k5','5 كيلو','نزلت 5 كجم',lost>=5,IC.flame],['k10','10 كيلو','نزلت 10 كجم',lost>=10,IC.bolt],
+   ['w10','ماشي 10','10 أيام مشي',walks>=10,IC.walk],['w30','ماشي 30','30 يوم مشي',walks>=30,IC.walk],['h7','مرطّب','7 أيام كمّلت 3 لتر',water>=7,IC.drop]];}
+function badgePanel(){const B=badgeList();const n=B.filter(b=>b[3]).length;
+  return `<div class="panel"><h3>إنجازاتي <span class="muted num" style="font-size:13px">${n}/${B.length}</span></h3><div class="badges">${B.map(([id,t,s,on,ic])=>`<div class="bdg ${on?'on':''}"><span>${ic}</span><b>${t}</b><small>${s}</small></div>`).join('')}</div></div>`;}
+function checkBadges(){try{const B=badgeList();const seen=(cfg().badges||'').split(',');const nw=B.filter(b=>b[3]&&!seen.includes(b[0]));if(!nw.length)return;cfg().badges=B.filter(b=>b[3]).map(b=>b[0]).join(',');save();if(seen.join('')!=='')toast('إنجاز جديد: '+nw[0][1]);}catch(e){}}
+/* progress photos — kept on this phone only (IndexedDB) */
+let photoCache=null;
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open('wp-photos',1);r.onupgradeneeded=()=>r.result.createObjectStore('p',{keyPath:'d'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function photosAll(){try{const db=await idb();return await new Promise(res=>{const q=db.transaction('p').objectStore('p').getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([]);});}catch(e){return [];}}
+async function photoPut(rec){const db=await idb();await new Promise(res=>{const tx=db.transaction('p','readwrite');tx.objectStore('p').put(rec);tx.oncomplete=res;tx.onerror=res;});}
+async function photoDel(d){const db=await idb();await new Promise(res=>{const tx=db.transaction('p','readwrite');tx.objectStore('p').delete(d);tx.oncomplete=res;tx.onerror=res;});}
+function shrink(file){return new Promise((res,rej)=>{const img=new Image();img.onload=()=>{const k=Math.min(1,720/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.8));URL.revokeObjectURL(img.src);};img.onerror=rej;img.src=URL.createObjectURL(file);});}
+function loadPhotos(){photosAll().then(a=>{photoCache=a.sort((x,y)=>x.d<y.d?-1:1);if(tab==='progress')render();});}
+function photoPanel(){if(photoCache===null){loadPhotos();}const a=photoCache||[];const f=a[0],l=a[a.length-1];
+  return `<div class="panel" id="pphotos"><h3>صور التقدّم</h3><div class="note" style="margin-top:0">صورة كل شهر بنفس المكان والإضاءة والملابس. الصور تنحفظ على جوالك بس، وما تنرسل لأحد.</div>
+   ${a.length>=2?`<div class="cmp"><figure><img src="${f.u}" alt="البداية"><figcaption class="num">${f.d}</figcaption></figure><figure><img src="${l.u}" alt="الحين"><figcaption class="num">${l.d}</figcaption></figure></div>`:a.length===1?`<div class="cmp one"><figure><img src="${f.u}" alt="البداية"><figcaption class="num">${f.d}</figcaption></figure></div>`:''}
+   ${a.length>2?`<div class="pth">${a.map(p=>`<button data-phdel="${p.d}" aria-label="حذف"><img src="${p.u}" alt=""><span class="num">${p.d.slice(5)}</span></button>`).join('')}</div>`:''}
+   <label class="btn" style="width:100%;margin-top:10px;cursor:pointer">${IC.cal} أضف صورة اليوم<input type="file" accept="image/*" id="phIn" hidden></label></div>`;}
+
 const SKK='wp.skin';
 function getSkin(){try{const v=localStorage.getItem(SKK);if(v)return v;}catch(e){}return 'night';}
 function applySkin(v){document.documentElement.setAttribute('data-skin',v);const b=document.getElementById('skinBtn');if(b)b.textContent=v==='beige'?'☾':'☀';const m=document.querySelector('meta[name=theme-color]');if(m)m.content=v==='beige'?'#f4eee2':'#0b1411';}
@@ -404,7 +488,7 @@ const TARGET=103, HEIGHT=1.83;
 
 /* ---------------- state ---------------- */
 const LS='weightplan.v1';
-const def=()=>({start:'2026-10-10',checks:{},water:{},swaps:{},weights:DATA.SEEDW?[{d:'2026-10-10',kg:DATA.SEEDW}]:[],shop:{},steps:{},sleep:{},ts:{},ing:{},cfg:{},notif:{water:1,meals:1,coffee:1,drinks:1,walk:1,sleep:1,weigh:1,pills:1}});
+const def=()=>({start:'2026-10-10',checks:{},water:{},swaps:{},weights:DATA.SEEDW?[{d:'2026-10-10',kg:DATA.SEEDW}]:[],shop:{},steps:{},sleep:{},ts:{},ing:{},cfg:{},outm:{},notif:{water:1,meals:1,coffee:1,drinks:1,walk:1,sleep:1,weigh:1,pills:1}});
 let S=def();
 try{const raw=localStorage.getItem(LS); if(raw) S=Object.assign(def(),JSON.parse(raw));}catch(e){}
 let dbRef=null, saveT=null, syncState='local';
@@ -414,6 +498,7 @@ function save(){
   if(typeof fbPushSoon==='function') fbPushSoon();
   if(typeof pushSched==='function') pushSched();
   if(typeof syncPrefs==='function') syncPrefs();
+  if(typeof checkBadges==='function'&&!window.__cb){window.__cb=1;setTimeout(()=>{checkBadges();window.__cb=0;},300);}
   if(dbRef){clearTimeout(saveT);saveT=setTimeout(async()=>{try{await dbRef.set(JSON.parse(JSON.stringify(S)));setSync('cloud');}catch(e){setSync('local');dbRef=null;}},700);}
 }
 function setSync(k){syncState=k;$('#sync').textContent=k==='cloud'?'✓ محفوظ بحسابك':'محفوظ على هالجهاز';}
@@ -434,7 +519,7 @@ setSync('local');
 /* ---------------- push (PWA only) ---------------- */
 const PWA=!!DATA.PWA;
 const NCATS=[['water','الموية','💧'],['meals','الوجبات والسناكات','🍽️'],['coffee','القهوة','☕'],['drinks','المشروبات','🌺'],['walk','المشي','🚶'],['sleep','البابونج والنوم','🌙'],['pills','الحبوب والإبر','💊'],['tips','نصيحة اليوم والتحفيز','💡'],['weigh','يوم الوزن','⚖️']];
-if(!S.notif) S.notif={water:1,meals:1,coffee:1,drinks:1,walk:1,sleep:1,weigh:1,pills:1};if(S.notif.pills===undefined)S.notif.pills=1;if(S.notif.tips===undefined)S.notif.tips=1;if(!S.cfg)S.cfg={};
+if(!S.notif) S.notif={water:1,meals:1,coffee:1,drinks:1,walk:1,sleep:1,weigh:1,pills:1};if(S.notif.pills===undefined)S.notif.pills=1;if(S.notif.tips===undefined)S.notif.tips=1;if(!S.cfg)S.cfg={};if(!S.outm)S.outm={};
 const PK='wp.pushep';
 let pushEp=null; try{pushEp=localStorage.getItem(PK);}catch(e){}
 const isStandalone=()=>(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
@@ -503,7 +588,7 @@ let fam=null; try{fam=localStorage.getItem(FK);}catch(e){}
 let fbLast=0, fbBusy=false, fbErr=false, fbMsg='';
 function wmapOf(st){const m={};(st.weights||[]).forEach(w=>m[w.d]=w.kg);return m;}
 function flat(st){const o={},walk=(v,p)=>{if(v&&typeof v==='object'&&!Array.isArray(v)){for(const k in v)walk(v[k],p?p+SEP+k:k);}else if(v!==undefined&&v!==null&&v!==false&&v!==0&&v!==''){o[p]=v;}};
-  ['checks','water','swaps','shop','steps','sleep','cfg'].forEach(k=>walk(st[k]||{},k)); walk(wmapOf(st),'wmap'); if(st.start)o['start']=st.start; return o;}
+  ['checks','water','swaps','shop','steps','sleep','cfg','outm'].forEach(k=>walk(st[k]||{},k)); walk(wmapOf(st),'wmap'); if(st.start)o['start']=st.start; return o;}
 let prevF=flat(S);
 function stamp(){const nf=flat(S),now=Date.now();S.ts=S.ts||{};const keys=new Set([...Object.keys(prevF),...Object.keys(nf)]);
   for(const k of keys){if(JSON.stringify(nf[k])!==JSON.stringify(prevF[k]))S.ts[k]=now;} prevF=nf;}
@@ -525,7 +610,7 @@ async function stepsPull(){if(!FB||!fam)return false;try{const r=await fetch(`ht
   stepsSync=Date.parse(j.updateTime)||Date.now();if(!/^\d{4}-\d{2}-\d{2}$/.test(dt)||!(n>=0&&n<200000))return false;if(S.steps[dt]===n)return false;S.steps[dt]=n;save();return true;}catch(e){return false;}}
 const stepsURL=()=>FB&&fam?`https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents/steps/${fam}?key=${FB.apiKey}`:'';
 async function fbPush(){if(!FB||!fam||fbBusy)return;fbBusy=true;try{await fbPull();
-  const keep={start:S.start,checks:S.checks,water:S.water,swaps:S.swaps,weights:S.weights,shop:S.shop,steps:S.steps,sleep:S.sleep,cfg:S.cfg,ts:S.ts};
+  const keep={start:S.start,checks:S.checks,water:S.water,swaps:S.swaps,weights:S.weights,shop:S.shop,steps:S.steps,sleep:S.sleep,cfg:S.cfg,outm:S.outm,ts:S.ts};
   const r=await fetch(fbURL()+'&updateMask.fieldPaths=json',{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({fields:{json:{stringValue:JSON.stringify(keep)}}})});
   fbErr=!r.ok;if(r.ok){fbLast=Date.now();fbMsg='';}else{let t='';try{t=(await r.json()).error.message||'';}catch(_){}fbMsg=r.status+' '+t;}}catch(e){fbErr=true;fbMsg='ما فيه إنترنت أو الاتصال انقطع';}fbBusy=false;if(tab==='plan')render();}
 let fbT=null;function fbPushSoon(){if(!FB||!fam)return;clearTimeout(fbT);fbT=setTimeout(fbPush,1200);}
@@ -590,7 +675,7 @@ const weighDay=()=>Number(cfg().weighDay||'4');
 function adaptItems(items,d){
   const W0=wakeFor(d),{T,drop}=planTimes(W0);const out=[];
   for(const it of items){if(drop[it.id])continue;const c=Object.assign({},it);if(T[it.id]!==undefined){c.m=T[it.id];}out.push(c);}
-  const rel={p_centrum:['m0',5],p_gluco:['m4',5],p_vitd:['m2',5],p_mag:['night',5],p_mj:['m4',60],wt:['wake',15]};
+  const rel={lbn:['m2',2],swt:['m2',40],fizz:['m4',2],p_centrum:['m0',5],p_gluco:['m4',5],p_vitd:['m2',5],p_mag:['night',5],p_mj:['m4',60],wt:['wake',15]};
   out.forEach(c=>{const r=rel[c.id];if(r)c.m=T[r[0]]+r[1];c.t=min2t(c.m);});
   out.sort((a,b)=>a.m-b.m);
   const custom=W0!==hm2min(DEFSTART)||(S.sleep[iso(d)]&&S.sleep[iso(d)].wake);
@@ -696,7 +781,7 @@ function pillSheet(k){let [t,q,l]=PILLS[k];if(k==='mj'){const m=mjCfg();q=`كل 
 let schedId=null;
 async function getSchedId(){if(schedId)return schedId;if(!pushEp||!crypto.subtle)return null;const h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pushEp));schedId=[...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,32);return schedId;}
 function reminderText(it,d){
-  if(it.type==='meal'){const ci=cInfo(mealKey(d,it.slot));const L=['🍳 وقت الفطور','🍎 وقت سناك الصبح','🍽️ وقت الغدا','🍏 وقت سناك العصر','🍽️ وقت العشا'];return [L[it.slot],ci.t+' · '+ci.q];}
+  if(it.type==='meal'){const oc=outChosen(d,it.slot);if(oc)return [['🍳 وقت الفطور','','🍽️ وقت الغدا','','🍽️ وقت العشا'][it.slot],oc[0]+': '+oc[1]+' · '+oc[4]];const ci=cInfo(mealKey(d,it.slot));const L=['🍳 وقت الفطور','🍎 وقت سناك الصبح','🍽️ وقت الغدا','🍏 وقت سناك العصر','🍽️ وقت العشا'];return [L[it.slot],ci.t+' · '+ci.q];}
   if(it.id==='p_mj')return ['💉 إبرة مونجارو',mjCfg().dose+' ملغ · غيّر مكان الإبرة عن الأسبوع اللي فات'];
   if(it.type==='pill')return ['💊 '+it.title,it.sub];
   if(it.type==='weigh')return it.late?['⚖️ باقي ما قست وزنك','قسه الحين قبل الأكل وسجّله، والتذكير يوقف لما تسجّل']:['⚖️ يوم الوزن','توزن الحين قبل الأكل والموية، وسجّله بالتطبيق'];
@@ -708,8 +793,10 @@ function reminderText(it,d){
 const atOf=(d,m)=>{const x=new Date(d);x.setDate(x.getDate()+Math.floor(m/1440));const mm=((m%1440)+1440)%1440;return iso(x)+'T'+pad(Math.floor(mm/60))+':'+pad(mm%60);};
 function catOf(it){if(it.type==='meal')return 'meals';if(it.type==='pill')return 'pills';if(it.type==='walk')return 'walk';if(it.type==='weigh')return 'weigh';if(it.type==='sleep'||it.id==='night')return 'sleep';if(it.ref==='v60'||it.ref==='saudi')return 'coffee';if(it.ref==='water')return 'water';return 'drinks';}
 function buildSched(){const out=[];const t=today();const on=c=>S.notif[c]!==0;for(let i=0;i<2;i++){const d=new Date(t);d.setDate(t.getDate()+i);const its=adaptItems(dayItems(d),d).items;
-  for(const it of its){const c=catOf(it);if(!on(c))continue;const [ti,bo]=reminderText(it,d);out.push({id:iso(d)+':'+it.id,at:atOf(d,it.m),title:ti,body:bo,done:isDone(d,it.id),cat:c});
+  for(const it of its){if(it.quiet)continue;const c=catOf(it);if(!on(c))continue;const [ti,bo]=reminderText(it,d);out.push({id:iso(d)+':'+it.id,at:atOf(d,it.m),title:ti,body:bo,done:isDone(d,it.id),cat:c});
     if(it.type==='meal'&&it.slot===2){out.push({id:iso(d)+':lq',at:atOf(d,it.m+60),title:'تغديت؟ ✓',body:'أشّر على الغدا بالتطبيق، واشرب كاس موية',done:isDone(d,it.id),cat:'meals'});}}
+  {const m0=its.find(x=>x.id==='m0'),m4=its.find(x=>x.id==='m4');if(on('tips')){if(m0)out.push({id:iso(d)+':mot1',at:atOf(d,m0.m+150),title:'💪 كمّل',body:motivFor(d,7),done:false,cat:'tips'});if(m4)out.push({id:iso(d)+':mot2',at:atOf(d,m4.m-45),title:'💪 قبل العشا',body:motivFor(d,13),done:false,cat:'tips'});}
+   if(d.getDay()===5&&on('tips')&&m0){const w=weeklyReport();if(w.all!==null)out.push({id:iso(d)+':rep',at:atOf(d,m0.m+60),title:'📊 تقريرك الأسبوعي',body:`التزامك ${Math.round(w.all*100)}%`+(w.lost!==null?` · ${w.lost>0?'نزلت '+w.lost+' كجم':'وزنك ثابت'}`:'')+(w.weak?` · ركّز على ${w.weak[0]}`:''),done:false,cat:'tips'});}}
   {const m2=its.find(x=>x.id==='m2');if(m2&&on('tips')){const t=tipFor(d);out.push({id:iso(d)+':tip',at:atOf(d,m2.m+120),title:'💡 '+t[0],body:t[1],done:false,cat:'tips'});}}
   const nt=its.find(x=>x.id==='night');if(on('water'))out.push({id:iso(d)+':w3',at:atOf(d,(nt?nt.m:1320)-30),title:'💧 كمّلت 3 لتر؟',body:'شيّك عدّاد الموية بالتطبيق',done:(S.water[iso(d)]||0)>=12,cat:'water'});}
   return out;}
@@ -764,12 +851,15 @@ function dayItems(d){
    {id:'w2',t:'10:30',type:'drink',ref:'water',title:'كاسين موية',sub:'500 مل'},
    {id:'sc',t:'12:00',type:'drink',ref:'saudi',title:'قهوة سعودية',sub:'3 فناجيل · بدون سكر'},
    {id:'m2',t:'1:30',type:'meal',slot:2},
+   ...(hasLaban(d)?[]:[{id:'lbn',t:'',type:'drink',ref:'laban',quiet:1,title:'كوب لبن المراعي قليل الدسم',sub:'200 مل مع الغدا · مرة وحدة باليوم'}]),
+   {id:'swt',t:'',type:'treat',quiet:1,title:sweetFor(d)[0],sub:sweetFor(d)[1]},
    ...(d.getDay()===5?[{id:'p_vitd',t:'1:30',type:'pill',ref:'vitd',title:'فيتامين د 50,000',sub:'حبة الأسبوع، مع الغدا'}]:[]),
    {id:'v2',t:'4:00',type:'drink',ref:'v60',title:'قهوة V60 الثانية',sub:'آخر قهوة باليوم · بدون سكر'},
    {id:'m3',t:'4:00',type:'meal',slot:3},
    {id:'eve',t:'6:00',type:'drink',ref:eve,title:DR[eve].t,sub:DR[eve].q},
    {id:'m4',t:'7:30',type:'meal',slot:4},
    {id:'p_gluco',t:'7:30',type:'pill',ref:'gluco',title:'جلوكوفاج إكس آر 750',sub:'حبة مع العشا، تبلعها كاملة بدون كسر'},
+   {id:'fizz',t:'',type:'drink',ref:'fizz',quiet:1,title:'موية فوارة بالليمون',sub:'بيرييه أو سان بيليغرينو سادة · بدل أي غازي'},
    {id:'walk',t:'8:00',type:'walk',title:'مشي '+(walkMin(d)===60?'ساعة':walkMin(d)+' دقيقة'),sub:(resistance(d)?'+ تمارين المقاومة 20 دقيقة قبله':'بعد العشا بنص ساعة')},
    {id:'night',t:'10:00',type:'drink',ref:'chamomile',title:'كوب بابونج',sub:'والمطبخ مقفل'},
    {id:'p_mag',t:'10:00',type:'pill',ref:'mag',title:'مغنيسيوم',sub:'حبة وحدة مع البابونج قبل النوم'},
@@ -783,7 +873,7 @@ function dayItems(d){
 }
 const toMin=t=>{let [h,m]=t.split(':').map(Number);if(h<6)h+=12;return h*60+m;};
 function isDone(d,id){if(id==='wt'&&S.weights.some(w=>w.d===iso(d)))return true;const c=S.checks[iso(d)];return !!(c&&c[id]);}
-function dayProgress(d){const its=adaptItems(dayItems(d),d).items;const n=its.filter(i=>isDone(d,i.id)).length;return {n,t:its.length};}
+function dayProgress(d){const its=adaptItems(dayItems(d),d).items.filter(i=>!i.quiet);const n=its.filter(i=>isDone(d,i.id)).length;return {n,t:its.length};}
 
 /* ---------------- helpers ---------------- */
 function cInfo(k){const c=C[k];return {t:c[0],q:strip(c[1]),link:c[2]};}
@@ -818,9 +908,11 @@ const IC={
  check:_sv('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
  bell:_sv('<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>'),
  cal:_sv('<rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'),
+ cookie:_sv('<circle cx="12" cy="12" r="8.5"/><path d="M9 9.2h.01M14.2 8.6h.01M15.4 13.4h.01M9.8 14.6h.01M12.4 11.8h.01"/>'),
+ out:_sv('<path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>'),
  alert:_sv('<path d="M12 4 2.8 19.5h18.4z"/><path d="M12 10v4.5M12 17h.01"/>')
 };
-function itemIcon(it){if(it.type==='meal')return [IC.sun,IC.leaf,IC.meal,IC.leaf,IC.meal][it.slot];if(it.id==='p_mj')return IC.syringe;if(it.type==='pill')return IC.pill;if(it.type==='walk')return IC.walk;if(it.type==='weigh')return IC.scale;if(it.type==='sleep'||it.id==='night')return IC.moon;if(it.ref==='water')return IC.drop;if(it.ref==='v60'||it.ref==='saudi')return IC.coffee;return IC.glass;}
+function itemIcon(it){if(it.type==='treat')return IC.cookie;if(it.type==='meal')return [IC.sun,IC.leaf,IC.meal,IC.leaf,IC.meal][it.slot];if(it.id==='p_mj')return IC.syringe;if(it.type==='pill')return IC.pill;if(it.type==='walk')return IC.walk;if(it.type==='weigh')return IC.scale;if(it.type==='sleep'||it.id==='night')return IC.moon;if(it.ref==='water')return IC.drop;if(it.ref==='v60'||it.ref==='saudi')return IC.coffee;return IC.glass;}
 const MOTIV=['كل وجبة تلتزم فيها، خطوة لجسم أخف وتحاليل أحسن.','الجوع اللي تحس فيه الحين يروح بعد 20 دقيقة. الندم على الأكل الزايد يقعد أكثر.','ما تحتاج تكون مثالي، تحتاج تكون مستمر.','كل كيلو ينزل يخفف عن ركبك 4 كيلو مع كل خطوة.','بنتك تشوفك. أنت قدوتها بالأكل والحركة.','الحلا لحظة، والصحة سنين.','اليوم الصعب يعدّي، والنتيجة تبقى.','نزل الوزن يبدأ من المطبخ ويكمّل بالمشي.','كوب موية قبل الأكل يخليك تاكل أقل بدون ما تحس.','أنت ما تحرم نفسك، أنت تختار نفسك.','الالتزام 80% من الوقت يكفي عشان تنزل.','اللي يقيس يتحسّن. سجّل وزنك وخطواتك.','الصحن الصغير يغشّ العين، والعين تشبع قبل البطن.','كُل ببطء: الشبع يوصل للمخ بعد 20 دقيقة.','كل يوم تلتزم فيه، كبدك يرتاح أكثر.','لا تخلي غلطة وجبة تخرب يوم كامل. الوجبة الجاية بداية جديدة.','النوم الزين نص الدايت. نام بدري.','المشي بعد العشا يخفض سكرك ويهضم أكلك.','بعد 3 شهور بتشكر نفسك على اليوم هذا.','البروتين أول بالصحن، والرز آخر شي.','الجوع الكاذب عطش. اشرب واستنى 10 دقائق.','ما فيه أكل ممنوع للأبد، فيه أكل بحدود.','جسمك يتغيّر من الداخل قبل ما يبان بالمراية.','كل خطوة تنحسب، حتى المشي بالبيت.','ركّز على اليوم بس. بكرة له بكرة.','أنت أقوى من صحن حلا.','الوزن ينزل بموجات: أسبوع ثابت وأسبوع ينزل. لا تيأس.','اللي تسويه اليوم يحدّد تحاليلك الجاية.','النفس تتعوّد. أول أسبوعين أصعب شي، وبعدها يصير عادي.','اشبع من الخضار، وخفف النشويات، وتمشّى.'];
 const TIPS=[['العصير حتى الطبيعي','سكر مركّز يروح للكبد على طول ويرفع الدهون الثلاثية. كُل الفاكهة حبة، لا تعصرها.'],['قبل الأكل','كاسين موية قبل الغدا بربع ساعة: تاكل أقل وتشبع أسرع.'],['الملح','الملح الكثير يرفع الضغط ويحبس الموية فيبان وزنك أكثر. خفّف المخللات والشيبس والمرق الجاهز.'],['السكر المخفي','الكاتشب والصوصات والزبادي المنكّه فيها سكر. اقرأ الملصق: أي شي فيه سكر أكثر من 5 جم بالحصة خله.'],['كبدك','الأنزيمات (ALT) تنزل مع نزول الوزن، وأكثر شي يساعد: قطع العصيرات والحلا، والمشي يوميًا.'],['الدهون الثلاثية','أكثر شي يرفعها السكر والنشويات البيضاء، مو الدهون نفسها. السمك مرتين بالأسبوع ينزّلها.'],['الجوع بالليل','غالبًا تعب أو ملل. بابونج، وفرشة أسنان بعد العشا، وقفّل المطبخ.'],['الأكل قدام الشاشة','تاكل أكثر بـ 25% وأنت تطالع جوال أو تلفزيون. كُل على الطاولة.'],['البروتين','يشبعك أطول ويحمي عضلاتك وأنت تنزل. كل وجبة لازم فيها بروتين.'],['الرز','ملعقتين كبار بس تكفي. كثّر السلطة والبروتين بداله.'],['المكسرات','صحية بس سعراتها عالية: 10 حبات لوز تكفي، لا تاكل من الكيس.'],['القهوة','سوداء بدون سكر ممتازة للكبد. المشكلة بالسيرب والكريمة: كوب لاتيه محلى يساوي وجبة.'],['المطاعم','اطلب مشوي، والصوص على جنب، وخبز وحدة بس. وابدأ بالسلطة.'],['الوزن اليومي','يتذبذب كيلو أو أكثر من الموية والملح. اعتمد على وزن الأسبوع.'],['النوم','أقل من 6 ساعات يرفع هرمون الجوع ويخليك تشتهي الحلا ثاني يوم.'],['المشي','30 دقيقة بعد العشا تخفض سكر الدم أكثر من نفس المشي الصبح.'],['التمر','تمرة وحدة تكفي مع القهوة. 3 تمرات = 200 سعرة تقريبًا.'],['الخبز','الأسمر أحسن، بس الكمية أهم: رغيف وحدة بالكثير بالوجبة.'],['المشروبات الزيرو','أحسن من العادية، بس لا تزيد عن علبة باليوم، وتبقى الموية الأساس.'],['الزهق','لا تاكل نفس الشي كل يوم. بدّل الوجبات من التطبيق عشان ما تمل.'],['الضغط','نزول 5 كيلو بس ينزّل الضغط بشكل واضح. كل كيلو يفرق.'],['السكر التراكمي','نزول الوزن والمشي مع الجلوكوفاج ممكن يرجّعون التراكمي تحت 5.7.'],['التسوّق','لا تتسوق وأنت جوعان، وامشِ على قائمة المشتريات بالتطبيق.'],['المناسبات','كُل قبلها سناك فيه بروتين، وابدأ بالسلطة، وصحن واحد بدون تكرار.'],['الموية الباردة','ما تحرق دهون، بس تملأ المعدة وتقلل الأكل. اشرب قبل كل وجبة.']];
 const dayN=d=>Math.floor((new Date(d).setHours(0,0,0,0))/DAYMS);
@@ -843,7 +935,7 @@ function guidePanel(){return `<div class="panel" id="pguide"><h3>الحلا وا
 let showDone=false,popCup=-1,enterAnim=true,calOpen=false;
 function heroNext(d,its,nowM){
   const isT=iso(d)===iso(today());if(!isT)return '';
-  const it=its.find(i=>!isDone(d,i.id)&&i.m>=nowM-30);
+  const it=its.find(i=>!i.quiet&&!isDone(d,i.id)&&i.m>=nowM-30);
   if(!it)return `<div class="hnext done"><span class="hni">${IC.check}</span><div class="hnb"><small>خلصت يومك</small><b>كل شي تمام، نوم هني</b></div></div>`;
   let title=it.title,sub=it.sub||'';if(it.type==='meal'){const ci=cInfo(mealKey(d,it.slot));title=SLOTL[it.slot]+': '+ci.t;sub=ci.q;}
   const diff=it.m-nowM;const when=diff<=0?'الحين':diff<60?'بعد '+diff+' دقيقة':'الساعة '+it.t+(diff<180?' · بعد '+Math.floor(diff/60)+' س '+(diff%60?diff%60+' د':''):'');
@@ -851,7 +943,7 @@ function heroNext(d,its,nowM){
 function viewToday(){
   const d=sel, ad=adaptItems(dayItems(d),d), its=ad.items, isT=iso(d)===iso(today());
   const now=new Date(), nowM=now.getHours()*60+now.getMinutes();
-  const doneN=its.filter(i=>isDone(d,i.id)).length, pct=its.length?doneN/its.length:0;
+  const core=its.filter(i=>!i.quiet),doneN=core.filter(i=>isDone(d,i.id)).length, pct=core.length?doneN/core.length:0;
   let nowId=null; if(isT){for(const i of its){if(!isDone(d,i.id)&&i.m+45>=nowM){nowId=i.id;break;}}}
   const water=S.water[iso(d)]||0;
   let strip='';const base=new Date(d);base.setDate(base.getDate()-3);
@@ -861,35 +953,38 @@ function viewToday(){
     const done=isDone(d,it.id);
     let cls='',tag='',title='',sub='',acts='',sw='';
     if(it.type==='meal'){
-      const k=mealKey(d,it.slot), ci=cInfo(k), orig=W[planIdx(d)][it.slot];
+      const k=mealKey(d,it.slot), ci=cInfo(k), orig=W[planIdx(d)][it.slot], oc=outChosen(d,it.slot);
       cls='t-meal'+it.slot; tag=SLOTL[it.slot]; title=ci.t; sub=ci.q;
+      if(oc){tag=SLOTL[it.slot]+' · برا البيت';title=oc[0]+': '+oc[1];sub=oc[2]+' سعرة · '+oc[3]+' ريال';}
       if(k!==orig) sw=`<div class="swapped">بدّلتها بدل: ${esc(cInfo(orig).t)}</div>`;
       const en=energyFor(d,it.slot,k); if(en) sw+=`<div class="energy">${IC.bolt}<span>طاقة: ${esc(en)}</span></div>`;
       const how = ci.link==='routine'?'نصايح الطلعة':'الطريقة';
       const late=isT&&!done&&nowM>it.m+90;
-      acts=`<div class="cact"><button data-how="${k}">${IC.book}${how}</button><button data-swap="${it.slot}">${IC.swap}بدّل</button>${late?`<button data-missed="${it.slot}">${IC.info}فاتتني؟</button>`:''}</div>`;
+      if(oc)sw=`<div class="energy">${IC.info}<span>${esc(oc[4])}</span></div>`;
+      acts=`<div class="cact">${oc?'':`<button data-how="${k}">${IC.book}${how}</button>`}${outKey(it.slot)?`<button data-out="${it.slot}">${IC.out}${oc?'غيّر المطعم':'برا البيت'}</button>`:`<button data-swap="${it.slot}">${IC.swap}بدّل</button>`}${outKey(it.slot)&&!oc?`<button data-swap="${it.slot}">${IC.swap}بدّل</button>`:''}${late?`<button data-missed="${it.slot}">${IC.info}فاتتني؟</button>`:''}</div>`;
     }else if(it.type==='drink'){cls='t-drink';tag=it.ref==='water'?'موية':(it.ref==='v60'||it.ref==='saudi')?'قهوة':'مشروب';title=it.title;sub=it.sub;acts=`<div class="cact"><button data-drink="${it.ref}">${IC.book}كيف أسويه؟</button>${it.ref==='v60'?`<button data-drink="v60_iced">${IC.snow}باردة</button>`:''}</div>`;}
     else if(it.type==='pill'){cls='t-pill';tag=it.id==='p_mj'?'إبرة الأسبوع':'حبوبي';title=it.title;sub=it.sub;acts=`<div class="cact"><button data-pill="${it.ref}">${IC.info}ليش بهالوقت؟</button></div>`;}
     else if(it.type==='walk'){cls='t-walk';tag='حركة · أسبوع '+weekNo(d);title=it.title;sub=it.sub;const stp=S.steps[iso(d)];if(stp)sw=`<div class="energy">${IC.steps}<span class="num">${stp.toLocaleString('en')} من ${stepGoal(d).toLocaleString('en')} خطوة</span></div>`;acts=`<div class="cact"><button data-tabgo="plan" data-anchor="walk">${IC.walk}خطة المشي</button></div>`;}
+    else if(it.type==='treat'){cls='t-treat';tag=d.getDay()===5?'حلا الأسبوع':'حلا اليوم · اختياري';title=it.title;sub=it.sub;acts=`<div class="cact"><button data-treat="1">${IC.cookie}بدائل الحلا</button></div>`;}
     else if(it.type==='weigh'){cls='t-weigh';tag=it.late?'متأخر':'يوم الوزن';title=it.late?'ما قست وزنك هالأسبوع':'سجّل وزنك';sub=it.sub;acts=`<div class="cact"><button data-ql="weight">${IC.scale}سجّل الحين</button></div>`;}
     else {cls='t-sleep';tag='راحة';title=it.title;sub=it.sub;}
     return `<div class="it ${cls} ${done?'done':''} ${nowId===it.id?'now':''}" data-it="${it.id}"><div class="tm"><b class="num">${it.t}</b><i class="nd"></i></div>
       <div class="card"><div class="cmain"><span class="cic">${itemIcon(it)}</span><div class="cbody"><span class="ctag">${tag}${nowId===it.id?'<span class="nowtag">الحين</span>':''}</span><div class="ctitle">${esc(title)}</div><div class="cqty">${esc(sub)}</div>${sw}</div>
       <button class="check" data-check="${it.id}" aria-label="تم">${checkSvg}</button></div>${acts}</div></div>`;};
-  const collapse=isT&&!showDone&&doneN>0;
+  const collapse=isT&&!showDone&&its.some(i=>isDone(d,i.id));
   let tl='';
-  if(isT&&doneN>0)tl+=`<button class="donebar" data-showdone="${showDone?0:1}"><span class="dbi">${IC.check}</span><span>${showDone?'اطوِ اللي خلصته':`خلصت <b class="num">${doneN}</b> من <b class="num">${its.length}</b>`}</span><span class="dbm">${showDone?'':'اعرضها'}</span></button>`;
+  if(collapse||(isT&&showDone&&doneN>0))tl+=`<button class="donebar" data-showdone="${showDone?0:1}"><span class="dbi">${IC.check}</span><span>${showDone?'اطوِ اللي خلصته':`خلصت <b class="num">${doneN}</b> من <b class="num">${core.length}</b>`}</span><span class="dbm">${showDone?'':'اعرضها'}</span></button>`;
   for(const it of its){if(collapse&&isDone(d,it.id))continue;tl+=card(it);}
-  if(collapse&&doneN===its.length)tl+=`<div class="empty">ما بقى شي اليوم. أحسنت</div>`;
+  if(collapse&&doneN===core.length)tl+=`<div class="empty">ما بقى شي اليوم. أحسنت</div>`;
   let cups='';for(let i=0;i<12;i++)cups+=`<div class="cup ${i<water?'on':''} ${i===popCup?'fill':''}"></div>`;popCup=-1;
   const wmsg=water>16?'أكثر من 4 لتر. ما تحتاج أكثر إلا إذا عرقت كثير، والزيادة الكبيرة تتعب الجسم.':water>12?'كمّلت الهدف. عادي تزيد شوي لين 4 لتر، خصوصًا مع المشي والحر.':water>=12?'كمّلت هدفك اليوم 3 لتر.':`باقي ${12-water} كاس (${((12-water)*0.25).toString().replace(/\.?0+$/,'')} لتر).`;
-  const left=its.length-doneN;
+  const left=core.length-doneN;
   return `
   <section class="hero h2">
     <div class="htop"><div class="hl"><div class="eyebrow">${isT?greet()+' · ':''}${fmtDate(d)}</div>
       ${isT?`<div class="clock num"><span dir="ltr">${min2t(nowM)}</span><small>${now.getHours()<12?'ص':'م'}</small></div>`:`<div class="clock">${d.getDate()} ${MON[d.getMonth()]}</div>`}
       <div class="sub">اليوم ${planIdx(d)+1} من 28 · الأسبوع ${weekNo(d)}</div></div>
-      <div class="ring">${ring(pct,96,6)}<b class="num">${Math.round(pct*100)}<i>%</i></b><small class="num">${doneN}/${its.length}</small></div></div>
+      <div class="ring">${ring(pct,96,6)}<b class="num">${Math.round(pct*100)}<i>%</i></b><small class="num">${doneN}/${core.length}</small></div></div>
     ${heroNext(d,its,nowM)}
     ${heroWeight()}
     <div class="hstats"><div>${IC.flame}<b class="num">1500</b><span>سعرة</span></div><div>${IC.walk}<b class="num">${walkMin(d)}</b><span>دقيقة مشي</span></div><div>${IC.drop}<b class="num">${water}/12</b><span>كاس موية</span></div></div>
@@ -1069,6 +1164,9 @@ function viewProgress(){
   <div class="stats"><div class="stat"><b class="num">${has?last:'—'}</b><span>وزنك الحين</span></div><div class="stat"><b class="num">${lost>0?'−'+lost:lost}</b><span>نزلت (كجم)</span></div><div class="stat"><b class="num">${left}</b><span>باقي للهدف</span></div></div>
   <div class="stats"><div class="stat"><b class="num">${bmi}</b><span>BMI</span></div><div class="stat"><b class="num">${streak}</b><span>أيام ملتزم</span></div><div class="stat"><b class="num">${weekNo(today())}</b><span>أسبوعك</span></div></div>
   ${trackPanel()}
+  ${reportPanel()}
+  ${badgePanel()}
+  ${photoPanel()}
   <div class="panel"><h3>الوزن مع الوقت</h3><div class="note" style="margin-top:0">الخط الذهبي وزنك · المتقطع الأخضر المتوقع</div>${svg}
     <div class="wform"><input id="wkg" type="number" inputmode="decimal" step="0.1" min="40" max="250" placeholder="وزنك اليوم (كجم)" aria-label="وزنك اليوم"><button class="btn" id="wadd">سجّل</button></div>
     <div class="note">توزن مرة بالأسبوع، الصبح بعد الحمام وقبل الفطور.</div></div>
@@ -1085,7 +1183,7 @@ function viewPlan(){
   const res=P.res.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="g">${r[2]}</td></tr>`).join('');
   const af=P.af.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="g">${r[2]}</td></tr>`).join('');
   return `<div class="sec" style="margin-top:8px"><h2>خطتي</h2></div>
-  <div class="seg" id="planseg">${DATA.PUBLIC?'':'<button data-pj="pstatus">حالتي</button>'}<button data-pj="prules">القواعد</button><button data-pj="pguide">الحلا والمشروبات</button><button data-pj="ppills">حبوبي</button>${DATA.PUBLIC?'':'<button data-pj="pdoc">الطبيب</button>'}<button data-pj="walk">المشي</button><button data-pj="paf">القلاية</button>${FB&&PWA?'<button data-pj="pfam">العائلة</button>':''}<button data-pj="pnotif">التذكيرات</button><button data-pj="pset">الإعدادات</button></div>
+  <div class="seg" id="planseg">${DATA.PUBLIC?'':'<button data-pj="pstatus">حالتي</button>'}<button data-pj="prules">القواعد</button><button data-pj="ppills">حبوبي</button>${DATA.PUBLIC?'':'<button data-pj="pdoc">الطبيب</button>'}<button data-pj="walk">المشي</button><button data-pj="paf">القلاية</button>${FB&&PWA?'<button data-pj="pfam">العائلة</button>':''}<button data-pj="pnotif">التذكيرات</button><button data-pj="pset">الإعدادات</button></div>
   ${DATA.PUBLIC?'':`<div class="panel" id="pstatus"><h3>وين أنت، ووين توصل بعد 3 شهور</h3><div style="overflow-x:auto"><table class="tbl"><tr><th>المؤشر</th><th>الحين</th><th>بعد 3 شهور</th><th>الطبيعي</th></tr>${st}</table></div>
    <div class="note">أكلك تقريبًا 1500 سعرة باليوم. المتوقع: أول أسبوع 2–3 كجم، وبعدها تقريبًا كيلو كل أسبوع. ولا تنزل تحت 1500 سعرة بدون إشراف طبيب.</div></div>`}
   <div id="prules">${rules}</div>
@@ -1093,7 +1191,6 @@ function viewPlan(){
   <div class="panel" id="walk"><h3>المشي بعد العشا</h3><div style="overflow-x:auto"><table class="tbl"><tr><th>الأسبوع</th><th>المشي</th><th>خطوات اليوم</th><th>المقاومة</th></tr>${walk}</table></div>
    <h3 style="margin-top:16px">تمارين المقاومة بالبيت (20 دقيقة)</h3><table class="tbl"><tr><th>التمرين</th><th>البداية</th><th>بعد شهرين</th></tr>${res}</table>
    <div class="note">الأحد والثلاثاء من الأسبوع 3، ومن الأسبوع 7 تضيف الخميس. إذا أوجعتك الركبة ارجع للمدة اللي قبلها أسبوع. وإذا جاك ألم صدر أو دوخة وقف وراجع الطبيب.</div></div>
-  ${guidePanel()}
   <div class="panel" id="paf"><h3>القلاية الهوائية</h3><table class="tbl"><tr><th>وش تسوي</th><th>الحرارة</th><th>الوقت</th></tr>${af}</table><div class="note">رشتين زيت بخاخ بالكثير · سخّنها 3 دقائق · لا تزحم السلة · قلّب بالنص.</div></div>
   <div class="panel" id="ppills"><h3>💊 حبوبي ومواعيدها</h3>${Object.entries(PILLS).map(([k,[t,q]])=>`<div class="row"><span>${t}</span><span><button class="btn ghost" data-pill="${k}" style="padding:4px 10px;font-size:12px">${q}</button></span></div>`).join('')}${mjPanel()}<div class="note">الترتيب هذا عام. الجرعة والوقت النهائي حسب وصفة طبيبك.</div></div>
   ${famPanel()}
@@ -1156,6 +1253,10 @@ document.addEventListener('click',e=>{
   if(ds.check){const k=iso(sel);S.checks[k]=S.checks[k]||{};const nv=!S.checks[k][ds.check];S.checks[k][ds.check]=nv;
     if(ds.check==='wake'||ds.check==='w2'){S.water[k]=Math.max(0,Math.min(20,(S.water[k]||0)+(nv?2:-2)));}
     save();if(nv&&tab==='today'){const el=document.querySelector('.it[data-it="'+ds.check+'"]');b.classList.add('hit');if(el){el.classList.add('justdone');setTimeout(render,700);}else render();toast('أحسنت ✓');}else render();return;}
+  if(ds.out!==undefined){outSheet(Number(ds.out));return;}
+  if(ds.outpick!==undefined){const k=iso(sel),slot=ds.slot;S.outm[k]=Object.assign({},S.outm[k]||{});if(ds.outpick==='')delete S.outm[k][slot];else S.outm[k][slot]=ds.outpick;save();closeSheet();render();toast(ds.outpick===''?'رجعت وجبة البيت':'تمام، بالعافية');return;}
+  if(ds.treat){treatSheet();return;}
+  if(ds.phdel){if(confirm('تحذف صورة '+ds.phdel+'؟')){photoDel(ds.phdel).then(loadPhotos);}return;}
   if(ds.cal){calOpen=!calOpen;render();return;}
   if(ds.motiv){motivOff++;render();return;}
   if(ds.showdone!==undefined){showDone=ds.showdone==='1';render();return;}
@@ -1211,6 +1312,7 @@ document.addEventListener('submit',e=>{if(e.target.id==='lkForm'){e.preventDefau
 document.addEventListener('input',e=>{if(e.target.id==='rq'){rQuery=e.target.value;const pos=e.target.selectionStart;render();const i=$('#rq');i.focus();i.setSelectionRange(pos,pos);}});
 document.addEventListener('change',e=>{
   const id=e.target.id;
+  if(id==='phIn'&&e.target.files&&e.target.files[0]){shrink(e.target.files[0]).then(u=>photoPut({d:iso(today()),u})).then(()=>{loadPhotos();toast('انحفظت الصورة');}).catch(()=>toast('ما زبطت الصورة'));return;}
   const refresh=()=>{save();render();if(sheetFn&&$('#sheet').classList.contains('on'))sheetFn();};
   if(id==='slBed'||id==='slWake'){const k=iso(sel);S.sleep[k]=Object.assign({},S.sleep[k]||{});S.sleep[k][id==='slBed'?'bed':'wake']=e.target.value;refresh();return;}
   if(id==='stIn'){const v=parseInt(e.target.value,10);const k=iso(sel);if(v>0&&v<100000)S.steps[k]=v;else delete S.steps[k];refresh();return;}
