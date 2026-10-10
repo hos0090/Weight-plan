@@ -1238,9 +1238,10 @@ function snackSheet(k){const s=SN[k];openSheet(`<div class="eyebrow">سناك</d
 function drinkSheet(k){const s=DR[k];openSheet(`<div class="eyebrow">مشروب · ${esc(s.when)}</div><h2>${esc(s.t)}</h2>`,`<div class="plate"><b>الكمية</b>${esc(s.q)}</div><div class="meta"><span class="nosugar">✓ ${esc(s.sugar)}</span></div>${s.ing.length?`<div class="h4">المكونات</div><ul class="list ing">${s.ing.map(([a,b])=>`<li><span class="nm">${esc(a)}</span><span class="am">${esc(b)}</span></li>`).join('')}</ul>`:''}<div class="h4">الطريقة</div><ol class="list steps">${s.steps.map((x,i)=>`<li><span class="sn num">${i+1}</span><p>${esc(x)}</p></li>`).join('')}</ol>${s.tip?`<div class="tip">💡 ${esc(s.tip)}</div>`:''}`);}
 function delSheet(kind){const d=sel;
   if(/^\d$/.test(kind)){const slot=+kind,cur=mealKey(d,slot),ci=cInfo(cur);
-    openSheet(`<div class="eyebrow">${SLOTL[slot]} · ${fmtDate(d)}</div><h2>تشيل «${esc(ci.t)}»؟</h2>`,`<button class="opt" data-delgo="day" data-slot="${slot}"><div class="ot"><b>شيله اليوم بس</b><div>ويحط مكانه صنف ثاني بنفس السعرات</div></div><span class="pk">اختر</span></button>
-     <button class="opt" data-delgo="ban" data-slot="${slot}"><div class="ot"><b>ما أحبه، شيله من الخطة كلها</b><div>ما يطلع لك مرة ثانية، ويتبدّل بكل الأيام تلقائي</div></div><span class="pk">اختر</span></button>
-     ${((S.cfg&&S.cfg.ban)||'').split(',').filter(Boolean).length?`<div class="note">شلت قبل: ${((S.cfg.ban)||'').split(',').filter(Boolean).map(k=>C[k]?esc(C[k][0]):'').join('، ')} · <button class="lnk" data-unban="1">رجّعها كلها</button></div>`:''}`);return;}
+    openSheet(`<div class="eyebrow">${SLOTL[slot]} · ${fmtDate(d)}</div><h2>تحذف «${esc(ci.t)}» نهائي؟</h2>`,`<div class="note" style="margin-top:0">ما يطلع لك بالخطة مرة ثانية، وبكل الأيام اللي فيها ينحط مكانه صنف ثاني بنفس السعرات تلقائي.</div>
+     <div style="display:flex;gap:8px;margin-top:14px"><button class="btn" data-delgo="ban" data-slot="${slot}" style="flex:1;background:var(--bad);color:#fff">إيه، احذفه نهائي</button><button class="btn ghost" id="shX2" style="flex:1">إلغاء</button></div>
+     <button class="lnk" data-delgo="day" data-slot="${slot}" style="display:block;margin:14px auto 0">لا، بس بدّله اليوم</button>
+     ${((S.cfg&&S.cfg.ban)||'').split(',').filter(Boolean).length?`<div class="note">حذفت قبل: ${((S.cfg.ban)||'').split(',').filter(Boolean).map(k=>C[k]?esc(C[k][0]):'').join('، ')} · <button class="lnk" data-unban="1">رجّعها كلها</button></div>`:''}`);return;}
   const k=iso(d);S.swaps[k]=Object.assign({},S.swaps[k]||{});
   if(kind==='swt'){const cur=SWEETS.findIndex(x=>x[0]===sweetFor(d)[0]);S.swaps[k].swt=String((cur+1)%SWEETS.length);toast('تبدّل الحلا');}
   else if(kind==='eve'){const cur=S.swaps[k].eve||(planIdx(d)%2===0?'hibiscus':'lemon_mint');S.swaps[k].eve=cur==='hibiscus'?'lemon_mint':'hibiscus';toast('تبدّل المشروب');}
@@ -1279,7 +1280,7 @@ document.addEventListener('click',e=>{
     save();if(nv&&tab==='today'){const el=document.querySelector('.it[data-it="'+ds.check+'"]');b.classList.add('hit');if(el){el.classList.add('justdone');setTimeout(render,700);}else render();toast('أحسنت ✓');}else render();return;}
   if(ds.del!==undefined){delSheet(ds.del);return;}
   if(ds.delgo){const slot=+ds.slot,d=sel,k=iso(d),cur=mealKey(d,slot);
-    if(ds.delgo==='ban'){const L=((S.cfg.ban)||'').split(',').filter(Boolean);if(!L.includes(cur))L.push(cur);cfg().ban=L.join(',');if(S.swaps[k])delete S.swaps[k][slot];save();closeSheet();render();toast('انشال من الخطة، وتبدّل بكل الأيام');return;}
+    if(ds.delgo==='ban'){const L=((S.cfg.ban)||'').split(',').filter(Boolean);if(!L.includes(cur))L.push(cur);cfg().ban=L.join(',');if(S.swaps[k])delete S.swaps[k][slot];save();closeSheet();render();toast('انحذف نهائي، وتبدّل بكل الأيام');return;}
     const ks=slotKeys(slot,d).filter(x=>x!==cur);const pick=ks[Math.floor(Math.random()*ks.length)];S.swaps[k]=Object.assign({},S.swaps[k]||{});S.swaps[k][slot]=pick;save();closeSheet();render();toast('حطيت مكانه: '+C[pick][0]);return;}
   if(ds.unban){cfg().ban='';save();closeSheet();render();toast('رجعت الأصناف');return;}
   if(ds.out!==undefined){outSheet(Number(ds.out));return;}
@@ -1311,7 +1312,7 @@ document.addEventListener('click',e=>{
   if(ds.pj){const el=document.getElementById(ds.pj);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return;}
   if(ds.delw){S.weights=S.weights.filter(w=>w.d!==ds.delw);save();render();return;}
   if(b.id==='wadd'){const v=parseFloat($('#wkg').value);if(!(v>40&&v<250)){toast('اكتب وزن صحيح');return;}const d=iso(today());S.weights=S.weights.filter(w=>w.d!==d);S.weights.push({d,kg:+v.toFixed(1)});S.checks[d]=S.checks[d]||{};S.checks[d].wt=true;save();render();if($('#sheet').classList.contains('on'))qlSheet('weight');const w=wStats();toast(w&&w.lost>0?`تم ✓ نزلت ${w.lost} كجم (${w.pct}%)`:'تم التسجيل');return;}
-  if(b.id==='shX'){closeSheet();return;}
+  if(b.id==='shX'||b.id==='shX2'){closeSheet();return;}
   if(b.id==='skinBtn'||b.id==='skinBtn2'){const v=document.documentElement.getAttribute('data-skin')==='beige'?'night':'beige';cfg().skin=v;try{localStorage.setItem(SKK,v);}catch(e){}applySkin(v);save();render();toast(v==='beige'?'صار الثيم بيج للكل':'صار الثيم ليلي للكل');return;}
   if(b.id==='enablePush'){enablePush();return;}
   if(b.id==='showCode'){showCode();return;}
