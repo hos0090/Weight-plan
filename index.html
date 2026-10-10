@@ -466,6 +466,18 @@ html[data-skin="beige"] .dg0{stop-color:rgba(160,108,28,.10)}
 .lv span{flex:none;position:relative;display:flex;flex-direction:column;align-items:center;padding:6px 12px 5px;border-radius:12px;background:var(--surface2);min-width:72px}
 .lv span.last{background:rgba(224,181,102,.14);border:1px solid var(--line)}.lv b{font-size:16px}.lv small{font-size:10px;color:var(--mut)}
 .lbx{position:absolute;top:2px;left:2px;width:18px;height:18px;display:grid;place-items:center;color:var(--mut2)}.lbx .ic{width:11px;height:11px}
+
+.cook{position:fixed;inset:0;z-index:90;background:var(--bg);display:flex;flex-direction:column;padding:calc(14px + env(safe-area-inset-top,0px)) 18px calc(18px + env(safe-area-inset-bottom,0px));gap:14px}
+.ck-top{display:flex;align-items:center;gap:12px}.ck-top div{display:flex;flex-direction:column}.ck-top b{font-size:17px}.ck-top span{font-size:12.5px;color:var(--mut)}
+.ck-x{width:40px;height:40px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;color:var(--mut)}
+.ck-bar{height:5px;border-radius:3px;background:var(--surface3);overflow:hidden}.ck-bar i{display:block;height:100%;background:var(--gold);transition:width .3s var(--ease)}
+.ck-step{flex:1;overflow:auto;font-size:25px;line-height:1.75;font-weight:600;padding-top:8px}
+.ck-timer{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:18px;background:var(--surface);border:1px solid var(--line)}
+.ck-timer b{font-size:34px;font-weight:600;flex:1;direction:ltr;text-align:right}.ck-timer.on b{color:var(--gold)}
+.ck-timer button{padding:10px 14px;border-radius:14px;background:var(--gold);color:var(--goldink);font-weight:700}.ck-timer button.ghost{background:var(--surface2);color:var(--fg)}
+.ck-ing{border-radius:16px;background:var(--surface);border:1px solid var(--line2);padding:10px 14px}.ck-ing summary{font-weight:600;cursor:pointer}
+.ck-ing ul{list-style:none;margin:8px 0 0;padding:0;max-height:30vh;overflow:auto}.ck-ing li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line2);font-size:14px}.ck-ing li b{color:var(--gold2);font-weight:600}
+.ck-nav{display:flex;gap:10px}.ck-nav button{flex:1;padding:16px;border-radius:18px;background:var(--surface2);font-size:16px;font-weight:600}.ck-nav button.prim{background:var(--gold);color:var(--goldink)}.ck-nav button:disabled{opacity:.4}
 </style>
 
 <script>document.documentElement.setAttribute("dir","rtl");document.documentElement.setAttribute("lang","ar");</script>
@@ -1246,10 +1258,10 @@ function normName(nm){let n=String(nm).replace(/\(.*?\)/g,' ').replace(/[:،].*$
   if(/ليمون/.test(n))return 'ليمون';if(/طماط/.test(n)&&!/معجون|صوص/.test(n))return 'طماط';if(/بصل/.test(n)&&!/بودرة/.test(n))return 'بصل';if(/ثوم/.test(n)&&!/بودرة/.test(n))return 'ثوم';
   if(/زيت زيتون/.test(n))return 'زيت زيتون';if(/^زيت/.test(n))return 'زيت';if(/خيار/.test(n))return 'خيار';if(/^خس/.test(n))return 'خس';if(/جزر/.test(n))return 'جزر';if(/فلفل رومي|فلفل ألوان/.test(n))return 'فلفل رومي';
   n=n.replace(/\s+(مكعبات|شرائح|مفرومة|مفروم|مبشورة|مبشور|مقطعة|مقطع|مهروس|مصفّى|مصفاة|مجمدة|مجمد|طازجة|ني|كاملة|للتتبيل|للشوي|للتقديم|للطشة|مخفوقة|محمصة|مطحون|مطحونة|ناشف|بالسيخ).*$/,'').trim();return n;}
-const CATS=[['🥩 لحوم ودواجن وأسماك',/دجاج|غنم|لحم|سمك|تونة/],['🥚 ألبان وبيض',/بيض|زبادي|لبن|حليب|لبنة|جبن|حلوم|كريمة|موزاريلا|بارميزان/],
- ['🥬 خضار',/خس|خيار|طماط|بصل|فلفل|جزر|بروكلي|بامية|ملوخية|فاصوليا|بازلاء|بطاطس|سبانخ|فطر|كرفس|جرجير|بقدونس|شبت|نعناع|ثوم|ليمون|كزبرة/],
- ['🍎 فواكه وتمر',/تفاح|برتقال|كمثرى|كيوي|فراولة|توت|بطيخ|عنب|مانجو|موز|تمر|رمان|معمول/],['🍞 خبز وحبوب وبقوليات',/توست|رغيف|خبز|تورتيلا|رز|شوفان|مكرونة|جريش|بقسماط|دقيق|عدس|فول|حمص|فلافل|ذرة|فشار|قضامة|شيا/],
- ['☕ مشروبات',/بن|قهوة|كركديه|بابونج|شاي/],['🥜 أخرى',/./]];
+const CATS=[['لحوم ودواجن وأسماك',/دجاج|غنم|لحم|سمك|تونة/],['ألبان وبيض',/بيض|زبادي|لبن|حليب|لبنة|جبن|حلوم|كريمة|موزاريلا|بارميزان/],
+ ['خضار',/خس|خيار|طماط|بصل|فلفل|جزر|بروكلي|بامية|ملوخية|فاصوليا|بازلاء|بطاطس|سبانخ|فطر|كرفس|جرجير|بقدونس|شبت|نعناع|ثوم|ليمون|كزبرة/],
+ ['فواكه وتمر',/تفاح|برتقال|كمثرى|كيوي|فراولة|توت|بطيخ|عنب|مانجو|موز|تمر|رمان|معمول/],['خبز وحبوب وبقوليات',/توست|رغيف|خبز|تورتيلا|رز|شوفان|مكرونة|جريش|بقسماط|دقيق|عدس|فول|حمص|فلافل|ذرة|فشار|قضامة|شيا/],
+ ['مشروبات وأعشاب',/بن|قهوة|كركديه|بابونج|شاي/],['مكسرات وأخرى',/./]];
 function fmtQty(q){const out=[];const add=(v,u)=>{if(!v)return;if(u==='g')out.push(v>=1000?(Math.round(v/100)/10)+' كجم':Math.round(v)+' جم');else if(u==='ml')out.push(v>=1000?(v/1000).toFixed(1).replace('.0','')+' لتر':Math.round(v)+' مل');
   else{const r=Math.ceil(v*2)/2;const L={pc:'حبة',tbsp:'ملعقة ك',tsp:'ملعقة ص',cup:'كوب',clove:'فص',slice:'شريحة',loaf:'رغيف',can:'علبة',leaf:'ورقة',stick:'عود',bag:'كيس'}[u]||u;out.push(String(r).replace('.5','½').replace(/^0½/,'½')+' '+L);}};
   for(const u in q)add(q[u],u);return out.join(' + ');}
@@ -1270,6 +1282,7 @@ function shopData(from,days){const items={},basics=new Set();
     if(q.tbsp&&q.tsp){q.tbsp+=q.tsp/3;delete q.tsp;}}
   const groups=CATS.map(([t])=>({t,list:[]}));
   Object.keys(items).sort().forEach(n=>{const gi=CATS.findIndex(([,rx])=>rx.test(n));groups[gi].list.push([n,items[n]]);});
+  const AISLE=['خضار','فواكه وتمر','خبز وحبوب وبقوليات','ألبان وبيض','لحوم ودواجن وأسماك','مكسرات وأخرى','مشروبات وأعشاب'];groups.sort((a,b)=>AISLE.indexOf(a.t)-AISLE.indexOf(b.t));
   return {groups:groups.filter(g=>g.list.length),basics:[...basics].sort()};}
 let shopPeriod='week';
 function shopView(wkStart){
@@ -1396,6 +1409,23 @@ function viewPlan(){
    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="shareBtn2">↗ شارك الخطة مع زوجتي</button><button class="btn ghost" id="resetToday">امسح علامات اليوم</button><button class="btn ghost" id="resetSwaps">رجّع كل الوجبات الأصلية</button></div></div>`;
 }
 
+/* ---------------- cooking mode: one step at a time, big type, timers ---------------- */
+let cook=null,cookT=null,wakeLock=null;
+function stepMinutes(t){const m=t.match(/(\d+)\s*(?:–|-|إلى)?\s*(\d+)?\s*(دقيقة|دقائق|دقايق)/);if(m)return +(m[2]||m[1]);if(/دقيقتين/.test(t))return 2;if(/ربع ساعة/.test(t))return 15;if(/نص ساعة/.test(t))return 30;const h=t.match(/(\d+)\s*ساع/);if(h)return +h[1]*60;if(/ساعة/.test(t))return 60;return 0;}
+function beep(){try{const a=new (window.AudioContext||window.webkitAudioContext)();[0,.35,.7].forEach(t=>{const o=a.createOscillator(),g=a.createGain();o.frequency.value=880;o.connect(g);g.connect(a.destination);g.gain.setValueAtTime(.25,a.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+t+.3);o.start(a.currentTime+t);o.stop(a.currentTime+t+.3);});}catch(e){}try{navigator.vibrate&&navigator.vibrate([300,150,300]);}catch(e){}}
+function cookOpen(link){const r=R[link];if(!r)return;closeSheet();cook={link,i:0,left:0,run:false};try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(l=>wakeLock=l).catch(()=>{});}catch(e){}cookDraw();}
+function cookClose(){clearInterval(cookT);cookT=null;cook=null;try{wakeLock&&wakeLock.release();}catch(e){}wakeLock=null;const el=document.getElementById('cook');if(el)el.remove();}
+function cookDraw(){if(!cook)return;const r=R[cook.link],st=r.steps[cook.i],n=r.steps.length,mins=stepMinutes(st);let el=document.getElementById('cook');if(!el){el=document.createElement('div');el.id='cook';el.className='cook';document.body.appendChild(el);}
+  const mm=Math.floor(cook.left/60),ss=cook.left%60;
+  el.innerHTML=`<div class="ck-top"><button class="ck-x" data-cookx="1" aria-label="اقفل">${IC.x}</button><div><b>${esc(r.t)}</b><span class="num">خطوة ${cook.i+1} من ${n}</span></div></div>
+   <div class="ck-bar"><i style="width:${(cook.i+1)/n*100}%"></i></div>
+   <div class="ck-step">${esc(st)}</div>
+   ${mins?`<div class="ck-timer ${cook.run?'on':''}"><b class="num">${cook.left?pad(mm)+':'+pad(ss):pad(mins)+':00'}</b><button data-cooktimer="${mins}">${cook.run?'وقّف':cook.left?'كمّل':'شغّل مؤقت '+mins+' دقيقة'}</button>${cook.left&&!cook.run?'<button data-cookreset="1" class="ghost">صفّر</button>':''}</div>`:''}
+   ${cook.i===0?`<details class="ck-ing"><summary>المكونات (${r.ing.length})</summary><ul>${r.ing.map(([a,b])=>`<li><span>${esc(a)}</span><b>${esc(b)}</b></li>`).join('')}</ul></details>`:''}
+   <div class="ck-nav"><button data-cookgo="-1" ${cook.i===0?'disabled':''}>السابقة</button><button data-cookgo="1" class="prim">${cook.i===n-1?'خلصت ✓':'التالية'}</button></div>`;}
+function cookTimer(mins){if(cook.run){cook.run=false;clearInterval(cookT);cookDraw();return;}if(!cook.left)cook.left=mins*60;cook.run=true;clearInterval(cookT);
+  cookT=setInterval(()=>{if(!cook){clearInterval(cookT);return;}cook.left--;if(cook.left<=0){cook.left=0;cook.run=false;clearInterval(cookT);beep();try{navigator.serviceWorker&&navigator.serviceWorker.ready.then(r=>r.showNotification('⏲️ خلص الوقت',{body:R[cook.link].t+' · خطوة '+(cook.i+1),tag:'cook'}));}catch(e){}toast('خلص الوقت ⏲️');}cookDraw();},1000);cookDraw();}
+
 /* ---------------- SHEETS ---------------- */
 function openSheet(titleHtml,bodyHtml){ $('#shTitle').innerHTML=titleHtml; $('#shBody').innerHTML=bodyHtml; $('#shBody').scrollTop=0; $('#scrim').classList.add('on'); $('#sheet').classList.add('on'); }
 function closeSheet(){sheetFn=null; $('#scrim').classList.remove('on'); $('#sheet').classList.remove('on'); }
@@ -1410,7 +1440,8 @@ function recipeSheet(link){
     <div class="meta"><span class="chip">⏱ ${esc(r.time)}</span><span class="chip">🔥 ${esc(r.kcal)} سعرة</span></div>
     <div class="h4">المكونات <small>لشخص واحد · ملعقة ص = 5 مل · ملعقة ك = 15 مل</small></div><ul class="list ing">${ing}</ul>
     <div class="h4">طريقة التحضير <small>اضغط الخطوة لما تخلصها</small></div><ol class="list steps">${steps}</ol>
-    ${r.tip?`<div class="tip">💡 ${esc(r.tip)}</div>`:''}`);
+    ${r.tip?`<div class="tip">💡 ${esc(r.tip)}</div>`:''}
+    <button class="btn" data-cook="${link}" style="width:100%;margin-top:16px">${IC.clock} ابدأ الطبخ خطوة خطوة</button>`);
 }
 function snackSheet(k){const s=SN[k];openSheet(`<div class="eyebrow">سناك</div><h2>${esc(s.t)}</h2>`,`<div class="plate"><b>الكمية</b>${esc(s.q)}</div><div class="meta"><span class="nosugar">✓ بدون سكر مضاف</span><span class="chip">🔥 ${esc(s.k)}</span></div><div class="h4">كيف</div><ol class="list steps">${s.steps.map((x,i)=>`<li><span class="sn num">${i+1}</span><p>${esc(x)}</p></li>`).join('')}</ol>${s.tip?`<div class="tip">💡 ${esc(s.tip)}</div>`:''}`);}
 function drinkSheet(k){const s=DR[k];openSheet(`<div class="eyebrow">مشروب · ${esc(s.when)}</div><h2>${esc(s.t)}</h2>`,`<div class="plate"><b>الكمية</b>${esc(s.q)}</div><div class="meta"><span class="nosugar">✓ ${esc(s.sugar)}</span></div>${s.ing.length?`<div class="h4">المكونات</div><ul class="list ing">${s.ing.map(([a,b])=>`<li><span class="nm">${esc(a)}</span><span class="am">${esc(b)}</span></li>`).join('')}</ul>`:''}<div class="h4">الطريقة</div><ol class="list steps">${s.steps.map((x,i)=>`<li><span class="sn num">${i+1}</span><p>${esc(x)}</p></li>`).join('')}</ol>${s.tip?`<div class="tip">💡 ${esc(s.tip)}</div>`:''}`);}
@@ -1471,6 +1502,11 @@ document.addEventListener('click',e=>{
     toast(c[0]+(hi>=4?' · أغلب قراءاتك مرتفعة، كلّم طبيبك':''));return;}
   if(b.id==='lbAdd'){let t=$('#lbT').value;const v=($('#lbV').value||'').trim(),dt=$('#lbD').value;if(t==='__new'){t=($('#lbNew').value||'').trim().replace(/\|/g,' ');}if(!t||!v||!dt){toast('كمّل الخانات');return;}S.labs[t+'|'+dt]=v;save();closeSheet();go('progress','plabs');toast('انحفظ التحليل');return;}
   if(b.id==='expHealth'){const t=healthSummary();try{navigator.clipboard.writeText(t).then(()=>toast('انسخ ✓ الصقه لي بالمحادثة'),()=>openSheet('<h2>ملخص صحتي</h2>',`<textarea style="width:100%;height:260px" readonly>${esc(t)}</textarea>`));}catch(e){openSheet('<h2>ملخص صحتي</h2>',`<textarea style="width:100%;height:260px" readonly>${esc(t)}</textarea>`);}return;}
+  if(ds.cook){cookOpen(ds.cook);return;}
+  if(ds.cookx){cookClose();return;}
+  if(ds.cookgo){const n=R[cook.link].steps.length;const ni=cook.i+Number(ds.cookgo);if(ni>=n){cookClose();toast('بالعافية');return;}cook.i=Math.max(0,ni);cook.left=0;cook.run=false;clearInterval(cookT);cookDraw();return;}
+  if(ds.cooktimer){cookTimer(Number(ds.cooktimer));return;}
+  if(ds.cookreset){cook.left=0;cookDraw();return;}
   if(ds.out!==undefined){outSheet(Number(ds.out));return;}
   if(ds.outpick!==undefined){const k=iso(sel),slot=ds.slot;S.outm[k]=Object.assign({},S.outm[k]||{});if(ds.outpick==='')delete S.outm[k][slot];else S.outm[k][slot]=ds.outpick;save();closeSheet();render();toast(ds.outpick===''?'رجعت وجبة البيت':'تمام، بالعافية');return;}
   if(ds.treat){treatSheet();return;}
