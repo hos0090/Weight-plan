@@ -35,8 +35,10 @@ function fallbackItems() {                                 // fixed plan, used w
     ['19:30', 'm4', '🍽️ وقت العشا', meal(4)], ['19:35', 'p_gluco', '💊 جلوكوفاج إكس آر 750', 'حبة مع العشا، تبلعها كاملة'], ['20:00', 'walk', '🚶 وقت المشي', walk + ' بعد العشا'],
     ['21:30', 'w3', '💧 كمّلت 3 لتر؟', 'شيّك عدّاد الموية'], ['22:00', 'p_mag', '💊 مغنيسيوم + بابونج', 'والمطبخ مقفل لين الصبح'], ['22:45', 'sleep', '🌙 النوم بعد ربع ساعة', '7 ساعات نوم تقلل جوع بكرة']];
   if (wd === 5) L.push(['13:35', 'p_vitd', '💊 فيتامين د 50,000', 'حبة الأسبوع، مع الغدا']);
-  if (wd === 6) L.push(['06:45', 'weigh', '⚖️ يوم الوزن', 'توزن قبل الفطور وسجّل وزنك']);
-  return L.map(([t, id, title, body]) => ({ id: `${today}:${id}`, at: `${today}T${t}`, title, body, done: false }));
+  if (wd === 4) L.push(['06:45', 'wt', '⚖️ يوم الوزن', 'توزن قبل الأكل والموية، وسجّل وزنك']);
+  const SHIFT = 90;                                        // the day starts at 8:00 by default (plan times above are for 6:30)
+  const sh = t => { let [h, m] = t.split(':').map(Number); let x = h * 60 + m + SHIFT; if (x >= 1440) x = 1439; return `${pad(Math.floor(x / 60))}:${pad(x % 60)}`; };
+  return L.map(([t, id, title, body]) => ({ id: `${today}:${id}`, at: `${today}T${sh(t)}`, title, body, done: false }));
 }
 async function getDoc(id) { const r = await fetch(`${DOCS}/sched/${id}?key=${FB.apiKey}`); if (r.status === 404) return null; if (!r.ok) throw new Error('firestore ' + r.status); return r.json(); }
 async function saveSent(id, sent) {
