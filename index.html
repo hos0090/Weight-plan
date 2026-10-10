@@ -732,7 +732,7 @@ function fbLeave(){fam=null;try{localStorage.removeItem(FK);}catch(e){}render();
 function lockView(){return `<section class="hero" style="margin-top:40px"><div class="eyebrow">خطتي للوزن</div><h1>اكتب كلمة المرور</h1><div class="sub">مرة وحدة بس، وبعدها يتذكرها هالجهاز. نفس الكلمة على جوالك وجوال زوجتك، وكل شي يتزامن بينكم لحاله.</div>
  <form id="lkForm" style="margin-top:16px;display:flex;flex-direction:column;gap:10px;position:relative;z-index:1"><input id="lkPw" type="password" autocomplete="current-password" placeholder="كلمة المرور" aria-label="كلمة المرور" style="background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:14px;font-size:17px;text-align:center"><button class="btn" type="submit">افتح</button></form>
  <div id="lkMsg" class="note" style="position:relative;z-index:1;min-height:20px"></div></section>`;}
-if(FB&&fam){fbPull().then(c=>{if(c)render();});stepsPull().then(c=>{if(c)render();});}
+if(FB&&fam){fbPull().then(c=>{if(c)render();setTimeout(seedHealth,500);});stepsPull().then(c=>{if(c)render();});}
 setInterval(()=>{if(FB&&fam&&document.visibilityState==='visible')stepsPull().then(c=>{if(c&&!$('#sheet').classList.contains('on'))render();});if(FB&&fam&&document.visibilityState==='visible')fbPull().then(c=>{if(c&&!$('#sheet').classList.contains('on'))render();});},15000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&FB&&fam)stepsPull().then(c=>{if(c)render();});if(document.visibilityState==='visible'&&FB&&fam)fbPull().then(c=>{if(c)render();});});
 function famPanel(){
@@ -772,7 +772,7 @@ const weighDay=()=>Number(cfg().weighDay||'4');
 function adaptItems(items,d){
   const W0=wakeFor(d),{T,drop}=planTimes(W0);const out=[];
   for(const it of items){if(drop[it.id])continue;const c=Object.assign({},it);if(T[it.id]!==undefined){c.m=T[it.id];}out.push(c);}
-  const rel={bpm:['wake',20],lbn:['m2',2],swt:['m2',40],fizz:['m4',2],p_centrum:['m0',5],p_gluco:['m4',5],p_vitd:['m2',5],p_mag:['night',5],p_mj:['m4',60],wt:['wake',15]};
+  const rel={bpm:['wake',20],bpe:['m4',-30],lbn:['m2',2],swt:['m2',40],fizz:['m4',2],p_centrum:['m0',5],p_gluco:['m4',5],p_vitd:['m2',5],p_mag:['night',5],p_mj:['m4',60],wt:['wake',15]};
   out.forEach(c=>{const r=rel[c.id];if(r)c.m=T[r[0]]+r[1];c.t=min2t(c.m);});
   out.sort((a,b)=>a.m-b.m);
   const custom=W0!==hm2min(DEFSTART)||(S.sleep[iso(d)]&&S.sleep[iso(d)].wake);
@@ -875,17 +875,27 @@ function mjPanel(){const m=mjCfg();const sel2='background:var(--surface2);border
 function pillSheet(k){let [t,q,l]=PILLS[k];if(k==='mj'){const m=mjCfg();q=`كل ${MJDAYS[+m.day]} بعد العشا بساعة · ${m.dose} ملغ`;}openSheet('<div class="eyebrow">💊 حبوبي</div><h2>'+t+'</h2>',`<div class="plate"><b>الموعد</b>${q}</div><div class="h4">ليش بهالوقت؟</div><ul class="list rules">${l.map(x=>`<li class="y">${x}</li>`).join('')}</ul><div class="tip">هذا ترتيب عام. الجرعة والوقت النهائي حسب وصفة طبيبك.</div>`);}
 
 /* ---------------- blood pressure & lab results ---------------- */
-const BPDAYS=[1,4]; // Monday & Thursday mornings
-function bpList(){return Object.entries(S.bp||{}).map(([k,v])=>{const [s,d,p]=String(v).split('/').map(Number);return {k,date:k.slice(0,10),time:k.slice(11),s,d,p};}).sort((a,b)=>a.k<b.k?1:-1);}
+const SEED1='vHixr//YDM/cviV1/7zu1mgLCMzIo/qnsa5FEVpZy9wPrmHK2poDlD4mu5NQOHiXvfCB/4EIIPOeDt2hFOCQAUJ4+Xes57drrvTs3JFDEOxLOONuSxdRXa14ExpHsfPOqlcM0D5Nyy78eTfcy0i5TRhtT0pMucUjQeEmR/MeVoZd2pix76+jYvBsYmb+PRPWl5XGAUKhSqQC00w7WclN2wopXhApEyqylD9q5Z2s7gUe0dHx+Z/cn5JRcQoR91/7LOnjJVAUJ0Pw2DetHAYAbN6mu7Ho1TiYGkJEZ/Ci+Pi864IHeyLwMMl7bexSDdYCh0Wbx6GibkElZFTonniMYEdJknYeHs3G7EF8SlXrG+wGJepcHBdECU+Jswn9jRzrqhLoVb+qtJ29sR6akSBm+K2mTSWQWuiJWptQgFK7euKaD/RqGSELCIkwfNS3JXduaoVphmKZ8nuoKAH5rxi4AE7bvkzpqw+uEmVgn+2coRkgfK/aNg+73OyxKEjkF4YSl1Lz0X4Jplqgm40R1i5hybjfxYxhRByxDwaMjZ2349OvFpa7NZhSFRGuHcVuCKx/jzq3/BjZ09YG5BVuyhFTEIwkMNxlNcvAeCgXCDQ+JGsdbFnLr2qqCjyROZX29RkFSkeGp+u+QltLd1MLwWSHgbZ7qHqEIJELXbWpJi9PxmTla5pFtStwnFi9y0miHFLeCvzTJksLReKtMETLkPa30C3+S1c3j7bYmWvLQqw1PxMd0rfkgYufVrkSN78+aGa+pMBRRm4ZFdCfjMoMILAQcn+Cpu7m+B5gjm22D5fZtHloL6A4MExme6fS0h0XR6mIrS3DdkrMY/E5YpGtV5dmS2MsbYcZ5GWbvqT0WIICEoiEw/OtSQKXAceGX+6u3HTeOixXnObgiX3SpRsoUu3pzfu3pz1OQRqLlH0G/YWWtmR+57t8BP8vrBl92e0Xof9Mi9SbaKmrG3T9PMCCY6omuJY6LU6v0yeEWPSf5r22eQQyz/tlSO6vS0BKPNdIt6WiXQkbDEBj+SRKxr8H4skErhRiC8qIvIRWbzTdbD+35DUHMmeIdFlYZzhXdqxv8BBNWIZrOtJdCJUWEE7UhwzQ0pPXIdAV6lTu1xkU0w9H2Al8ezm7imxl7MxOYfpHEfMUi5kqPV1hMbIzydKzIpiElP/KL1HkZRaihDCSXHAh6OPWBKHFegLBknETCPSIZZ7F9z7s6a7HQKHvE/8iqpCgR6tzAnjmn/VE3h4C5bqpUlSPXhQzl2A4jwP0iFZA73WBDOgoFeOeTC4dbaL23wP273p0GXvdguo6pc70aYHNzt9bvIX51PqAKnhX0332xnRF4hpRpGLCDOSqfpn3FWGg2TuBCQwWVzeHIL4eETUJNFjoVfYNuaOq127BgkGrHBzCFEPum0wvJBWk3ssGd5/vLTFjoNsmyKpd7//h6GsV/fZz';
+async function seedHealth(){try{if(!fam||(S.cfg&&S.cfg.seed1)||!crypto.subtle)return;const raw=Uint8Array.from(atob(SEED1),c=>c.charCodeAt(0));
+  const kb=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('labs-seed:'+fam));const key=await crypto.subtle.importKey('raw',kb,'AES-GCM',false,['decrypt']);
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:raw.slice(0,12)},key,raw.slice(12));const o=JSON.parse(new TextDecoder().decode(pt));
+  S.labs=S.labs||{};for(const k in o.labs)if(S.labs[k]===undefined)S.labs[k]=o.labs[k];
+  for(const w of o.w)if(!S.weights.some(x=>x.d===w.d))S.weights.push(w);
+  cfg().seed1='1';save();render();}catch(e){}}
+const BPDAYS=[1,4]; // after the first two weeks: Monday & Thursday mornings
+const bpIntensive=d=>sinceStart(d)>=0&&sinceStart(d)<14;
+const bpAm=d=>bpIntensive(d)||(BPDAYS.includes(d.getDay())&&sinceStart(d)<84);
+function bpList(){return Object.entries(S.bp||{}).map(([k,v])=>{const [s,d,p]=String(v).split('/').map(Number);return {k,date:k.slice(0,10),time:k.slice(11,16),s,d,p};}).sort((a,b)=>a.k<b.k?1:-1);}
 function bpClass(s,d){if(s>=180||d>=120)return ['خطر: راجع الطوارئ الحين إذا معه صداع قوي أو ألم صدر أو زغللة','var(--bad)','crit'];if(s>=140||d>=90)return ['مرتفع (درجة 2)','var(--bad)','h2'];if(s>=130||d>=80)return ['مرتفع (درجة 1)','var(--warn)','h1'];if(s>=120)return ['أعلى من الطبيعي شوي','var(--warn)','el'];if(s<90||d<60)return ['منخفض','var(--warn)','lo'];return ['طبيعي','var(--ok)','ok'];}
-const bpDone=d=>Object.keys(S.bp||{}).some(k=>k.startsWith(iso(d)));
+const bpDone=(d,pm)=>Object.keys(S.bp||{}).some(k=>k.startsWith(iso(d))&&(pm===undefined||(k.slice(11)>='15:00')===pm));
 function bpSheet(){const L=bpList().slice(0,6);const last=L[0];
   openSheet('<div class="eyebrow">صحتي</div><h2>الضغط</h2>',`
    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px"><label class="flab">الانقباضي (فوق)<input id="bpS" type="number" inputmode="numeric" placeholder="120" style="${inp}"></label><label class="flab">الانبساطي (تحت)<input id="bpD" type="number" inputmode="numeric" placeholder="80" style="${inp}"></label><label class="flab">النبض<input id="bpP" type="number" inputmode="numeric" placeholder="75" style="${inp}"></label></div>
    <button class="btn" id="bpAdd" style="width:100%;margin-top:10px">سجّل القراءة</button>
    ${last?`<div class="plate" style="margin-top:12px"><b>آخر قراءة · ${last.date} ${last.time}</b><span class="num" dir="ltr">${last.s}/${last.d}</span> · <span style="color:${bpClass(last.s,last.d)[1]}">${bpClass(last.s,last.d)[0]}</span></div>`:''}
    <div class="tip">كيف تقيس صح: اجلس 5 دقائق قبل، وظهرك مسنود ورجولك على الأرض، والذراع على الطاولة بمستوى القلب. لا قهوة ولا تدخين ولا رياضة قبلها بنص ساعة. خذ قراءتين بينهم دقيقة، وسجّل الثانية.</div>
-   <div class="note">الطبيعي أقل من 120/80. إذا تكررت 140/90 أو أعلى، كلّم طبيبك.</div>`);}
+   <div class="h4">متى تقيس</div><ul class="list rules"><li class="y">أول أسبوعين من الخطة: كل يوم مرتين، الصبح قبل القهوة والحبوب، والمساء قبل العشا</li><li class="y">بعدها: الاثنين والخميس الصبح</li><li class="y">كل مرة قراءتين بينهم دقيقة، وسجّل الثنتين</li></ul>
+   <div class="h4">متى تتحرك</div><ul class="list rules"><li class="n">180/120 أو أعلى، ومعه صداع قوي أو ألم صدر أو ضيق نفس أو زغللة أو ضعف بجهة: الطوارئ على طول</li><li class="n">180/120 أو أعلى بدون أعراض: ارتاح 5 دقائق وعيد. إذا بقى عالي، كلّم طبيبك اليوم</li><li class="n">140/90 أو أعلى بأغلب القراءات لمدة أسبوع: موعد مع طبيبك</li><li class="n">أقل من 90/60 مع دوخة: اجلس، واشرب موية، وخبّر طبيبك</li></ul>`);}
 const LABS=[['hba1c','السكر التراكمي (HbA1c)','%','أقل من 5.7 طبيعي · 5.7–6.4 مقدمات سكري'],['fbs','سكر صايم','mg/dL','70–99'],['ldl','الكوليسترول الضار (LDL)','mg/dL','أقل من 100'],['hdl','الكوليسترول النافع (HDL)','mg/dL','أكثر من 40'],['tg','الدهون الثلاثية','mg/dL','أقل من 150'],['chol','الكوليسترول الكلي','mg/dL','أقل من 200'],['alt','إنزيم الكبد ALT','U/L','أقل من 40 تقريبًا'],['ast','إنزيم الكبد AST','U/L','أقل من 40 تقريبًا'],['vitd','فيتامين د','ng/mL','30–100'],['b12','فيتامين B12','pg/mL','200–900'],['tsh','الغدة الدرقية TSH','mIU/L','0.4–4.0'],['creat','الكرياتينين (الكلى)','mg/dL','0.7–1.3']];
 function labRows(){const out={};for(const [k,v] of Object.entries(S.labs||{})){const [t,dt]=k.split('|');(out[t]=out[t]||[]).push({dt,v});}for(const t in out)out[t].sort((a,b)=>a.dt<b.dt?1:-1);return out;}
 function labName(t){const L=LABS.find(x=>x[0]===t);return L?L[1]:t;}
@@ -899,7 +909,7 @@ function labSheet(pre){const opts=LABS.map(([k,n])=>`<option value="${k}" ${pre=
 function healthPanel(){const L=bpList();const R=labRows();
   const bpRows=L.slice(0,5).map(x=>{const c=bpClass(x.s,x.d);return `<div class="row"><span class="num">${x.date.slice(5)} · ${x.time}</span><span><b class="num" dir="ltr">${x.s}/${x.d}</b>${x.p?` <small class="muted num">نبض ${x.p}</small>`:''} <i class="bpdot" style="background:${c[1]}" title="${c[0]}"></i><button class="del" data-bpdel="${x.k}">حذف</button></span></div>`;}).join('');
   const avg=L.length?L.slice(0,6):[];const as=avg.length?Math.round(avg.reduce((p,c)=>p+c.s,0)/avg.length):null,ad=avg.length?Math.round(avg.reduce((p,c)=>p+c.d,0)/avg.length):null;
-  const labHtml=Object.keys(R).map(t=>{const a=R[t];const L0=LABS.find(x=>x[0]===t);return `<div class="lab"><div class="lh"><b>${esc(labName(t))}</b>${L0?`<small>${L0[3]} ${L0[2]}</small>`:''}</div><div class="lv">${a.map((x,i)=>`<span class="${i===0?'last':''}"><b class="num">${esc(x.v)}</b><small class="num">${x.dt}</small><button class="lbx" data-labdel="${t}|${x.dt}" aria-label="حذف">${IC.x}</button></span>`).join('')}</div></div>`;}).join('');
+  const labHtml=Object.keys(R).map(t=>{const a=R[t];const L0=LABS.find(x=>x[0]===t);return `<div class="lab"><div class="lh"><b>${esc(labName(t))}</b>${L0?`<small>${L0[3]} ${L0[2]}</small>`:''}</div><div class="lv">${a.map((x,i)=>`<span class="${i===0?'last':''}"><b class="num"><bdi>${esc(x.v)}</bdi></b><small class="num">${x.dt}</small><button class="lbx" data-labdel="${t}|${x.dt}" aria-label="حذف">${IC.x}</button></span>`).join('')}</div></div>`;}).join('');
   return `<div class="panel" id="phealth"><div class="row" style="border:0;padding:0;align-items:center"><h3 style="margin:0">الضغط</h3><span><button class="btn" data-bp="1" style="padding:6px 12px;font-size:13px">+ قراءة</button></span></div>
     ${as!==null?`<div class="note" style="margin-top:6px">${avg.length>1?`متوسط آخر ${avg.length} قراءات:`:`آخر قراءة:`} <b class="num" dir="ltr">${as}/${ad}</b> · <span style="color:${bpClass(as,ad)[1]}">${bpClass(as,ad)[0]}</span></div>`:`<div class="note" style="margin-top:6px">قيس الضغط الصبح يوم الاثنين والخميس، ويوصلك تذكير.</div>`}${bpRows}</div>
    <div class="panel" id="plabs"><div class="row" style="border:0;padding:0;align-items:center"><h3 style="margin:0">تحاليلي</h3><span><button class="btn" data-lab="1" style="padding:6px 12px;font-size:13px">+ تحليل</button></span></div>
@@ -924,7 +934,7 @@ function reminderText(it,d){
   if(it.type==='meal'){const oc=outChosen(d,it.slot);if(oc)return [['🍳 وقت الفطور','','🍽️ وقت الغدا','','🍽️ وقت العشا'][it.slot],oc[0]+': '+oc[1]+' · '+oc[4]];const ci=cInfo(mealKey(d,it.slot));const L=['🍳 وقت الفطور','🍎 وقت سناك الصبح','🍽️ وقت الغدا','🍏 وقت سناك العصر','🍽️ وقت العشا'];return [L[it.slot],ci.t+' · '+ci.q];}
   if(it.id==='p_mj')return ['💉 إبرة مونجارو',mjCfg().dose+' ملغ · غيّر مكان الإبرة عن الأسبوع اللي فات'];
   if(it.type==='pill')return ['💊 '+it.title,it.sub];
-  if(it.type==='bp')return ['❤️ قيس الضغط','اجلس 5 دقائق، وقيس قبل القهوة، وسجّل القراءة بالتطبيق'];
+  if(it.type==='bp')return it.id==='bpe'?['❤️ قيس الضغط (المساء)','قبل العشا: اجلس 5 دقائق، قراءتين بينهم دقيقة، وسجّلهم']:['❤️ قيس الضغط (الصبح)','قبل القهوة والحبوب: اجلس 5 دقائق، قراءتين بينهم دقيقة، وسجّلهم'];
   if(it.type==='weigh')return it.late?['⚖️ باقي ما قست وزنك','قسه الحين قبل الأكل وسجّله، والتذكير يوقف لما تسجّل']:['⚖️ يوم الوزن','توزن الحين قبل الأكل والموية، وسجّله بالتطبيق'];
   if(it.type==='walk')return ['🚶 '+it.title,it.sub];
   if(it.type==='sleep')return ['🌙 وقت النوم','7 ساعات نوم تقلل جوع بكرة'];
@@ -989,7 +999,8 @@ function dayItems(d){
   const p=planIdx(d), sx=S.swaps[iso(d)]||{}, eve=sx.eve||(p%2===0?'hibiscus':'lemon_mint');
   const items=[
    {id:'wake',t:'6:30',type:'drink',ref:'water',title:'كاسين موية على الريق',sub:'500 مل · قبل أي شي'},
-   ...(BPDAYS.includes(d.getDay())&&sinceStart(d)<35?[{id:'bpm',t:'',type:'bp',title:'قيس الضغط',sub:'قبل القهوة، وأنت جالس مرتاح 5 دقائق'}]:[]),
+   ...(bpAm(d)?[{id:'bpm',t:'',type:'bp',title:'قيس الضغط (الصبح)',sub:'قبل القهوة والحبوب، بعد 5 دقائق جلوس'}]:[]),
+   ...(bpIntensive(d)?[{id:'bpe',t:'',type:'bp',title:'قيس الضغط (المساء)',sub:'قبل العشا، بعد 5 دقائق جلوس'}]:[]),
    {id:'m0',t:'7:00',type:'meal',slot:0},
    {id:'p_centrum',t:'7:00',type:'pill',ref:'centrum',title:'سنتروم',sub:'حبة وحدة مع الفطور'},
    {id:'v1',t:'8:00',type:'drink',ref:'v60',title:'قهوة V60 الأولى',sub:'كوب 250 مل · سوداء بدون سكر'},
@@ -1018,7 +1029,7 @@ function dayItems(d){
   return items;
 }
 const toMin=t=>{let [h,m]=t.split(':').map(Number);if(h<6)h+=12;return h*60+m;};
-function isDone(d,id){if(id==='bpm'&&bpDone(d))return true;if(id==='wt'&&S.weights.some(w=>w.d===iso(d)))return true;const c=S.checks[iso(d)];return !!(c&&c[id]);}
+function isDone(d,id){if(id==='bpm'&&bpDone(d,false))return true;if(id==='bpe'&&bpDone(d,true))return true;if(id==='wt'&&S.weights.some(w=>w.d===iso(d)))return true;const c=S.checks[iso(d)];return !!(c&&c[id]);}
 function dayProgress(d){const its=adaptItems(dayItems(d),d).items.filter(i=>!i.quiet);const n=its.filter(i=>isDone(d,i.id)).length;return {n,t:its.length};}
 
 /* ---------------- helpers ---------------- */
@@ -1454,7 +1465,10 @@ document.addEventListener('click',e=>{
   if(ds.lab){labSheet();return;}
   if(ds.bpdel){if(confirm('تحذف القراءة؟')){delete S.bp[ds.bpdel];save();render();}return;}
   if(ds.labdel){if(confirm('تحذف النتيجة؟')){delete S.labs[ds.labdel];save();render();}return;}
-  if(b.id==='bpAdd'){const sv=+$('#bpS').value,dv=+$('#bpD').value,pv=+$('#bpP').value||0;if(!(sv>60&&sv<260&&dv>30&&dv<160)){toast('اكتب القراءة صح، مثل 125 و 82');return;}const n=new Date();S.bp[iso(n)+'T'+pad(n.getHours())+':'+pad(n.getMinutes())]=sv+'/'+dv+(pv?'/'+pv:'');save();render();bpSheet();const c=bpClass(sv,dv);toast('انحفظت · '+c[0].split(':')[0]);return;}
+  if(b.id==='bpAdd'){const sv=+$('#bpS').value,dv=+$('#bpD').value,pv=+$('#bpP').value||0;if(!(sv>60&&sv<260&&dv>30&&dv<160)){toast('اكتب القراءة صح، مثل 125 و 82');return;}const n=new Date();let k=iso(n)+'T'+pad(n.getHours())+':'+pad(n.getMinutes());while(S.bp[k])k+='+';S.bp[k]=sv+'/'+dv+(pv?'/'+pv:'');save();render();
+    const c=bpClass(sv,dv);if(c[2]==='crit'){openSheet('<h2 style="color:var(--bad)">ضغطك عالي جدًا</h2>',`<div class="plate" style="border-color:var(--bad)"><b>القراءة</b><span class="num" dir="ltr">${sv}/${dv}</span></div><ul class="list rules"><li class="n">إذا معك صداع قوي، أو ألم صدر، أو ضيق نفس، أو زغللة، أو ضعف أو تنميل بجهة: اتصل 997 أو روح الطوارئ الحين</li><li class="y">بدون أعراض: اجلس مرتاح 5 دقائق وعيد القياس</li><li class="y">إذا بقى 180/120 أو أعلى: كلّم طبيبك اليوم</li></ul>`);return;}
+    const recent=bpList().slice(0,6);const hi=recent.filter(x=>x.s>=140||x.d>=90).length;bpSheet();
+    toast(c[0]+(hi>=4?' · أغلب قراءاتك مرتفعة، كلّم طبيبك':''));return;}
   if(b.id==='lbAdd'){let t=$('#lbT').value;const v=($('#lbV').value||'').trim(),dt=$('#lbD').value;if(t==='__new'){t=($('#lbNew').value||'').trim().replace(/\|/g,' ');}if(!t||!v||!dt){toast('كمّل الخانات');return;}S.labs[t+'|'+dt]=v;save();closeSheet();go('progress','plabs');toast('انحفظ التحليل');return;}
   if(b.id==='expHealth'){const t=healthSummary();try{navigator.clipboard.writeText(t).then(()=>toast('انسخ ✓ الصقه لي بالمحادثة'),()=>openSheet('<h2>ملخص صحتي</h2>',`<textarea style="width:100%;height:260px" readonly>${esc(t)}</textarea>`));}catch(e){openSheet('<h2>ملخص صحتي</h2>',`<textarea style="width:100%;height:260px" readonly>${esc(t)}</textarea>`);}return;}
   if(ds.out!==undefined){outSheet(Number(ds.out));return;}
