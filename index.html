@@ -319,7 +319,8 @@ const isStandalone=()=>(window.matchMedia&&matchMedia('(display-mode: standalone
 const isIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent);
 const pushSupported=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
 function pushState(){ if(!PWA) return 'na'; if(pushEp&&window.Notification&&Notification.permission==='granted') return 'on'; if(isIOS()&&!isStandalone()) return 'install'; if(!pushSupported()) return 'unsupported'; if(window.Notification&&Notification.permission==='denied') return 'denied'; return 'off'; }
-if(PWA&&'serviceWorker' in navigator){navigator.serviceWorker.register(DATA.GH?'./sw.js':'/sw.js').catch(()=>{});}
+if(PWA&&'serviceWorker' in navigator){navigator.serviceWorker.register(DATA.GH?'./sw.js':'/sw.js').catch(()=>{});
+  navigator.serviceWorker.ready.then(r=>r.pushManager.getSubscription()).then(sub=>{if(sub&&sub.endpoint!==pushEp){pushEp=sub.endpoint;try{localStorage.setItem(PK,pushEp);}catch(e){}schedId=null;if(typeof pushSched==='function')pushSched();}}).catch(()=>{});}
 function b64u(s){const p='='.repeat((4-s.length%4)%4);const b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...b].map(c=>c.charCodeAt(0)));}
 function prunedSwaps(){const out={},t=today();for(const k in S.swaps){const d=parse(k);if((d-t)/DAYMS>=-1&&(d-t)/DAYMS<=21)out[k]=S.swaps[k];}return out;}
 function showCode(){
@@ -370,7 +371,7 @@ function pushSettings(){
   if(!PWA) return `<div class="panel" id="pnotif"><h3>🔔 التذكيرات</h3><div class="note" style="margin-top:0">${DATA.APPURL?`التنبيهات تشتغل بنسخة الجوال. افتح <b style="user-select:all">${esc(DATA.APPURL)}</b> من سفاري، وضيفه للشاشة الرئيسية.`:'التنبيهات تشتغل بنسخة الجوال، وهي تحت التجهيز.'}</div></div>`;
   const st=pushState();
   const tg=NCATS.map(([k,l,i])=>`<div class="tg"><span>${i} ${l}</span><button class="sw ${S.notif[k]?'on':''}" data-ncat="${k}" aria-label="${l}" aria-pressed="${S.notif[k]?'true':'false'}"></button></div>`).join('');
-  if(DATA.GH) return `<div class="panel" id="pnotif"><h3>🔔 التذكيرات</h3>${st==='on'?`<div class="note" style="margin-top:0">مفعّلة على هالجهاز. التذكيرات تمشي على بداية يومك. اختر وش يوصلك:</div>${tg}<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="showCode">اعرض رمز التفعيل</button><button class="btn ghost" id="localTest">جرّب إشعار</button></div>`:pushBanner().replace('<section class="push">','<div>').replace('</section>','</div>')}</div>`;
+  if(DATA.GH) return `<div class="panel" id="pnotif"><h3>🔔 التذكيرات</h3>${st==='on'?`<div class="note" style="margin-top:0">مفعّلة على هالجهاز. التذكيرات تمشي على بداية يومك.</div><div class="row"><span>جدول التذكيرات</span><span>${schedErr?'⚠️ '+esc(schedErr):schedOK?'✓ متزامن '+new Date(schedOK).getHours()+':'+pad(new Date(schedOK).getMinutes()):'…'}</span></div><div class="note">اختر وش يوصلك:</div>${tg}<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="showCode">اعرض رمز التفعيل</button><button class="btn ghost" id="localTest">جرّب إشعار</button></div>`:pushBanner().replace('<section class="push">','<div>').replace('</section>','</div>')}</div>`;
   return `<div class="panel" id="pnotif"><h3>🔔 التذكيرات</h3>${st==='on'?`<div class="note" style="margin-top:0">مفعّلة. اختر وش يوصلك:</div>${tg}<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" id="testPush">أرسل تنبيه تجربة</button></div>`:pushBanner().replace('<section class="push">','<div>').replace('</section>','</div>')}</div>`;
 }
 
@@ -578,10 +579,11 @@ function buildSched(){const out=[];const t=today();const on=c=>S.notif[c]!==0;fo
     if(it.type==='meal'&&it.slot===2){out.push({id:iso(d)+':lq',at:atOf(d,it.m+60),title:'تغديت؟ ✓',body:'أشّر على الغدا بالتطبيق، واشرب كاس موية',done:isDone(d,it.id),cat:'meals'});}}
   const nt=its.find(x=>x.id==='night');if(on('water'))out.push({id:iso(d)+':w3',at:atOf(d,(nt?nt.m:1320)-30),title:'💧 كمّلت 3 لتر؟',body:'شيّك عدّاد الموية بالتطبيق',done:(S.water[iso(d)]||0)>=12,cat:'water'});}
   return out;}
-let schedT=null;
+let schedT=null,schedOK=0,schedErr='';
 function pushSched(){if(!FB||!PWA||!pushEp)return;clearTimeout(schedT);schedT=setTimeout(async()=>{try{const id=await getSchedId();if(!id)return;
   const body={fields:{items:{stringValue:JSON.stringify(buildSched())},updated:{integerValue:String(Date.now())},prefs:{stringValue:JSON.stringify(S.notif||{})}}};
-  await fetch(`https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents/sched/${id}?key=${FB.apiKey}&updateMask.fieldPaths=items&updateMask.fieldPaths=updated&updateMask.fieldPaths=prefs`,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify(body)});}catch(e){}},1500);}
+  const r=await fetch(`https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents/sched/${id}?key=${FB.apiKey}&updateMask.fieldPaths=items&updateMask.fieldPaths=updated&updateMask.fieldPaths=prefs`,{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+  if(r.ok){schedOK=Date.now();schedErr='';}else{schedErr='رفض '+r.status;}}catch(e){schedErr='ما فيه اتصال';}if(tab==='plan')render();},1500);}
 
 /* ---------------- share with family ---------------- */
 function b64uEnc(str){return btoa(unescape(encodeURIComponent(str))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}

@@ -21,7 +21,7 @@ const pad = n => String(n).padStart(2, '0');
 const isoR = d => `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
 const today = isoR(nowR), nowStr = `${today}T${pad(nowR.getUTCHours())}:${pad(nowR.getUTCMinutes())}`;
 const minus = m => { const d = new Date(nowR.getTime() - m * 60e3); return `${isoR(d)}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`; };
-const WINDOW_FROM = minus(25);                            // GitHub cron can run late; send anything due in the last 25 min
+const WINDOW_FROM = minus(45);                            // triggers can run late; send anything due in the last 45 min
 function fallbackItems() {                                 // fixed plan, used when the phone hasn't written a schedule
   const [sy, sm, sd] = (process.env.START || '2026-10-10').split('-').map(Number);
   const diff = Math.round((Date.UTC(nowR.getUTCFullYear(), nowR.getUTCMonth(), nowR.getUTCDate()) - Date.UTC(sy, sm - 1, sd)) / 864e5);
