@@ -1,0 +1,35 @@
+name: remind
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  push:
+    paths: ['scripts/subs.txt']
+  workflow_dispatch:
+    inputs:
+      id:
+        description: "reminder id (wake b weigh v1 s1 w2 sc l30 lq v2 eve d30 walk w3 night sleep) or test"
+        required: true
+        default: test
+concurrency:
+  group: remind
+  cancel-in-progress: false
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund --silent
+      - run: node scripts/remind.mjs
+        env:
+          SCHED: ${{ github.event.schedule }}
+          INPUT_ID: ${{ inputs.id || (github.event_name == 'push' && 'test') || '' }}
+          START: ${{ vars.START }}
+          PUSH_SUBS: ${{ secrets.PUSH_SUBS }}
+          FAM: ${{ secrets.FAM_CODE }}
+          VAPID_PUBLIC: BFBczDRaSx47vpk-dVh2FMWbuhIfHxFCMVN1uBXrZiBsp1jJNV7__sHuVaSLiMr5TjEWUaDdkxFpOD7eOvJmoM4
+          VAPID_PRIVATE: ${{ secrets.VAPID_PRIVATE || 'tfcLXvBGcBHmONb0CEnhgnbKPuMAmq8Woaa2HNzVYp4' }}
+          VAPID_SUBJECT: https://hos0090.github.io/Weight-plan/
