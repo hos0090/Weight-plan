@@ -3,7 +3,7 @@
  *  فيبقى app.js (المأخوذ من الواجهة الأصلية) كما هو دون أي تعديل بنيوي.
  * ========================================================== */
 var BRIDGE = (function () {
-  const worker = new Worker('worker.js?v=1792516919283');
+  const worker = new Worker('worker.js?v=1792517622151');
   let seq = 0;
   const pending = {};
   let onChange = null, onError = null;

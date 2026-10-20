@@ -1,8 +1,10 @@
-const CACHE = 'myz-1792516919283';
+const CACHE = 'myz-1792517622151';
 const SHELL = [
-  './', './index.html', './style.css', './app.js', './main.js', './bridge.js', './sync.js',
+  './', './index.html', './style.css', './ui.css', './app.js', './ui.js', './main.js', './bridge.js', './sync.js',
   './worker.js', './gas-runtime.js', './engine.js', './engine-ext.js', './claude-ai.js',
-  './manifest.webmanifest', './icon-192.png', './icon-512.png'
+  './manifest.webmanifest', './icon-192.png', './icon-512.png',
+  './fonts/plex-arabic-400.woff2', './fonts/plex-arabic-500.woff2', './fonts/plex-arabic-600.woff2', './fonts/plex-arabic-700.woff2',
+  './fonts/plex-latin-400.woff2', './fonts/plex-latin-500.woff2', './fonts/plex-latin-600.woff2', './fonts/plex-latin-700.woff2'
 ];
 
 self.addEventListener('install', function (e) {
