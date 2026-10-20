@@ -5,17 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ميزانيتي</title>
 <meta name="description" content="إدارة الدخل والالتزامات والادخار بوضوح">
-<meta name="theme-color" content="#14324F">
+<meta name="theme-color" content="#0b1322">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ميزانيتي">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1792516919283">
+<link rel="stylesheet" href="style.css?v=1792517622151">
+<link rel="stylesheet" href="ui.css?v=1792517622151">
 </head>
 <body>
 
@@ -35,40 +33,25 @@
 </div>
 
 <div id="app" class="hidden">
-<div class="shell">
-  <aside class="side">
-    <div class="side-top">
-      <div class="side-logo">م</div>
-      <div><strong>ميزانيتي</strong><small>لوحة مالية شخصية</small></div>
+  <nav id="nav" class="hidden" aria-hidden="true"></nav>
+  <header class="appbar">
+    <div class="ab-brand" onclick="go('dash')"><span class="ab-mark">م</span><span class="ab-name">ميزانيتي</span></div>
+    <div class="ab-title"><h2 id="ttl">الرئيسية</h2><p id="sub"></p></div>
+    <div class="ab-acts">
+      <select class="sel" id="monthSel" onchange="setMonth(this.value)" aria-label="الدورة"></select>
+      <button class="ab-btn" id="topBtn" onclick="topAction()">إضافة</button>
+      <button class="ab-ico" onclick="refresh(true)" aria-label="تحديث" id="abRefresh"></button>
     </div>
-    <nav class="nav" id="nav"></nav>
-    <div class="side-bot">
-      <div class="a11y">
-        <button onclick="setFs('s')" id="fs-s" title="أصغر">A−</button>
-        <button onclick="setFs('n')" id="fs-n" title="عادي">A</button>
-        <button onclick="setFs('l')" id="fs-l" title="أكبر">A+</button>
-        <button onclick="setFs('xl')" id="fs-xl" title="كبير جداً">A++</button>
-      </div>
-      <button class="btn wide" onclick="logout()">تسجيل الخروج</button>
-    </div>
-  </aside>
+  </header>
   <main class="main">
-    <div class="top">
-      <div><h2 id="ttl">لوحة القيادة</h2><p id="sub"></p></div>
-      <div class="top-acts">
-        <select class="sel" id="monthSel" onchange="setMonth(this.value)"></select>
-        <button class="btn" onclick="go('guide')" title="دليل الاستخدام">؟</button>
-        <button class="btn" onclick="refresh(true)">تحديث</button>
-        <button class="btn-main" id="topBtn" onclick="topAction()">إضافة</button>
-      </div>
-    </div>
     <div id="err" class="note n-red hidden" style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
       <span id="errTxt"></span><button class="x" onclick="hideErr()">×</button></div>
     <section id="view"></section>
   </main>
-</div>
+  <nav class="tabbar" id="tabbar"></nav>
 </div>
 
+<div id="sheetBg" class="sheet-bg hidden" onclick="closeSheet()"><div id="sheet" class="sheet" onclick="event.stopPropagation()"></div></div>
 <div id="mbg" class="mbg hidden" onclick="closeModal(event)"><div id="modal" class="modal" onclick="event.stopPropagation()"></div></div>
 <div id="load" class="hidden"><div class="loader"><div class="spin"></div><div id="loadTxt">جاري التحميل…</div></div></div>
 <div id="toast" class="toast"></div>
@@ -78,8 +61,9 @@
   <button class="x" onclick="el('installBar').classList.add('hidden')">×</button>
 </div>
 
-<script src="bridge.js?v=1792516919283"></script>
-<script src="sync.js?v=1792516919283"></script>
-<script src="app.js?v=1792516919283"></script>
-<script src="main.js?v=1792516919283"></script>
+<script src="bridge.js?v=1792517622151"></script>
+<script src="sync.js?v=1792517622151"></script>
+<script src="app.js?v=1792517622151"></script>
+<script src="ui.js?v=1792517622151"></script>
+<script src="main.js?v=1792517622151"></script>
 </html>
