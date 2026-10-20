@@ -65,7 +65,7 @@ for (const sub of subs) {
   let doc = null, fsOK = true; try { doc = await getDoc(id); } catch (e) { fsOK = false; console.log('::warning::' + e.message); }
   const f = doc?.fields || {};
   let items = null, source = 'phone';
-  const fresh = f.updated && Date.now() - Number(f.updated.integerValue) < 40 * 3600e3;
+  const fresh = f.updated && Date.now() - Number(f.updated.integerValue) < 8 * 24 * 3600e3;                     // the phone writes a week ahead
   if (fresh && f.items?.stringValue) { try { items = JSON.parse(f.items.stringValue); } catch {} }
   if (!items) { items = fallbackItems(); source = 'plan'; }
   let sent = []; try { sent = JSON.parse(f.sent?.stringValue || '[]'); } catch {}
