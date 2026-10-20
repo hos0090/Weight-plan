@@ -1,0 +1,32 @@
+name: remind-mizaniyati
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    inputs:
+      id:
+        description: "test لإرسال إشعار تجربة لكل الأجهزة المسجّلة، أو اتركه فارغاً للتشغيل العادي"
+        required: false
+        default: ''
+concurrency:
+  group: remind-mizaniyati
+  cancel-in-progress: false
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: mizaniyati
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund --silent
+      - run: node scripts/remind.mjs
+        env:
+          INPUT_ID: ${{ inputs.id }}
+          VAPID_PUBLIC: ${{ vars.MIZ_VAPID_PUBLIC }}
+          VAPID_PRIVATE: ${{ secrets.MIZ_VAPID_PRIVATE }}
+          VAPID_SUBJECT: ${{ vars.MIZ_VAPID_SUBJECT }}
