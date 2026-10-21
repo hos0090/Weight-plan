@@ -32,6 +32,7 @@ var IC = {
   down:'<path d="M12 5v13M6.5 12.5 12 18l5.5-5.5"/>',
   search:'<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/>',
   sliders:'<path d="M5 7h9M18 7h1M5 17h3M12 17h7"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',
+  shield:'<path d="M12 3.5l7.5 2.8v5.4c0 4.3-3.2 7.9-7.5 8.8-4.3-.9-7.5-4.5-7.5-8.8V6.3z"/><path d="m9 12 2 2 4-4"/>',
   palette:'<circle cx="12" cy="12" r="8.5"/><circle cx="8.5" cy="10" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="15.5" cy="10" r="1"/><path d="M12 20.5a3 3 0 0 1 0-6h1.5a3 3 0 0 0 3-3"/>'
 };
 function ico(n, cls){
@@ -452,6 +453,7 @@ function obTable(list){
       +   '<span class="d-end"><b>'+num_(o.amount)+'</b><em>'+(o.occurrences > 1 ? num_(o.unitAmount)+' × '+o.occurrences : 'ريال')+'</em></span>'
       + '</div>'
       + ((srcs || flags) ? '<div class="oc-f">'+srcs+flags+'</div>' : '')
+      + obPayRow_(o)
       + (isOpen
           ? '<div class="oc-x">'+timelineBlock()
             + '<div class="oc-acts">'
@@ -463,6 +465,17 @@ function obTable(list){
   }).join('') + '</div>';
 }
 
+function obPayRow_(o){
+  var c = find(S.data.obligations, o.id);
+  if (!c) return '';
+  var lbl = 'هذه الدورة · '+dShort_(c.dueDate);
+  if (c.autoDeduct) return '<div class="oc-pay"><span>'+lbl+'</span><em class="st '+(c.autoPaid?'ok':'')+'">'+(c.autoPaid?'خُصم تلقائياً':'يُخصم تلقائياً')+'</em></div>';
+  if (c.paid) return '<div class="oc-pay"><span>'+lbl+'</span><em class="st ok">'+ico('check')+'مسدَّد '+num_(c.paidAmount)+'</em>'
+    + '<button class="ghost-del" onclick="undoPay(\''+o.id+'\',\''+attrJs(o.name)+'\')">تراجع</button></div>';
+  return '<div class="oc-pay'+(c.overdue?' late':'')+'"><span>'+lbl+(c.overdue?' · متأخر':'')+(c.paidAmount>0?' · سُدّد '+num_(c.paidAmount)+' من '+num_(c.amount):'')+'</span>'
+    + '<span class="pay2"><button onclick="pay(\''+o.id+'\',true)">'+(c.paidAmount>0?'أكمل '+num_(c.remainingAmount):'سدّدت '+num_(c.amount))+'</button>'
+    + '<button class="pt" onclick="payPart(\''+o.id+'\')">دفعة جزئية</button></span></div>';
+}
 function timelineBlock(){
   var t = S.timeline;
   if (!t){
@@ -610,7 +623,8 @@ function rangeRows(list){
       : o.paidAmount > 0
         ? (!o.paid ? '<button onclick="rangePay(\''+o.id+'\',\''+o.cycle+'\','+o.amount+')">أكمل</button>' : '')
           + '<button class="ghost-del" onclick="rangePay(\''+o.id+'\',\''+o.cycle+'\',0)">تراجع</button>'
-        : '<button onclick="rangePay(\''+o.id+'\',\''+o.cycle+'\','+o.amount+')">سدّدت</button>';
+        : '<span class="pay2"><button onclick="rangePay(\''+o.id+'\',\''+o.cycle+'\','+o.amount+')">سدّدت</button>'
+          + '<button class="pt" onclick="cyclePartial(\''+o.id+'\',\''+o.cycle+'\','+o.amount+','+o.paidAmount+')">جزء</button></span>';
     return '<div class="grow due'+cls+'"><span class="d-box">'+(o.paid ? ico('check') : '<b>'+x.d+'</b><small>'+x.m+'</small>')+'</span>'
       + '<span class="g-tx"><b>'+esc(o.name)+'</b><small>'+state+'</small></span>'
       + '<span class="d-end"><b>'+num_(o.paid ? o.amount : o.remainingAmount)+'</b>'+acts+'</span></div>';
@@ -648,3 +662,533 @@ function pFlow(){
       }).join('') + '</div>'
     + sensPanel();
 }
+
+/* ============================================================
+ *  الإصدار الثالث للرئيسية: حلقة الدورة + «وش قدامك» + أزرار السداد
+ * ========================================================== */
+function evtsOfCycle_(){
+  var d = S.data, cr = d.settings.cycleRange || {}, out = [];
+  d.obligations.forEach(function(o){
+    if (!o.dueDate || o.dueDate < cr.start || o.dueDate > cr.end) return;
+    out.push({ kind:'ob', id:o.id, name:o.name, date:o.dueDate, amount:o.paid ? o.amount : (o.remainingAmount || o.amount),
+               state: o.paid ? 'paid' : o.overdue ? 'late' : o.autoDeduct ? 'auto' : 'due', auto:o.autoDeduct, o:o });
+  });
+  d.incomes.forEach(function(i){
+    if (i.paused || !i.occurrenceDate || i.occurrenceDate < cr.start || i.occurrenceDate > cr.end) return;
+    out.push({ kind:'in', id:i.id, name:i.name, date:i.occurrenceDate, amount:i.arrived && i.actualAmount ? i.actualAmount : i.amount,
+               state: i.arrived ? 'got' : 'wait' });
+  });
+  out.sort(function(a,b){ return a.date < b.date ? -1 : a.date > b.date ? 1 : (a.kind === 'in' ? -1 : 1); });
+  return out;
+}
+function ring_(){
+  var d = S.data, s = d.summary, cr = d.settings.cycleRange || { start:TODAY_ISO, end:TODAY_ISO };
+  var total = Math.max(1, days_(cr.start, cr.end) + 1);
+  var isCur = d.month === currentCycle();
+  var passed = isCur ? Math.min(total, Math.max(0, days_(cr.start, TODAY_ISO) + .5)) : (d.month < currentCycle() ? total : 0);
+  var C = 150, R = 116, RI = 92;
+  var ang = function(iso){ return -Math.PI/2 - Math.min(total, Math.max(0, days_(cr.start, iso) + .5)) / total * 2 * Math.PI; };
+  var at = function(a, r){ return [C + r*Math.cos(a), C + r*Math.sin(a)]; };
+  var ev = evtsOfCycle_(); S._evts = ev;
+  var stack = {}, marks = '';
+  ev.forEach(function(e, idx){
+    var a = ang(e.date), key = e.kind + e.date, k = stack[key] = (stack[key] || 0) + 1;
+    if (e.kind === 'ob'){
+      var p = at(a, R + (k-1) * 13);
+      marks += '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="6" class="rk ob '+e.state+'" onclick="ringTap('+idx+')"><title>'+esc(e.name)+'</title></circle>';
+    } else {
+      var q = at(a, RI - (k-1) * 13), x = q[0].toFixed(1), y = q[1].toFixed(1);
+      marks += '<rect x="'+(q[0]-6).toFixed(1)+'" y="'+(q[1]-6).toFixed(1)+'" width="12" height="12" rx="3" class="rk in '+e.state+'" transform="rotate(45 '+x+' '+y+')" onclick="ringTap('+idx+')"><title>'+esc(e.name)+'</title></rect>';
+    }
+  });
+  var arc = '';
+  if (passed > 0){
+    var a1 = ang(cr.start) + .5/total*2*Math.PI, a2 = -Math.PI/2 - passed/total*2*Math.PI, p1 = at(-Math.PI/2, R), p2 = at(a2, R);
+    arc = passed >= total ? '<circle cx="'+C+'" cy="'+C+'" r="'+R+'" class="r-arc"/>'
+      : '<path d="M'+p1[0].toFixed(1)+' '+p1[1].toFixed(1)+' A'+R+' '+R+' 0 '+(passed/total > .5 ? 1 : 0)+' 0 '+p2[0].toFixed(1)+' '+p2[1].toFixed(1)+'" class="r-arc"/>';
+  }
+  var now = isCur ? at(-Math.PI/2 - passed/total*2*Math.PI, R) : null;
+  var next = d.incomes.filter(function(i){ return i.isBasic && !i.paused && !i.arrived && i.occurrenceDate && i.occurrenceDate >= TODAY_ISO; })
+    .sort(function(a,b){ return a.occurrenceDate < b.occurrenceDate ? -1 : 1; })[0];
+  var left = next ? days_(TODAY_ISO, next.occurrenceDate) : Math.max(0, days_(TODAY_ISO, cr.end) + 1);
+  var safe = s.safeRemaining;
+  var tick = '';
+  for (var t = 0; t < total; t++){
+    var ta = -Math.PI/2 - t/total*2*Math.PI, o1 = at(ta, R + 15), o2 = at(ta, R + (t % 7 === 0 ? 20 : 17));
+    tick += '<line x1="'+o1[0].toFixed(1)+'" y1="'+o1[1].toFixed(1)+'" x2="'+o2[0].toFixed(1)+'" y2="'+o2[1].toFixed(1)+'" class="r-tick'+(t % 7 === 0 ? ' w' : '')+'"/>';
+  }
+  var sd = dd_(cr.start), ed = dd_(cr.end);
+  return '<section class="ring-card">'
+    + '<div class="ring-wrap"><svg viewBox="0 0 300 300" class="ring" role="img" aria-label="دورتك من الراتب إلى الراتب">'
+    +   '<defs><linearGradient id="rgA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent2)"/><stop offset="1" stop-color="var(--accent)"/></linearGradient>'
+    +   '<radialGradient id="rgG"><stop offset="0" stop-color="var(--accent)" stop-opacity=".22"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></radialGradient></defs>'
+    +   tick
+    +   '<circle cx="150" cy="150" r="'+R+'" class="r-trk"/>'
+    +   '<circle cx="150" cy="150" r="'+RI+'" class="r-in"/>'
+    +   arc + marks
+    +   (now ? '<circle cx="'+now[0].toFixed(1)+'" cy="'+now[1].toFixed(1)+'" r="17" fill="url(#rgG)"/><circle cx="'+now[0].toFixed(1)+'" cy="'+now[1].toFixed(1)+'" r="7.5" class="r-now"/>' : '')
+    + '</svg>'
+    + '<div class="ring-c"><small>المتبقي الآمن</small><strong class="'+(safe<0?'neg':'')+'">'+(safe<0?'−':'')+num_(Math.abs(safe))+'</strong><em>ريال</em>'
+    +   '<span class="ring-left">'+(next ? (left === 0 ? esc(next.name)+' ينزل اليوم' : 'باقي '+left+' '+(left===1?'يوم':left<=10?'أيام':'يوماً')+' على '+esc(next.name))
+            : isCur ? 'باقي '+left+' '+(left<=10?'أيام':'يوماً')+' في الدورة' : monthName(d.month))+'</span></div>'
+    + '<span class="ring-s r1">'+sd.d+' '+sd.m+'</span><span class="ring-s r2">'+ed.d+' '+ed.m+'</span>'
+    + '</div>'
+    + '<div id="ringInfo" class="ring-info">'+'<span class="lg"><i class="lg-ob"></i>التزام</span><span class="lg"><i class="lg-ob" style="background:var(--green)"></i>مسدَّد</span><span class="lg"><i class="lg-ob" style="background:var(--red)"></i>متأخر</span><span class="lg"><i class="lg-in"></i>دخل</span><span class="lg"><i class="lg-now"></i>اليوم</span><span class="lg tap">اضغط أي علامة</span>'+'</div>'
+    + '</section>';
+}
+function ringTap(i){
+  var e = (S._evts || [])[i], box = el('ringInfo');
+  if (!e || !box) return;
+  var x = dd_(e.date), rel = days_(TODAY_ISO, e.date);
+  var when = rel === 0 ? 'اليوم' : rel === 1 ? 'غداً' : rel === -1 ? 'أمس' : rel > 0 ? 'بعد '+rel+' يوم' : 'قبل '+(-rel)+' يوم';
+  var st = e.kind === 'in' ? (e.state === 'got' ? 'نزل' : 'لم ينزل بعد')
+    : e.state === 'paid' ? 'مسدَّد' : e.state === 'late' ? 'متأخر' : e.state === 'auto' ? 'يُخصم تلقائياً' : 'لم يُسدَّد';
+  box.innerHTML = '<div class="ri '+(e.kind==='in'?'in':'ob '+e.state)+'"><span class="ri-ic">'+ico(e.kind==='in'?'down':'list')+'</span>'
+    + '<span class="g-tx"><b>'+esc(e.name)+'</b><small>'+x.d+' '+x.m+' · '+when+' · '+st+'</small></span>'
+    + '<span class="ri-a">'+(e.kind==='in'?'+':'−')+num_(e.amount)+'</span>'
+    + (e.kind === 'ob' && (e.state === 'due' || e.state === 'late') ? '<button onclick="pay(\''+e.id+'\',true)">سدّد</button>' : '')
+    + '<button class="x" onclick="ringReset()" aria-label="إغلاق">×</button></div>';
+}
+function ringReset(){
+  var box = el('ringInfo'); if (!box) return;
+  box.innerHTML = '<span class="lg"><i class="lg-ob"></i>التزام</span><span class="lg"><i class="lg-ob" style="background:var(--green)"></i>مسدَّد</span><span class="lg"><i class="lg-ob" style="background:var(--red)"></i>متأخر</span><span class="lg"><i class="lg-in"></i>دخل</span><span class="lg"><i class="lg-now"></i>اليوم</span><span class="lg tap">اضغط أي علامة</span>';
+}
+
+/* «وش قدامك»: ما سيحدث من اليوم بالترتيب — دخل أو التزام */
+function ahead_(){
+  var ev = (S._evts || evtsOfCycle_()).filter(function(e){
+    return e.date >= TODAY_ISO && !(e.kind === 'ob' && e.state === 'paid') && !(e.kind === 'in' && e.state === 'got');
+  });
+  var late = (S._evts || []).filter(function(e){ return e.kind === 'ob' && e.state === 'late'; });
+  if (!ev.length && !late.length) return '';
+  if (!ev.length) return '<div class="sec"><h3>وش قدامك</h3></div><div class="glist"><div class="grow quiet"><span class="g-ic ok">'+ico('check')+'</span>'
+    + '<span class="g-tx"><b>لا شيء جديد حتى نهاية الدورة</b><small>بقي فقط ما فات موعده أعلاه</small></span></div></div>';
+  var bal = {};
+  if (S.flow && S.flow.days) S.flow.days.forEach(function(x){ bal[x.date] = x.balance; });
+  var rows = ev.slice(0, S.allAhead ? 40 : 5);
+  return '<div class="sec"><h3>وش قدامك</h3>'+(late.length ? '<span class="sec-n neg">'+late.length+' متأخر</span>' : '')+'</div>'
+    + '<div class="glist ahead">' + rows.map(function(e, k){
+        var x = dd_(e.date), rel = days_(TODAY_ISO, e.date);
+        var when = rel === 0 ? 'اليوم' : rel === 1 ? 'غداً' : 'بعد '+rel+' '+(rel<=10?'أيام':'يوماً');
+        var showBal = bal[e.date] !== undefined && (k === rows.length - 1 || rows[k+1].date !== e.date);
+        var o = e.o;
+        var btns = e.kind === 'ob' && !e.auto
+          ? '<span class="pay2"><button onclick="pay(\''+e.id+'\',true)">سدّدت</button><button class="pt" onclick="payPart(\''+e.id+'\')">جزء</button></span>' : '';
+        return '<div class="grow ev-'+e.kind+'">'
+          + '<span class="d-box"><b>'+x.d+'</b><small>'+x.m+'</small></span>'
+          + '<span class="g-tx"><b>'+esc(e.name)+'</b><small>'+when+(e.kind==='in' ? ' · دخل' : e.auto ? ' · يُخصم تلقائياً' : o && o.paidAmount > 0 ? ' · سُدّد '+num_(o.paidAmount) : '')
+          +   (showBal ? ' · رصيدك بعدها '+num_(bal[e.date]) : '')+'</small></span>'
+          + '<span class="d-end"><b class="'+(e.kind==='in'?'pos':'')+'">'+(e.kind==='in'?'+':'−')+num_(e.amount)+'</b>'+btns+'</span></div>';
+      }).join('')
+    + (ev.length > 5 ? '<button class="g-more" onclick="S.allAhead=!S.allAhead;render()">'+(S.allAhead?'أقل':'كل ما تبقى في الدورة ('+ev.length+')')+'</button>' : '')
+    + '</div>';
+}
+function lateList_(){
+  var late = S.data.obligations.filter(function(o){ return o.overdue && !o.paid; })
+    .sort(function(a,b){ return a.dueDate < b.dueDate ? -1 : 1; });
+  if (!late.length) return '';
+  return '<div class="sec"><h3>فات موعدها</h3><span class="sec-n neg">'+num_(sum(late,'remainingAmount'))+'</span></div><div class="glist">'
+    + late.slice(0, S.allLate ? 40 : 4).map(function(o){
+        var x = dd_(o.dueDate);
+        return '<div class="grow due late"><span class="d-box"><b>'+x.d+'</b><small>'+x.m+'</small></span>'
+          + '<span class="g-tx"><b>'+esc(o.name)+'</b><small>متأخر '+Math.abs(o.daysLeft)+' يوم'+(o.paidAmount>0?' · سُدّد '+num_(o.paidAmount):'')+'</small></span>'
+          + '<span class="d-end"><b>'+num_(o.remainingAmount || o.amount)+'</b><span class="pay2"><button onclick="pay(\''+o.id+'\',true)">سدّدت</button><button class="pt" onclick="payPart(\''+o.id+'\')">جزء</button></span></span></div>';
+      }).join('')
+    + (late.length > 4 ? '<button class="g-more" onclick="S.allLate=!S.allLate;render()">'+(S.allLate?'أقل':'عرض الكل ('+late.length+')')+'</button>' : '')
+    + '</div>';
+}
+function flowCard_(){
+  var f = S.flow;
+  return '<div class="sec"><h3>رصيدك يوماً بيوم</h3><button class="sec-l" onclick="go(\'flow\')">التفاصيل</button></div>'
+    + '<section class="flow-card"><div class="fc-wrap">'+flowChart_(f)+(f && f.days && S.data.month === currentCycle() ? nowTag_(f) : '')+'</div>'
+    + '<div class="h-axis"><span>'+dShort_((S.data.settings.cycleRange||{}).start)+'</span><span>'+dShort_((S.data.settings.cycleRange||{}).end)+'</span></div>'
+    + (f && f.days && f.days.length ? (function(){
+        var low = f.days.reduce(function(a,b){ return b.balance < a.balance ? b : a; });
+        return '<div class="h-foot"><span class="hf'+(f.firstNegative?' neg':'')+'">'+(f.firstNegative ? 'ينقلب سالباً يوم '+dShort_(f.firstNegative.date) : 'أدنى رصيد '+num_(low.balance)+' يوم '+dShort_(low.date))+'</span>'
+          + '<span class="hf">آخر الدورة '+num_(f.closing)+'</span></div>';
+      })() : '')
+    + '</section>';
+}
+function payPart(id){
+  var o = find(S.data.obligations, id);
+  if (!o) return toast('لم أجد الالتزام في هذه الدورة','err');
+  openPay({ id:id, name:o.name, cycle:S.month, due:o.amount, paid:o.paidAmount,
+            estimated:!!o.isEstimated, flexible:o.type==='مرن'||o.type==='ترفيهي' }, 'partial');
+  setTimeout(function(){ var e = el('payAmt'); if (e){ e.value = ''; e.focus(); payHint(); } }, 60);
+}
+function pDash(){
+  if (!S.data) return '';
+  S._evts = null;
+  var ring = ring_();
+  return '<div class="home">' + ring + quick_() + alerts_() + startWindowNote() + arrearsPanel()
+    + lateList_() + ahead_() + flowCard_() + cycleFigures_() + sources_() + '</div>';
+}
+function dues_(){ return lateList_() + ahead_(); }
+
+/* ============================================================
+ *  مكونات عامة بلغة الرئيسية: كل اللوحات تصير قسماً بعنوان خارجي،
+ *  وكل مجموعة أرقام تصير بطاقة ملخص برقم رئيسي واحد.
+ * ========================================================== */
+function panel(title, sub, body, extra){
+  return '<section class="psec"><div class="sec"><div class="sec-t"><h3>'+title+'</h3>'+(sub ? '<small>'+sub+'</small>' : '')+'</div>'
+    + (extra ? '<div class="sec-x">'+extra+'</div>' : '') + '</div><div class="pbox">'+body+'</div></section>';
+}
+function unit_(v){ return String(v).replace(/\s*ر\.س$/, '<em>ريال</em>'); }
+function kpis(items){
+  if (!items || !items.length) return '';
+  var a = items[0], rest = items.slice(1);
+  return '<section class="ksum"><div class="k-main"><small>'+a[0]+'</small><b class="c-'+a[2]+'">'+unit_(a[1])+'</b>'+(a[3] ? '<span>'+a[3]+'</span>' : '')+'</div>'
+    + (rest.length ? '<div class="k-grid">' + rest.map(function(k){
+        return '<div><small>'+k[0]+'</small><b class="c-'+k[2]+'">'+unit_(k[1])+'</b>'+(k[3] ? '<span>'+k[3]+'</span>' : '')+'</div>';
+      }).join('') + '</div>' : '') + '</section>';
+}
+function hsum_(o){
+  /* o: { label, value, unit, cls, sub, ring:{pct,txt}, pills:[[txt,cls]], grid:[[label,value,cls,sub]] } */
+  return '<section class="hsum">'
+    + '<div class="hs-top"><div class="hs-tx"><small>'+o.label+'</small>'
+    +   '<b class="'+(o.cls||'')+'">'+o.value+(o.unit===false ? '' : '<em>'+(o.unit||'ريال')+'</em>')+'</b>'
+    +   (o.sub ? '<span>'+o.sub+'</span>' : '') + '</div>'
+    + (o.ring ? '<div class="hs-ring">'+ringSvg_(o.ring.pct, 86, 8)+'<div><b>'+o.ring.txt+'</b>'+(o.ring.sub ? '<small>'+o.ring.sub+'</small>' : '')+'</div></div>' : '')
+    + '</div>'
+    + (o.pills ? '<div class="hs-pills">'+o.pills.map(function(p){ return '<span class="pill '+(p[1]||'')+'">'+p[0]+'</span>'; }).join('')+'</div>' : '')
+    + (o.grid ? '<div class="sum2 g'+o.grid.length+'">'+o.grid.map(function(g){
+        return '<div><small>'+g[0]+'</small><b class="'+(g[2]||'')+'">'+g[1]+'</b>'+(g[3] ? '<span>'+g[3]+'</span>' : '')+'</div>'; }).join('')+'</div>' : '')
+    + '</section>';
+}
+function ringSvg_(pct, size, stroke){
+  size = size || 96; stroke = stroke || 9;
+  var r = (size - stroke) / 2, c = 2 * Math.PI * r, off = c * (1 - Math.max(0, Math.min(100, pct)) / 100);
+  return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" class="mring">'
+    + '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="var(--track)" stroke-width="'+stroke+'"/>'
+    + '<circle cx="'+size/2+'" cy="'+size/2+'" r="'+r+'" fill="none" stroke="url(#rgA2)" stroke-width="'+stroke+'" stroke-linecap="round"'
+    + ' stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" transform="rotate(-90 '+size/2+' '+size/2+') translate('+size+' 0) scale(-1 1)"/></svg>';
+}
+function chipsRow_(list){ return '<div class="chips">'+list.join('')+'</div>'; }
+function catIc_(c){
+  var m = { 'قهوة':'☕','مطاعم':'🍽','مقاضي':'🛒','مواصلات':'🚕','بنزين':'⛽','منزل':'🏠','ملابس':'👕','ترفيه':'🎬','صحة':'💊' };
+  return m[c] || '•';
+}
+function relDay_(iso){
+  var r = days_(iso, TODAY_ISO);
+  return r === 0 ? 'اليوم' : r === 1 ? 'أمس' : dShort_(iso);
+}
+
+/* ============================================================ المشتريات ============================================================ */
+function pPurchases(){
+  var s = S.data.summary, all = S.data.purchases, cats = S.data.settings.purchaseCategories;
+  var list = all.filter(function(p){
+    if (S.pf.cat !== 'all' && p.category !== S.pf.cat) return false;
+    if (S.pf.q && (p.item+' '+p.store+' '+p.notes).toLowerCase().indexOf(S.pf.q.toLowerCase()) < 0) return false;
+    return true;
+  }).sort(function(a,b){ return a.date < b.date ? 1 : -1; });
+  var todayAmt = all.filter(function(p){ return p.date === TODAY_ISO; }).reduce(function(x,p){ return x+p.amount; },0);
+  var pct = s.purchaseBudget ? Math.min(100, s.purchasesSpent/s.purchaseBudget*100) : 0;
+  var spend = (S.data.categorySpend || []).filter(function(c){ return c.spent > 0 || c.budget > 0; })
+    .sort(function(a,b){ return b.spent - a.spent; });
+  var mx = spend.length ? Math.max.apply(null, spend.map(function(c){ return Math.max(c.spent, c.budget||0); })) || 1 : 1;
+  var used = {}; all.forEach(function(p){ used[p.category] = 1; });
+
+  var groups = {}, order = [];
+  list.forEach(function(p){ if (!groups[p.date]){ groups[p.date] = []; order.push(p.date); } groups[p.date].push(p); });
+
+  return hsum_({ label:'صرفت على النثريات هذه الدورة', value:num_(s.purchasesSpent), cls:s.purchasesOverBudget ? 'neg' : '',
+      sub: all.length+' عملية · اليوم '+num_(todayAmt),
+      ring: s.purchaseBudget ? { pct:pct, txt:Math.round(pct)+'%', sub:'من السقف' } : null,
+      grid: s.purchaseBudget ? [['السقف', num_(s.purchaseBudget)], ['المتبقي منه', num_(s.purchasesLeft), s.purchasesLeft < 0 ? 'neg' : 'pos']] : null })
+    + (s.purchaseBudget ? '' : '<div class="note n-gold" style="margin-top:12px">حدّد سقفاً شهرياً للنثريات من الإعدادات ليُحجز من المتبقي الآمن بدل أن يفاجئك آخر الشهر.</div>')
+    + '<div class="sec"><h3>سجّل بسرعة</h3></div>' + quickBar(cats)
+    + '<div class="tools">'
+    +   '<button onclick="openReceipt()">'+ico('receipt')+'صوّر فاتورة</button>'
+    +   '<button onclick="openSms()">'+ico('down')+'لصق رسائل البنك</button>'
+    +   '<button onclick="openNlp()">'+ico('spark')+'اكتب بالكلام</button>'
+    +   '<button onclick="openRecurring()">'+ico('refresh')+'المتكررة</button>'
+    + '</div>'
+    + '<div class="sec"><h3>حسب التصنيف</h3><button class="sec-l" onclick="openCatBudgets()">السقوف</button></div>'
+    + (spend.length ? '<div class="glist">' + spend.map(function(c){
+        var w = Math.min(100, c.spent/mx*100), bw = c.budget ? Math.min(100, c.budget/mx*100) : 0;
+        return '<button class="grow cat'+(c.over?' over':'')+'" onclick="S.pf.cat=\''+attrJs(c.category)+'\';render()">'
+          + '<span class="g-ic emo">'+catIc_(c.category)+'</span>'
+          + '<span class="g-tx"><b>'+esc(c.category)+'</b><small>'+(c.budget ? (c.over ? 'تجاوز السقف بـ '+num_(c.spent-c.budget) : 'من سقف '+num_(c.budget)) : 'بلا سقف')+'</small>'
+          +   '<span class="mb cmb'+(c.over?' over':'')+'"><i style="width:'+w.toFixed(1)+'%"></i>'+(bw ? '<u style="right:'+bw.toFixed(1)+'%"></u>' : '')+'</span></span>'
+          + '<span class="f-v'+(c.over?' neg':'')+'">'+num_(c.spent)+'</span></button>';
+      }).join('') + '</div>' : '<div class="empty-st">'+ico('bag')+'<b>لا مشتريات بعد</b><small>سجّل أول عملية من الأعلى</small></div>')
+    + '<div class="sec"><h3>العمليات</h3><button class="sec-l" onclick="exportCsv(\'purchases\')">تصدير</button></div>'
+    + '<div class="ob-search">'+ico('search')+'<input id="pq" value="'+attr(S.pf.q)+'" oninput="pSearch(this.value)" placeholder="ابحث بالبند أو المحل"></div>'
+    + chipsRow_(['<button class="'+(S.pf.cat==='all'?'on':'')+'" onclick="S.pf.cat=\'all\';render()">الكل<i>'+all.length+'</i></button>']
+        .concat(cats.filter(function(c){ return used[c]; }).map(function(c){
+          var n = all.filter(function(p){ return p.category === c; }).length;
+          return '<button class="'+(S.pf.cat===c?'on':'')+'" onclick="S.pf.cat=\''+attrJs(c)+'\';render()">'+esc(c)+'<i>'+n+'</i></button>'; })))
+    + (order.length ? order.map(function(dt){
+        var g = groups[dt], tot = g.reduce(function(x,p){ return x+p.amount; },0);
+        return '<div class="day-h"><span>'+relDay_(dt)+'</span><span>'+num_(tot)+'</span></div><div class="glist">'
+          + g.map(function(p){
+              return '<div class="grow pur" onclick="openPurchase(\''+p.id+'\')"><span class="g-ic emo">'+catIc_(p.category)+'</span>'
+                + '<span class="g-tx"><b>'+esc(p.item)+'</b><small>'+esc(p.category)+(p.store ? ' · '+esc(p.store) : '')+(p.notes ? ' · '+esc(p.notes) : '')+'</small></span>'
+                + '<span class="d-end"><b>'+num_(p.amount)+'</b><button class="ghost-del" onclick="event.stopPropagation();delPurchase(\''+p.id+'\')">حذف</button></span></div>';
+            }).join('') + '</div>';
+      }).join('') : '<div class="empty-st">'+ico('search')+'<b>لا نتائج</b><small>غيّر البحث أو التصنيف</small></div>')
+    + purchRangePanel();
+}
+
+/* ============================================================ الادخار والتجنيب ============================================================ */
+function pSavings(){
+  var s = S.data.summary, goals = S.data.savings, r = S.reserves;
+  var saved = goals.reduce(function(x,g){ return x + (g.saved||0); },0), target = goals.reduce(function(x,g){ return x + (g.target||0); },0);
+  return hsum_({ label:'المقترح أن تدّخره هذه الدورة', value:num_(s.suggestedSaving), sub:s.savingsRate+'% من المتبقي الآمن ('+num_(s.safeRemaining)+')',
+      ring: target ? { pct: saved/target*100, txt: Math.round(saved/target*100)+'%', sub:'من أهدافك' } : null,
+      grid:[['أُدخر هذه الدورة', num_(s.savingsDeposited), 'pos'], ['الاحتياطي', num_(s.buffer)]] })
+    + '<details class="intro"><summary>'+ico('help')+'كيف يُحسب المقترح؟</summary><div class="note n-blue">(الرصيد المرحّل + الدخل − الالتزامات − المشتريات المحجوزة − الاحتياطي) × نسبة الادخار. الدخل الإضافي لا يدخل الخطة تلقائياً.</div></details>'
+    + '<div class="sec"><h3>التجنيب للالتزامات القادمة</h3><button class="sec-l" onclick="go(\'advisor\')">اطلب من المستشار</button></div>'
+    + (!r ? (S.errs.reserves ? waitOrErr('reserves','','loadReserves()') : '<div class="glist"><div class="tl-wait">جاري التحميل…</div></div>')
+      : !r.length ? '<div class="glist"><div class="grow quiet"><span class="g-ic">'+ico('gem')+'</span><span class="g-tx"><b>لا يوجد تجنيب</b><small>مثال: «جنّب لي للتأمين 1200 بعد 3 شهور من الراتب والضمان»</small></span></div></div>'
+      : '<div class="cards">' + r.map(function(x){
+          var pct = Math.min(100, Math.round(x.progress*100));
+          return '<article class="gcard"><div class="gc-top">'+ringSvg_(pct, 64, 7)+'<span class="gc-p">'+pct+'%</span>'
+            + '<div class="g-tx"><b>'+esc(x.name)+'</b><small>'+(x.obligationName ? 'لـ«'+esc(x.obligationName)+'» · ' : '')+(x.dueDate ? 'قبل '+dShort_(x.dueDate) : 'بلا موعد')+(x.cyclesLeft ? ' · بقي '+x.cyclesLeft+' دورة' : '')+'</small></div></div>'
+            + '<div class="sum2 g2"><div><small>جُنِّب</small><b>'+num_(x.accumulated)+'</b><span>من '+num_(x.target)+'</span></div>'
+            +   '<div><small>شهرياً</small><b>'+num_(x.monthly)+'</b><span>'+x.contributions.map(function(c){ return esc(c.sourceName); }).join(' + ')+'</span></div></div>'
+            + (x.shortfall ? '<div class="gc-warn neg">ينقص '+num_(x.shortfall)+' عند الاستحقاق</div>' : '')
+            + (x.behind ? '<div class="gc-warn neg">متأخر '+num_(x.behind)+' عن الخطة</div>' : '')
+            + '<div class="gc-acts">'
+            + (x.depositedThisCycle
+               ? '<span class="st ok">'+ico('check')+'جنّبت '+num_(x.thisCycleAmount)+'</span><button onclick="rsvDeposit(\''+x.id+'\',\''+attrJs(x.name)+'\','+x.thisCycleAmount+')">تعديل</button>'
+               : '<button class="pri" onclick="rsvDeposit(\''+x.id+'\',\''+attrJs(x.name)+'\','+x.monthly+')">جنّبت '+num_(x.monthly)+'</button>')
+            + '<button class="ghost-del" onclick="delReserve(\''+x.id+'\',\''+attrJs(x.name)+'\')">إلغاء</button></div></article>';
+        }).join('') + '</div>')
+    + '<div class="sec"><h3>أهدافك</h3><button class="sec-l" onclick="openCalc()">الحاسبة</button></div>'
+    + (goals.length ? '<div class="cards">' + goals.map(function(g){
+        var rem = Math.max(0, g.target - g.saved), pct = g.target ? Math.min(100, g.saved/g.target*100) : 0;
+        var eta = g.monthly > 0 ? Math.ceil(rem/g.monthly) : null;
+        return '<article class="gcard"><div class="gc-top">'+ringSvg_(pct, 64, 7)+'<span class="gc-p">'+Math.round(pct)+'%</span>'
+          + '<div class="g-tx"><b>'+esc(g.name)+'</b><small>'+(g.saved >= g.target ? 'مكتمل' : eta ? 'يكتمل خلال '+eta+' شهر تقريباً' : 'حدّد مساهمة شهرية')
+          + (g.targetDate ? ' · موعده '+dShort_(g.targetDate) : '')+'</small></div></div>'
+          + '<div class="sum2 g3"><div><small>المدّخر</small><b class="pos">'+num_(g.saved)+'</b></div><div><small>المتبقي</small><b>'+num_(rem)+'</b></div><div><small>الهدف</small><b>'+num_(g.target)+'</b></div></div>'
+          + '<div class="gc-acts"><button class="pri" onclick="openAddSaving(\''+g.id+'\')">أضف مبلغاً</button>'
+          + '<button onclick="openSaving(\''+g.id+'\')">تعديل</button><button class="ghost-del" onclick="delSaving(\''+g.id+'\')">حذف</button></div></article>';
+      }).join('') + '</div>'
+      : '<div class="empty-st">'+ico('gem')+'<b>لا أهداف بعد</b><small>سفر، سيارة، صندوق طوارئ — أضف هدفك وكم تدّخر له شهرياً</small><button class="btn-main" onclick="openSaving()">إضافة هدف</button></div>');
+}
+
+/* ============================================================ الديون والأقساط ============================================================ */
+function pDebt(){
+  var d = S.debt;
+  if (!d) return waitOrErr('debt','جاري حساب الديون…','loadDebt()');
+  var e = S.fund, p = S.payoff;
+  var fund = e ? '<div class="sec"><h3>صندوق الطوارئ</h3></div>' + hsum_({ label:'كم تصمد لو انقطع دخلك', value:e.monthsCovered, unit:'شهر',
+      cls: e.monthsCovered >= 3 ? 'pos' : 'neg', sub:'التقييم: '+e.level+' · المتعارف عليه ٣ أشهر على الأقل',
+      ring:{ pct: Math.min(100, e.monthsCovered/6*100), txt:e.monthsCovered+'/6', sub:'أشهر' },
+      grid:[['حاجتك الشهرية', num_(e.monthlyNeed)], ['المدّخر حالياً', num_(e.saved)]] })
+      + '<div class="glist" style="margin-top:10px">' + e.targets.map(function(t){
+          var pc = t.target ? Math.min(100, e.saved/t.target*100) : 0;
+          return '<div class="grow fig"><span class="g-ic">'+ico('shield')+'</span><span class="g-tx"><b>هدف '+t.months+' أشهر</b>'
+            + '<small>'+(t.gap ? 'ينقص '+num_(t.gap)+(t.monthsToReach ? ' · يتحقق خلال '+t.monthsToReach+' شهر' : '') : 'مكتمل')+'</small>'
+            + '<span class="mb'+(pc>=100?' in':'')+'"><i style="width:'+pc.toFixed(1)+'%"></i></span></span><span class="f-v">'+num_(t.target)+'</span></div>';
+        }).join('') + '</div>' : '';
+  if (!d.items.length) return fund + '<div class="empty-st" style="margin-top:16px">'+ico('pie')+'<b>لا أقساط لها نهاية</b><small>أضف «تاريخ الانتهاء» لأي التزام ليظهر هنا بعدد أقساطه المتبقية</small></div>';
+  var active = d.items.filter(function(x){ return !x.finished; });
+  var share = Math.round(d.incomeShare*100);
+  var strat = S.debtStrat || 'avalanche';
+  return hsum_({ label:'المتبقي عليك من التمويلات', value:num_(d.totalRemaining), cls:'', sub:active.length+' تمويل قائم · تتحرر '+(d.payoffDate ? dShort_(d.payoffDate) : '—'),
+      ring:{ pct:share, txt:share+'%', sub:'من دخلك' },
+      grid:[['القسط الشهري', num_(d.monthlyLoad)], ['دخلك الأساسي', num_(d.income)]] })
+    + (d.incomeShare > 0.4 ? '<div class="note n-red" style="margin-top:12px">أقساطك تستهلك أكثر من 40% من دخلك — هامش الطوارئ ضيق.</div>' : '')
+    + '<div class="sec"><h3>تمويلاتك</h3></div><div class="glist">'
+    + d.items.map(function(x){
+        var pc = Math.round(x.progress*100);
+        return '<div class="grow debt'+(x.finished?' dim':'')+'"><span class="dring">'+ringSvg_(pc, 46, 5)+'<i>'+pc+'%</i></span>'
+          + '<span class="g-tx"><b>'+esc(x.name)+'</b><small>'+num_(x.amount)+' '+esc(x.recurrence||'شهري')+' · '
+          + (x.finished ? 'مكتمل' : (x.remainingInstallments === null ? '—' : 'بقي '+x.remainingInstallments+' قسط')+' · ينتهي '+dShort_(x.endDate))+'</small></span>'
+          + '<span class="f-v">'+(x.remainingValue === null ? '—' : num_(x.remainingValue))+'<small>متبقٍ</small></span></div>';
+      }).join('') + '</div>'
+    + (p && p.hasDebt ? '<div class="sec"><h3>أي دين تسدّد أولاً؟</h3></div>'
+      + '<div class="note n-gold">ابدأ بـ <strong>'+esc(p.recommendation.target)+'</strong> — '+esc(p.recommendation.why)+'.'
+      + (p.extraPayoffMonths ? ' بتوجيه فائضك ('+num_(p.spare)+' شهرياً) تسدده خلال '+p.extraPayoffMonths+' شهر فيتحرر '+num_(p.freedIfCleared)+' شهرياً.' : '')+'</div>'
+      + '<div class="seg2"><button class="'+(strat==='avalanche'?'on':'')+'" onclick="S.debtStrat=\'avalanche\';render()">الأعلى فائدة</button>'
+      + '<button class="'+(strat==='snowball'?'on':'')+'" onclick="S.debtStrat=\'snowball\';render()">الأقصر مدة</button></div>'
+      + '<div class="glist">' + p[strat].map(function(x){
+          return '<div class="grow"><span class="d-box"><b>'+x.order+'</b><small>الترتيب</small></span><span class="g-tx"><b>'+esc(x.name)+'</b>'
+            + '<small>'+(x.interestRate ? 'فائدة '+x.interestRate+'% · ' : '')+'يحرّر '+num_(x.freedPerMonth)+' شهرياً</small></span>'
+            + '<span class="f-v">'+num_(x.remainingValue)+'</span></div>';
+        }).join('') + '</div>' : '')
+    + fund;
+}
+
+/* ============================================================ ما ينتظرك ============================================================ */
+function pForecast(){
+  var f = S.forecast;
+  if (!f) return waitOrErr('forecast','جاري حساب الدورات القادمة…','loadForecast()');
+  var mx = 1; f.cycles.forEach(function(c){ mx = Math.max(mx, c.income, c.confirmed + c.expected + c.purchases); });
+  return hsum_({ label: f.firstTight ? 'أول دورة ضاغطة: '+esc(f.firstTight.label) : 'الدورات القادمة كلها موجبة',
+      value: f.firstTight ? num_(f.firstTight.balance) : ico('check'), unit: f.firstTight ? 'ريال' : false, cls: f.firstTight ? 'neg' : 'pos',
+      sub: f.firstTight ? 'ابدأ التجنيب من الآن أو أجّل ما يمكن تأجيله' : 'لا عجز متوقع ضمن الأفق المعروض',
+      grid:[['متوقعة غير مؤكدة', num_(f.totalExpected)], ['جنّب شهرياً', num_(f.setAsideMonthly)], ['الاحتياطي', num_(f.buffer)]] })
+    + (f.purchaseBudgetSet ? '' : '<div class="note n-gold" style="margin-top:12px">لم تحدد سقفاً للمشتريات، فالتوقعات لا تحسم المصروف اليومي وستبدو أفضل من الواقع.</div>')
+    + '<div class="sec"><h3>الدورات القادمة</h3><small class="sec-s">الفائض ينتقل للتي بعدها</small></div>'
+    + '<div class="cyc-x">' + f.cycles.map(function(c){
+        var out = c.confirmed + c.expected + c.purchases;
+        return '<article class="cyc'+(c.negative?' neg':c.tight?' tight':'')+(c.isCurrent?' cur':'')+'">'
+          + '<div class="cy-l">'+esc(c.label)+(c.isCurrent ? ' <em>الحالية</em>' : '')+'</div>'
+          + '<div class="cy-bal">'+num_(c.balance)+'</div><small class="cy-s">الرصيد المتوقع</small>'
+          + '<div class="cy-bars"><span class="in" style="width:'+(c.income/mx*100).toFixed(1)+'%"></span><span class="out" style="width:'+(out/mx*100).toFixed(1)+'%"></span></div>'
+          + '<div class="cy-r"><span>دخل</span><b>'+num_(c.income)+'</b></div>'
+          + '<div class="cy-r"><span>التزامات</span><b>'+num_(c.confirmed)+'</b></div>'
+          + (c.expected ? '<div class="cy-r g"><span>متوقع</span><b>'+num_(c.expected)+'</b></div>' : '')
+          + '<div class="cy-r"><span>نثريات</span><b>'+num_(c.purchases)+'</b></div>'
+          + '<div class="cy-r net '+(c.net>=0?'pos':'neg')+'"><span>الصافي</span><b>'+(c.net>=0?'+':'−')+num_(Math.abs(c.net))+'</b></div>'
+          + '</article>';
+      }).join('') + '</div>'
+    + payloadPanel()
+    + '<div class="sec"><h3>البنود القادمة</h3><button class="sec-l" onclick="openOblig(\'\', true)">إضافة متوقع</button></div>'
+    + (f.upcoming.length ? '<div class="glist">' + f.upcoming.map(function(u){
+        var x = dd_(u.dueDate);
+        return '<div class="grow up"><span class="d-box"><b>'+x.d+'</b><small>'+x.m+'</small></span>'
+          + '<span class="g-tx"><b>'+esc(u.name)+'</b><small>'+(u.isExpected ? '<span class="neg-o">متوقع</span>' : 'مؤكد')+' · '
+          + (u.cyclesAway === 0 ? 'هذه الدورة' : 'بعد '+u.cyclesAway+' دورة') + (u.cyclesAway > 0 ? ' · جنّب '+num_(u.setAside)+' شهرياً' : '')+'</small>'
+          + '<span class="up-acts">'+(u.isExpected
+              ? '<button class="ok" onclick="setCertainty(\''+u.id+'\',\'مؤكد\')">تحقق</button><button onclick="dropExpected(\''+u.id+'\',\''+attrJs(u.name)+'\','+u.amount+')">لم يتحقق</button>'
+              : '<button onclick="setCertainty(\''+u.id+'\',\'متوقع\')">اجعله متوقعاً</button>')
+          + '<button onclick="openOblig(\''+u.id+'\')">تعديل</button></span></span>'
+          + '<span class="f-v">'+num_(u.amount)+'</span></div>';
+      }).join('') + '</div>'
+      : '<div class="empty-st">'+ico('cal')+'<b>لا بنود غير متكررة قادمة</b><small>أضف ما تتوقعه: فاتورة بعد شهرين، تأمين بعد خمسة</small></div>');
+}
+function payloadPanel(){
+  var list = S.pload;
+  if (!list) return S.errs.pload ? waitOrErr('pload','','loadPayload()') : '';
+  if (!list.length) return '';
+  var over = list.filter(function(p){ return p.over; });
+  var bySrc = {};
+  list.forEach(function(p){ (bySrc[p.source] = bySrc[p.source] || []).push(p); });
+  return '<div class="sec"><h3>ضغط كل راتب — ١٢ دورة</h3></div>'
+    + (over.length ? '<div class="note n-red">'+over.length+' نزول سيعجز: '+over.slice(0,3).map(function(p){ return esc(p.source)+' '+dShort_(p.date); }).join('، ')
+        + '<div style="margin-top:8px"><button class="btn btn-sm" onclick="fixOverflow()">اطلب العلاج من المستشار</button></div></div>'
+      : '')
+    + Object.keys(bySrc).map(function(src){
+        var arr = bySrc[src];
+        return '<div class="pbox load"><div class="ld-h"><b>'+esc(src)+'</b><small>'+(arr.some(function(p){ return p.over; }) ? '<span class="neg">فيه عجز</span>' : 'كلها مغطاة')+'</small></div>'
+          + '<div class="ld-cols">' + arr.map(function(p){
+              var pc = p.amount ? Math.min(100, p.load/p.amount*100) : 0, x = dd_(p.date);
+              return '<div class="ldc'+(p.over?' over':pc>85?' hi':'')+'" title="'+attr(p.items.join(' · '))+'" onclick="toast(\''+attrJs(esc(src)+' '+x.d+' '+x.m+': '+num_(p.load)+' من '+num_(p.amount))+'\',\'ok\')">'
+                + '<span><i style="height:'+Math.max(4,pc).toFixed(0)+'%"></i></span><small>'+x.m.slice(0,3)+'</small></div>';
+            }).join('') + '</div></div>';
+      }).join('');
+}
+
+/* ============================================================ التقارير ============================================================ */
+function pReports(){
+  var t = S.trend, s = S.data.summary;
+  if (!t) return waitOrErr('trend','جاري حساب الاتجاه…','loadTrend()');
+  var d = t.delta, mx = 1;
+  t.series.forEach(function(x){ mx = Math.max(mx, x.income, x.obligations + x.purchases); });
+  var arrow = function(n, goodDown){
+    if (!n) return '<span class="mut">بلا تغيير</span>';
+    var up = n > 0, good = goodDown ? !up : up;
+    return '<span class="'+(good?'pos':'neg')+'">'+(up?'▲ ':'▼ ')+num_(Math.abs(n))+'</span>';
+  };
+  var W = 320, H = 150, n = t.series.length, bw = Math.min(26, W / n / 2.6);
+  var bars = t.series.map(function(x, i){
+    var cx = W - (i + .5) * (W / n), hi = x.income/mx*(H-24), ho = (x.obligations + x.purchases)/mx*(H-24), hp = x.purchases/mx*(H-24);
+    return '<rect x="'+(cx-bw-1).toFixed(1)+'" y="'+(H-18-hi).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+hi.toFixed(1)+'" rx="4" class="tb-in"/>'
+      + '<rect x="'+(cx+1).toFixed(1)+'" y="'+(H-18-ho).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+ho.toFixed(1)+'" rx="4" class="tb-ob"/>'
+      + '<rect x="'+(cx+1).toFixed(1)+'" y="'+(H-18-hp).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+hp.toFixed(1)+'" rx="4" class="tb-pu"/>'
+      + '<text x="'+cx.toFixed(1)+'" y="'+(H-3)+'" class="tb-t">'+MONTH_AR[(+x.month.slice(5))-1].slice(0,3)+'</text>';
+  }).join('');
+  var mxc = t.categoryBreakdown.length ? t.categoryBreakdown[0].amount || 1 : 1;
+  var mxo = t.obligationCategories && t.obligationCategories.length ? t.obligationCategories[0].amount || 1 : 1;
+  return hsum_({ label:'الرصيد الختامي لهذه الدورة', value:num_(s.closing), cls:s.closing<0?'neg':'', sub:s.closed ? 'الدورة مُقفلة' : 'لم تُقفل بعد',
+      grid:[['الدخل المحقق', num_(s.incomeRealized), 'pos'], ['المسدَّد', num_(s.paidObligations)], ['المشتريات', num_(s.purchasesSpent)]] })
+    + '<div class="glist" style="margin-top:12px"><div class="grow quiet"><span class="g-ic">'+ico('chart')+'</span><span class="g-tx"><b>مقارنة بمتوسط آخر ٣ أشهر</b>'
+    +   '<small>الالتزامات '+arrow(d.obligations,true)+' · المشتريات '+arrow(d.purchases,true)+' · الادخار '+arrow(d.savings,false)+'</small></span></div></div>'
+    + '<div class="sec"><h3>الاتجاه</h3><div class="seg2 sm">'+[3,6,12].map(function(k){ return '<button class="'+(S.trendRange===k?'on':'')+'" onclick="setRange('+k+')">'+k+' أشهر</button>'; }).join('')+'</div></div>'
+    + '<section class="flow-card"><svg viewBox="0 0 '+W+' '+H+'" class="tchart">'+bars+'</svg>'
+    +   '<div class="ring-info" style="min-height:0"><span class="lg"><i style="background:var(--green);border-radius:3px"></i>الدخل</span><span class="lg"><i style="background:var(--accent);border-radius:3px"></i>التزامات</span><span class="lg"><i style="background:var(--orange);border-radius:3px"></i>منها مشتريات</span></div></section>'
+    + '<div class="sec"><h3>أين تذهب المشتريات</h3></div>'
+    + (t.categoryBreakdown.length ? '<div class="glist">' + t.categoryBreakdown.slice(0,8).map(function(c){
+        return '<div class="grow cat"><span class="g-ic emo">'+catIc_(c.category)+'</span><span class="g-tx"><b>'+esc(c.category)+'</b>'
+          + '<span class="mb"><i style="width:'+(c.amount/mxc*100).toFixed(1)+'%"></i></span></span><span class="f-v">'+num_(c.amount)+'</span></div>';
+      }).join('') + '</div>' : '<div class="empty-st">'+ico('bag')+'<b>لا مشتريات مسجلة</b></div>')
+    + (t.obligationCategories && t.obligationCategories.length ? '<div class="sec"><h3>الالتزامات حسب التصنيف</h3></div><div class="glist">'
+      + t.obligationCategories.map(function(c, i){
+          return '<div class="grow cat"><span class="g-ic"><i class="dotk k'+(i%6)+'"></i></span><span class="g-tx"><b>'+esc(c.category)+'</b>'
+            + '<span class="mb"><i style="width:'+(c.amount/mxo*100).toFixed(1)+'%"></i></span></span><span class="f-v">'+num_(c.amount)+'</span></div>';
+        }).join('') + '</div>' : '')
+    + '<div class="sec"><h3>الأشهر</h3><button class="sec-l" onclick="exportPdf()">تقرير للطباعة</button></div><div class="glist">'
+    + t.series.slice().reverse().map(function(x){
+        return '<div class="grow mrow"><span class="d-box"><b>'+(+x.month.slice(5))+'</b><small>'+x.month.slice(0,4)+'</small></span>'
+          + '<span class="g-tx"><b>'+MONTH_AR[(+x.month.slice(5))-1]+(x.closed ? ' <em class="st ok">مُقفل</em>' : '')+'</b>'
+          + '<small>دخل '+num_(x.incomeRealized)+' · التزامات '+num_(x.paid)+' · مشتريات '+num_(x.purchases)+(x.savings ? ' · ادخار '+num_(x.savings) : '')+'</small></span>'
+          + '<span class="f-v'+(x.closing<0?' neg':'')+'">'+num_(x.closing)+'<small>ختامي</small></span></div>';
+      }).join('') + '</div>';
+}
+
+/* ============================================================ المستشار ============================================================ */
+function pAdvisor(){
+  var st = S.ai.status;
+  if (st && !st.hasKey){
+    return '<section class="adv-hero">'+ico('spark')+'<b>مستشارك المالي</b><small>يقرأ كل أرقامك ويقترح، ولا ينفّذ شيئاً حتى توافق</small>'
+      + '<div class="note n-gold">أضف مفتاح كلود من الإعدادات لتفعيله — أنشئه من console.anthropic.com ولا تشاركه مع أحد.</div>'
+      + '<button class="btn-main wide" onclick="go(\'settings\')">اذهب للإعدادات</button></section>';
+  }
+  var last = S.ai.last, h = S.ai.history;
+  var q = S.ai.quality;
+  return '<section class="adv-hero">'+ico('spark')+'<b>اسأل عن أي قرار مالي</b><small>يرى كل التزاماتك، والدورات القادمة، وضغط كل راتب، وسجل سدادك — ويتذكر محادثاتكم</small>'
+    + (q ? '<span class="pill '+(q.score>=80?'ok':'')+'">جودة بياناتك '+q.score+'/100 · '+esc(q.level)+'</span>' : '')
+    + '</section>'
+    + chipsRow_([['حلّل وضعي كاملاً','aiRun(\'analyze\')'],['وزّع التزاماتي','aiAllocOpen(\'unassigned\')'],
+        ['قسّم المصروف المرن',"el('aiQ').value='قسّم التزاماتي المرنة الكبيرة إلى فترات حسب مواعيد نزول دخلي، كل فترة من مصدرها';aiSend()"],
+        ['عاداتي في الصرف','aiRun(\'patterns\')'],['تقرير الدورة','aiRun(\'report\')']]
+      .map(function(x){ return '<button onclick="'+x[1].replace(/"/g,'&quot;')+'">'+x[0]+'</button>'; }))
+    + '<div class="composer"><textarea id="aiQ" rows="2" placeholder="أقدر آخذ قسط 800؟ · جنّب لي للتأمين 1200 بعد 3 شهور · سجّل إني سدّدت الإيجار"></textarea>'
+    +   '<button onclick="aiSend()" aria-label="إرسال">'+ico('chev')+'</button></div>'
+    + (last ? '<div class="bub a">'+esc(last.answer)+'</div>' : '')
+    + agentPanel() + batchPanel()
+    + (q && q.issues && q.issues.length ? '<details class="intro"><summary>'+ico('help')+'ما ينقص بياناتك؟</summary><div class="note n-gold">'+esc(q.confidence)+'<br>'+q.issues.map(esc).join(' · ')+'</div></details>' : '')
+    + '<div class="sec"><h3>المحادثات</h3>'+(h && h.length ? '<button class="sec-l" onclick="aiClearHistory()">مسح الذاكرة</button>' : '')+'</div>'
+    + (!h ? '<div class="tl-wait">جاري التحميل…</div>'
+      : !h.length ? '<div class="empty-st">'+ico('spark')+'<b>ابدأ بـ «حلّل وضعي كاملاً»</b><small>كل سؤال وجوابه يُحفظ هنا، والمستشار يرجع له لاحقاً</small></div>'
+      : '<div class="chat">' + h.map(function(t){
+          return '<div class="bub q">'+esc(t.question)+'<small>'+esc(t.at)+'</small></div>'
+            + '<div class="bub a">'+esc(t.answer)
+            + (t.userNote ? '<div class="ai-note">ما حدث: '+esc(t.userNote)+'</div>' : '')
+            + '<button class="bub-n" onclick="aiNote(\''+t.id+'\')">'+(t.userNote ? 'عدّل ما حدث' : 'سجّل ما حدث')+'</button></div>';
+        }).join('') + '</div>');
+}
+
+/* ============================================================ ماذا لو ============================================================ */
+function pWhatIf(){
+  var sm = S.data.summary;
+  if (!S.simItems.length) S.simItems = [{kind:'loan',amount:'',months:24,day:1,label:''}];
+  return hsum_({ label:'متبقيك الآمن قبل أي قرار', value:num_(sm.safeRemaining), sub:'جرّب قسطاً أو سفراً أو زيادة دخل — وشوف أثرها على رصيدك يوماً بيوم',
+      grid:[['المتبقي الكلي', num_(sm.remaining)], ['الاحتياطي', num_(sm.buffer)]] })
+    + '<div class="sec"><h3>قراراتك</h3><button class="sec-l" onclick="simAdd()">＋ قرار</button></div>'
+    + '<div id="simList" class="sims"></div>'
+    + '<div class="two" style="margin-top:12px"><button class="btn-main" onclick="runMulti()">احسب الأثر</button><button class="btn" onclick="aiReview()">ناقشه مع المستشار</button></div>'
+    + '<div id="simOut" class="sim-out"></div>';
+}
+function simRender(){
+  var box = el('simList'); if (!box) return;
+  box.innerHTML = S.simItems.map(function(x,i){
+    return '<div class="simc"><div class="seg2 sm">'
+      + [['loan','قسط'],['expense','مصروف'],['income','دخل'],['saving','ادخار']].map(function(o){
+          return '<button class="'+(x.kind===o[0]?'on':'')+'" onclick="simSet('+i+',\'kind\',\''+o[0]+'\');simRender()">'+o[1]+'</button>'; }).join('')
+      + '</div>'
+      + '<input class="sim-l" type="text" placeholder="الوصف (مثلاً: قسط جوال)" value="'+attr(x.label)+'" oninput="simSet('+i+',\'label\',this.value)">'
+      + '<div class="two"><label class="field"><span>المبلغ</span><input type="number" min="0" value="'+attr(x.amount)+'" oninput="simSet('+i+',\'amount\',this.value)"></label>'
+      + '<label class="field"><span>يوم الشهر</span><input type="number" min="1" max="31" value="'+attr(x.day)+'" oninput="simSet('+i+',\'day\',this.value)"></label></div>'
+      + (S.simItems.length > 1 ? '<button class="ghost-del" onclick="simDel('+i+')">حذف القرار</button>' : '')
+      + '</div>';
+  }).join('');
+}
+
+/* ============================================================ الدليل ============================================================ */
+function pGuide(){
+  return '<section class="adv-hero">'+ico('help')+'<b>كيف تستخدم ميزانيتي</b><small>ابدأ بالمفاهيم الخمسة، ثم افتح الصفحة التي تستخدمها فقط</small></section>'
+    + GUIDE.map(function(sec, i){
+        return '<details class="gd"'+(i===0?' open':'')+'><summary><span><b>'+esc(sec[0])+'</b><small>'+esc(sec[1]||'')+'</small></span>'+ico('chev')+'</summary>'
+          + '<div class="glist">'+sec[2].map(function(row){
+              return '<div class="grow quiet"><span class="g-tx"><b>'+esc(row[0])+'</b><small>'+esc(row[1])+'</small></span></div>';
+            }).join('')+'</div></details>';
+      }).join('');
+}
+document.body.insertAdjacentHTML('beforeend', '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>'
+  + '<linearGradient id="rgA2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent2)"/><stop offset="1" stop-color="var(--accent)"/></linearGradient></defs></svg>');
