@@ -1511,8 +1511,8 @@ function getObligationTimeline(token, id, back, forward) {
     // المبلغ التقديري يختلف بين الدورات، فنأخذ المسجَّل إن وُجد
     const pay = pays[k] || null;
     const unit = obligationAmount_(r).amount;
-    const full = (pay && pay.dueAmount > 0) ? pay.dueAmount : unit * count;
-    const amount = Math.round(full * sharePct / 100);
+    // المسجَّل في السداد محسوب بحصتك أصلاً — تطبيق النسبة عليه مرة ثانية كان يُنصّف المشترك
+    const amount = (pay && pay.dueAmount > 0) ? Math.round(pay.dueAmount) : Math.round(unit * count * sharePct / 100);
     const paidAmount = pay ? pay.amount : 0;
 
     const autoPaidAmt = autoDeduct

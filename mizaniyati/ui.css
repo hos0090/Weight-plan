@@ -650,3 +650,18 @@ details.gd .g-tx b{white-space:normal}
 .chips.wrap{flex-wrap:wrap!important;margin:0}
 .chips.wrap .chip{background:var(--surface2);border:1px solid var(--line2);border-radius:99px;padding:7px 12px;font-size:13px}
 .themes,.tcards{gap:8px}
+:root[data-theme="light"] .pay2 .pt,:root[data-theme="government"] .pay2 .pt,
+:root[data-theme="light"] .fl.s,:root[data-theme="government"] .fl.s,
+:root[data-theme="light"] .tab.on,:root[data-theme="government"] .tab.on,
+:root[data-theme="light"] .cy-l em,:root[data-theme="government"] .cy-l em,
+:root[data-theme="light"] .gc-p,:root[data-theme="government"] .gc-p,
+:root[data-theme="light"] .hs-ring b,:root[data-theme="government"] .hs-ring b,
+:root[data-theme="light"] .dring i,:root[data-theme="government"] .dring i,
+:root[data-theme="light"] .due.soon .d-box,:root[data-theme="government"] .due.soon .d-box,
+:root[data-theme="light"] .note.n-gold,:root[data-theme="government"] .note.n-gold,
+:root[data-theme="light"] .pill:not(.ok):not(.warn),:root[data-theme="government"] .pill:not(.ok):not(.warn){color:var(--accent)}
+:root[data-theme="light"] .r-now,:root[data-theme="government"] .r-now{fill:var(--accent)}
+:root[data-theme="light"] .rk.ob,:root[data-theme="government"] .rk.ob{fill:var(--accent)}
+:root[data-theme="light"] .rk.ob.paid,:root[data-theme="government"] .rk.ob.paid{fill:var(--green)}
+:root[data-theme="light"] .rk.ob.late,:root[data-theme="government"] .rk.ob.late{fill:var(--red)}
+:root[data-theme="light"] .rk.ob.auto,:root[data-theme="government"] .rk.ob.auto{fill:var(--blue)}

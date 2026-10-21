@@ -256,9 +256,11 @@ function rtSha256_(bytes) {
 }
 
 /* ---------- الأدوات ---------- */
+/* التاريخ بتوقيت الجهاز نفسه: المحرك يبني تواريخه بدوال التوقيت المحلي (new Date(y,m,d))،
+   فتنسيقها بتوقيت ثابت يزيح اليوم عند من يكون شرق الرياض. هكذا كان سلوك جوجل
+   حين يطابق توقيت السكربت توقيت المستخدم. */
 function rtRiyadhParts_(d) {
-  const t = new Date(d.getTime() + 3 * 3600000);   // الرياض UTC+3 بلا توقيت صيفي
-  return { y: t.getUTCFullYear(), M: t.getUTCMonth() + 1, d: t.getUTCDate(), H: t.getUTCHours(), m: t.getUTCMinutes(), s: t.getUTCSeconds(), w: t.getUTCDay() };
+  return { y: d.getFullYear(), M: d.getMonth() + 1, d: d.getDate(), H: d.getHours(), m: d.getMinutes(), s: d.getSeconds(), w: d.getDay() };
 }
 function rtBlob_(content, type, name) {
   const b = {

@@ -224,3 +224,17 @@ function claudeApplyPlan(token, month, text) {
   return { month: m, reply: String(parsed.reply || ''), actions: actions,
            validCount: actions.filter(function (a) { return a.valid; }).length };
 }
+
+/* ============================================================
+ *  ترحيل تلقائي: إن لم تُقفل الدورة السابقة كان رصيدها يضيع (الافتتاحي = 0)
+ *  بينما تُخصم متأخراتها من الدورة الجديدة — فيظهر المتبقي أقل من الحقيقة.
+ *  الآن: المقفلة تُرحَّل بختاميها المسجّل، وغير المقفلة بختاميها المحسوب.
+ * ========================================================== */
+function openingBalance_(month) {
+  if (String(getSetting_('ROLLOVER') || 'نعم') === 'لا') return 0;
+  const pm = prevMonth_(month);
+  const prev = monthRecord_(pm);
+  if (prev) return num(prev.closing);
+  if (pm < startMonth_()) return 0;
+  return monthSummary_(pm).closing;
+}

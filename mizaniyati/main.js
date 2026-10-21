@@ -6,7 +6,7 @@
 /* ---------- Service Worker ---------- */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () {
-    navigator.serviceWorker.register('sw.js?v=1792570271486').then(function (reg) {
+    navigator.serviceWorker.register('sw.js?v=1792573365734').then(function (reg) {
       reg.addEventListener('updatefound', function () {
         const nw = reg.installing;
         nw && nw.addEventListener('statechange', function () {
