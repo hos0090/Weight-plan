@@ -82,7 +82,7 @@ function markNav(){
   b.style.display = (p[2] && !home) ? '' : 'none';
   document.body.setAttribute('data-view', S.view);
   var top = document.querySelector('.top');
-  if (top) top.classList.toggle('hidden', home);
+  if (top) top.classList.toggle('hidden', home || S.view === 'settings' || S.view === 'advisor');
 }
 
 /* ---------- أوراق «المزيد» و«إضافة» ---------- */
@@ -1192,3 +1192,193 @@ function pGuide(){
 }
 document.body.insertAdjacentHTML('beforeend', '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>'
   + '<linearGradient id="rgA2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent2)"/><stop offset="1" stop-color="var(--accent)"/></linearGradient></defs></svg>');
+
+/* ============================================================ جسر كلود ============================================================ */
+function claudeCard_(){
+  return '<section class="cl-card">'
+    + '<div class="cl-h"><span class="cl-ic">'+ico('spark')+'</span><div><b>حلّل مع كلود</b><small>بدون مفتاح: التطبيق يجهّز ملف وضعك كاملاً، تلصقه في محادثتنا، وأنا أحلّل وأناقشك وأقترح — وأي تعديل أعطيك إياه ترجعه هنا وتوافق عليه بضغطة</small></div></div>'
+    + '<textarea id="clQ" rows="2" placeholder="وش تبي نناقش؟ (اختياري) — مثلاً: أقدر آخذ قسط 800؟ رتّب لي التزاماتي على رواتبي">'+esc(S.clQ||'')+'</textarea>'
+    + '<div class="cl-steps">'
+    +   '<button class="cl-s" onclick="claudeCopy()"><i>١</i><span><b>انسخ وضعي لكلود</b><small>ينسخ الملف ويفتح المشاركة</small></span></button>'
+    +   '<button class="cl-s" onclick="claudePaste()"><i>٢</i><span><b>الصق خطة كلود</b><small>تراجعها وتوافق قبل التنفيذ</small></span></button>'
+    + '</div></section>';
+}
+function claudeCopy(){
+  var q = el('clQ') ? el('clQ').value.trim() : '';
+  S.clQ = q;
+  busy(true,'جاري تجهيز ملف وضعك…');
+  srv(function(r){
+    busy(false);
+    var text = r.text;
+    var done = function(how){
+      modal('<div class="sheet-t">جاهز ✓</div><div class="glist">'
+        + '<div class="grow quiet"><span class="g-ic ok">'+ico('check')+'</span><span class="g-tx"><b>'+how+'</b><small>'+num_(r.chars)+' حرف — كل التزاماتك ودخلك ودوراتك القادمة وسجل سدادك</small></span></div>'
+        + '<div class="grow quiet"><span class="g-ic">'+ico('spark')+'</span><span class="g-tx"><b>افتح محادثة مع كلود والصقه</b><small>أحلّل وأناقشك، وإذا اتفقنا على تعديلات أعطيك كتلة كود في آخر ردّي</small></span></div>'
+        + '<div class="grow quiet"><span class="g-ic">'+ico('down')+'</span><span class="g-tx"><b>انسخ ردّي كاملاً وارجع هنا</b><small>ثم «الصق خطة كلود»</small></span></div></div>'
+        + '<div class="macts"><button class="btn-main" onclick="closeModal()">تمام</button>'
+        + (navigator.share ? '<button class="btn" onclick="claudeShare_()">مشاركة</button>' : '') + '</div>');
+    };
+    S._clText = text;
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ done('نسخت ملف وضعك'); }, function(){ claudeManual_(text); });
+    } else claudeManual_(text);
+  }, failBusy).claudeBriefing(S.token, currentCycle(), q);
+}
+function claudeShare_(){ try { navigator.share({ title:'وضعي من ميزانيتي', text:S._clText }); } catch (e) {} }
+function claudeManual_(text){
+  modal('<div class="sheet-t">انسخ الملف</div><div class="hint" style="margin-bottom:8px">اضغط داخل المربع ← تحديد الكل ← نسخ</div>'
+    + '<textarea id="clTxt" class="cl-big" readonly>'+esc(text)+'</textarea>'
+    + '<div class="macts"><button class="btn-main" onclick="var t=el(\'clTxt\');t.select();document.execCommand(\'copy\');toast(\'نُسخ\',\'ok\')">نسخ</button>'
+    + (navigator.share ? '<button class="btn" onclick="claudeShare_()">مشاركة</button>' : '') + '</div>');
+}
+function claudePaste(){
+  modal('<div class="sheet-t">الصق خطة كلود</div>'
+    + '<textarea id="clPlan" class="cl-big" placeholder="الصق ردّ كلود كاملاً هنا — التطبيق يلقط كتلة الخطة منه"></textarea>'
+    + '<div class="macts"><button class="btn-main" onclick="claudeApply_()">راجع الخطة</button>'
+    + (navigator.clipboard && navigator.clipboard.readText ? '<button class="btn" onclick="navigator.clipboard.readText().then(function(t){el(\'clPlan\').value=t})">لصق من الحافظة</button>' : '')
+    + '</div>');
+}
+function claudeApply_(){
+  var t = v('clPlan');
+  if (!t.trim()) return toast('الصق الرد أولاً','err');
+  busy(true,'جاري تدقيق الخطة…');
+  srv(function(r){
+    busy(false); closeModal();
+    r.actions.forEach(function(a){ a.checked = a.valid && a.risk !== 'high'; });
+    S.ai.plan = r; S.ai.last = { answer: r.reply || 'خطة من كلود' }; S.ai.history = null;
+    if (S.view !== 'advisor') go('advisor'); else render();
+    loadAiHistory();
+    toast(r.validCount + ' إجراء جاهز لموافقتك','ok');
+  }, failBusy).claudeApplyPlan(S.token, currentCycle(), t);
+}
+var __pAdv0 = pAdvisor;
+pAdvisor = function(){
+  var st = S.ai.status;
+  if (st && !st.hasKey){
+    return claudeCard_() + (S.ai.last ? '<div class="bub a">'+esc(S.ai.last.answer)+'</div>' : '') + agentPanel() + batchPanel()
+      + '<div class="sec"><h3>أو اربطني مباشرة</h3></div><div class="glist"><button class="grow" onclick="go(\'settings\');setTimeout(openAiSheet,120)">'
+      + '<span class="g-ic">'+ico('bolt')+'</span><span class="g-tx"><b>مفتاح كلود</b><small>يخلّي المستشار يرد داخل التطبيق مباشرة — يحتاج حساباً مدفوعاً في console.anthropic.com</small></span>'+ico('chev','g-go')+'</button></div>';
+  }
+  return claudeCard_() + __pAdv0();
+};
+
+/* ============================================================ الإعدادات ============================================================ */
+function srow_(icon, title, val, act, cls){
+  return '<button class="grow srow '+(cls||'')+'" onclick="'+act.replace(/"/g,'&quot;')+'"><span class="g-ic">'+ico(icon)+'</span>'
+    + '<span class="g-tx"><b>'+title+'</b></span>'+(val !== undefined && val !== '' ? '<span class="s-val">'+val+'</span>' : '')+ico('chev','g-go')+'</button>';
+}
+function pSettings(){
+  var st = S.data.settings, s = S.data.summary, n = window.NOTIF_STATE ? window.NOTIF_STATE() : {};
+  var sy = window.SYNC ? window.SYNC.state() : {};
+  var ai = S.ai.status;
+  if (!S.appUser && !S._uLoading){ S._uLoading = 1; BRIDGE.call('__status', []).then(function(x){ S.appUser = x.user || 'admin'; if (S.view==='settings') render(); }); }
+  var u = S.appUser || '';
+  return '<section class="prof"><span class="pf-av">'+esc((u||'م').slice(0,1))+'</span><div><b>'+esc(u || '…')+'</b>'
+    +   '<small>دورتك من يوم '+(st.cycleStartDay||1)+' · '+dShort_(st.cycleRange.start)+' ← '+dShort_(st.cycleRange.end)+'</small></div>'
+    +   '<span class="pill '+(sy.code?'ok':'')+'">'+(sy.code ? ico('check')+'مزامَن' : 'على هذا الجهاز')+'</span></section>'
+
+    + '<div class="sec"><h3>خطتك المالية</h3></div><div class="glist">'
+    + srow_('cal','يوم بداية الدورة', 'يوم '+(st.cycleStartDay||1), 'openPlanSheet()')
+    + srow_('shield','احتياطي الأمان', num_(st.buffer)+' ريال', 'openPlanSheet()')
+    + srow_('bag','سقف المشتريات', st.purchaseBudget ? num_(st.purchaseBudget)+' ريال' : 'غير محدد', 'openPlanSheet()')
+    + srow_('gem','نسبة الادخار', st.savingsRate+'%', 'openPlanSheet()')
+    + srow_('refresh','ترحيل الرصيد', st.rollover ? 'مفعّل' : 'معطّل', 'openPlanSheet()')
+    + srow_('wallet','بداية العمل بالتطبيق', dShort_(st.startDate), 'openPlanSheet()')
+    + '</div>'
+
+    + '<div class="sec"><h3>الدورة الحالية</h3></div>'
+    + hsum_({ label:'الرصيد الختامي المتوقع', value:num_(s.closing), cls:s.closing<0?'neg':'', sub: s.closed ? 'مُقفلة ومرحَّلة للدورة التالية' : 'أقفلها بعد تسجيل كل الدخل والسداد',
+        grid:[['الافتتاحي', num_(s.opening)], ['الدخل المحقق', num_(s.incomeRealized), 'pos'], ['المصروف', num_(s.paidObligations + s.purchasesSpent)]] })
+    + '<div class="two" style="margin-top:10px">'+(s.closed ? '<button class="btn" onclick="reopenMonth()">إعادة فتح الدورة</button>' : '<button class="btn-main" onclick="doCloseMonth()">إقفال الدورة وترحيل الرصيد</button>')
+    +   '<select class="sel" onchange="setMonth(this.value)">'+el('monthSel').innerHTML+'</select></div>'
+
+    + '<div class="sec"><h3>المستشار والتنبيهات</h3></div><div class="glist">'
+    + srow_('spark','كلود — مستشارك', ai && ai.hasKey ? 'مربوط بمفتاح' : 'عبر المحادثة', 'openAiSheet()')
+    + srow_('alert','إشعارات الجوال', n.enabled ? 'مفعّلة · '+pad2(n.hour)+':00' : 'معطّلة', 'openNotifSheet()')
+    + '</div>'
+
+    + '<div class="sec"><h3>المظهر</h3></div><div class="pbox">'+themeCards()
+    +   '<div class="seg2" style="margin:14px 0 0">'+[['s','أصغر'],['n','عادي'],['l','أكبر'],['xl','كبير جداً']].map(function(x){
+          return '<button class="'+(S.fs===x[0]?'on':'')+'" onclick="setFs(\''+x[0]+'\');render()">'+x[1]+'</button>'; }).join('')+'</div></div>'
+
+    + '<div class="sec"><h3>بياناتك</h3></div><div class="glist">'
+    + srow_('down','استيراد من الشيت القديم', '', 'openDataSheet(\'import\')')
+    + srow_('refresh','المزامنة بين جوالاتك', sy.code ? esc(sy.code) : 'غير مفعّلة', 'openDataSheet(\'sync\')')
+    + srow_('shield','النسخ الاحتياطية', '', 'openDataSheet(\'backups\')')
+    + srow_('receipt','تصدير الالتزامات', '', "exportCsv('obligations')")
+    + '</div>'
+
+    + '<div class="sec"><h3>التصنيفات</h3></div><div class="glist">'
+    + srow_('list','تصنيفات الالتزامات', (st.obligationCategories||[]).length, 'openObCatSheet()')
+    + srow_('bag','سقوف تصنيفات المشتريات', '', 'openCatBudgets()')
+    + '</div>'
+
+    + '<div class="sec"><h3>الأمان والصيانة</h3></div><div class="glist">'
+    + srow_('shield','كلمة المرور', '', 'openPassSheet()')
+    + srow_('check','فحص وإصلاح البيانات', '', 'runRepair()')
+    + srow_('receipt','سجل العمليات', S.audit ? S.audit.length : '', 'openAuditSheet()')
+    + srow_('alert','سلة المحذوفات', S.trash ? S.trash.length : '', 'openTrashSheet()')
+    + '</div>'
+    + (S.ai.repair ? '<div class="note n-green" style="margin-top:10px">'+esc(S.ai.repair.message)+'</div>' : '')
+    + '<div class="glist" style="margin-top:22px">'+srow_('logout','تسجيل الخروج','','logout()','danger')+'</div>'
+    + '<p class="ver">ميزانيتي · يعمل على جهازك بالكامل</p>';
+}
+function openPlanSheet(){
+  var st = S.data.settings;
+  modal('<div class="sheet-t">خطتك المالية</div>'
+    + fld('يوم بداية الدورة','<input id="setCycle" type="number" min="1" max="28" value="'+(st.cycleStartDay||1)+'">','27 = من يوم نزول راتبك إلى 26 من الشهر التالي.')
+    + '<div class="two">'+fld('احتياطي الأمان','<input id="setBuffer" type="number" min="0" value="'+st.buffer+'">')
+    + fld('نسبة الادخار %','<input id="setRate" type="number" min="0" max="100" value="'+st.savingsRate+'">')+'</div>'
+    + fld('سقف المشتريات النثرية','<input id="setPurchase" type="number" min="0" value="'+st.purchaseBudget+'">','يُحجز من المتبقي الآمن.')
+    + fld('ترحيل الرصيد بين الدورات', seg('setRoll',[['true','مفعّل'],['false','معطّل']], String(!!st.rollover)))
+    + fld('تاريخ بداية العمل بالتطبيق','<input id="setStart" type="date" value="'+attr(st.startDate)+'">','لا يُحسب شيء قبله.')
+    + macts('حفظ', 'closeModal();saveSettings()'));
+}
+function openAiSheet(){
+  var a = S.ai.status || {};
+  modal('<div class="sheet-t">كلود — مستشارك</div>'
+    + '<div class="glist"><div class="grow quiet"><span class="g-ic">'+ico('spark')+'</span><span class="g-tx"><b>بدون مفتاح</b><small>من صفحة المستشار: «انسخ وضعي لكلود» ثم الصق خطتي. يعمل الآن.</small></span></div>'
+    + '<div class="grow quiet"><span class="g-ic">'+ico('bolt')+'</span><span class="g-tx"><b>بمفتاح (اختياري)</b><small>يرد المستشار داخل التطبيق مباشرة. المفتاح من console.anthropic.com ويحتاج رصيداً، ويُحفظ مشفّراً على جهازك فقط.</small></span></div></div>'
+    + (a.hasKey ? '<div class="note n-green" style="margin-top:12px">مربوط. النموذج: <strong>'+esc(a.model)+'</strong></div>' : '')
+    + fld('مفتاح كلود','<input id="aiKey" type="password" placeholder="'+(a.hasKey?'محفوظ — اكتب جديداً لتغييره':'الصق المفتاح هنا')+'">')
+    + '<input id="aiModel" type="hidden" value="'+attr(a.model||'')+'">'
+    + '<div class="macts"><button class="btn-main" onclick="saveAi()">حفظ</button><button class="btn" onclick="closeModal();runDiag()">فحص الاتصال</button>'
+    + (a.hasKey ? '<button class="btn no-b" onclick="closeModal();clearAi()">حذف المفتاح</button>' : '') + '</div>'
+    + diagPanel());
+}
+function openNotifSheet(){ modal('<div class="sheet-t">إشعارات الجوال</div>' + notifPanel()); }
+function openDataSheet(k){
+  var full = pDeviceSettings();
+  var tmp = document.createElement('div'); tmp.innerHTML = full;
+  var secs = tmp.querySelectorAll('.psec');
+  var idx = k === 'import' ? 0 : k === 'backups' ? 1 : 2;
+  modal(secs[idx] ? secs[idx].outerHTML : full);
+}
+function openPassSheet(){
+  modal('<div class="sheet-t">تغيير كلمة المرور</div>'
+    + fld('الحالية','<input id="oldPass" type="password" autocomplete="current-password">')
+    + fld('الجديدة','<input id="newPass" type="password" autocomplete="new-password">')
+    + fld('تأكيد الجديدة','<input id="cfPass" type="password" autocomplete="new-password">')
+    + '<div class="hint">تُحفظ مشفّرة على جهازك. تغييرها يسجّل خروجك من كل الجلسات.</div>'
+    + macts('تحديث', 'changePass()'));
+}
+function openObCatSheet(){
+  var st = S.data.settings;
+  modal('<div class="sheet-t">تصنيفات الالتزامات</div><div class="chips wrap">'
+    + (st.obligationCategories||[]).map(function(c,i){
+        return '<span class="chip">'+esc(c)+' <b onclick="closeModal();delObCat('+i+')" style="cursor:pointer;color:var(--red)">×</b></span>'; }).join('')
+    + '</div><div class="macts"><button class="btn-main" onclick="closeModal();addObCat()">＋ تصنيف</button></div>');
+}
+function openAuditSheet(){
+  var a = S.audit || [];
+  modal('<div class="sheet-t">سجل العمليات</div>' + (a.length ? '<div class="glist">' + a.slice(0,40).map(function(l){
+      return '<div class="grow quiet"><span class="g-tx"><b>'+esc(l.action)+'</b><small>'+(l.details && l.details!==l.action ? esc(l.details)+' · ' : '')+esc(l.at)+'</small></span></div>'; }).join('') + '</div>'
+    : '<div class="empty">لا عمليات بعد.</div>'));
+}
+function openTrashSheet(){
+  var t = S.trash || [];
+  modal('<div class="sheet-t">سلة المحذوفات</div><div class="hint" style="margin-bottom:10px">تُفرَّغ تلقائياً بعد 30 يوماً.</div>' + (t.length ? '<div class="glist">' + t.map(function(x){
+      return '<div class="grow"><span class="g-tx"><b>'+esc(x.name)+'</b><small>'+esc(x.label)+(x.amount ? ' · '+num_(x.amount) : '')+' · '+esc(x.deletedAt)+'</small></span>'
+        + '<span class="pay2"><button onclick="closeModal();restore(\''+x.sheet+'\',\''+x.id+'\')">استعادة</button><button class="pt" onclick="closeModal();purge(\''+x.sheet+'\',\''+x.id+'\',\''+attr(x.name)+'\')">حذف</button></span></div>'; }).join('') + '</div>'
+    : '<div class="empty">السلة فارغة.</div>'));
+}
