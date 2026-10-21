@@ -1,4 +1,4 @@
-const CACHE = 'myz-1792569413849';
+const CACHE = 'myz-1792570271486';
 const SHELL = [
   './', './index.html', './style.css', './ui.css', './app.js', './ui.js', './main.js', './bridge.js', './sync.js',
   './worker.js', './gas-runtime.js', './engine.js', './engine-ext.js', './claude-ai.js',

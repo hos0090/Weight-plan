@@ -168,3 +168,59 @@ function appPushPreview(token) {
   guard_(token);
   return pushDigest_() || { title: '', body: '' };
 }
+
+/* ============================================================
+ *  جسر كلود: بلا مفتاح. التطبيق يجهّز «ملف الوضع» كاملاً لتلصقه
+ *  في محادثة كلود، ثم تلصق خطته هنا فتمر بنفس التدقيق والموافقة
+ *  والتراجع التي يمر بها المستشار المدمج.
+ * ========================================================== */
+function claudeBriefing(token, month, request) {
+  guard_(token);
+  const q = String(request || '').trim() || 'حلّل وضعي المالي كاملاً، وقل لي رأيك الصريح: وش أسوي هذه الدورة والدورات الجاية؟';
+  let captured = null;
+  const orig = callGemini_;
+  callGemini_ = function (p) { captured = p; throw new Error('__CAPTURE__'); };
+  try { aiAgent(token, month, q); }
+  catch (e) { if (String(e.message) !== '__CAPTURE__') throw e; }
+  finally { callGemini_ = orig; }
+  if (!captured) throw new Error('تعذّر تجهيز الملف');
+  const cut = captured.indexOf('\n\nأعد JSON فقط');
+  const body = cut > -1 ? captured.slice(0, cut) : captured;
+  const head = 'هذا ملف من تطبيق «ميزانيتي» — تطبيقي لإدارة دخلي والتزاماتي. أبيك تكون مستشاري المالي: ' +
+    'اقرأ كل الأرقام، حلّل وضعي، ناقشني وأعطني رأيك الصريح ولو كان ما يعجبني.\n' +
+    'التاريخ اليوم: ' + today_() + '\n\n';
+  const tail = '\n\nطريقة ردّك:' +
+    '\n1) ابدأ بتحليلك ورأيك بالعربي وبالأرقام من الملف — باختصار وبدون تكرار.' +
+    '\n2) إذا اقترحت تغييرات على بياناتي (ربط، تعديل، تجنيب، تقسيم، سداد…) فضعها في آخر ردّك في كتلة كود واحدة بهذا الشكل بالضبط حتى ألصقها في التطبيق وأوافق عليها:' +
+    '\n```json\n{"reply":"ملخص ما ستفعله","actions":[{"type":"نوع","params":{},"why":"سبب مختصر"}]}\n```' +
+    '\n3) استخدم المعرفات (id) كما هي حرفياً من الملف. وإن لم تكن هناك تغييرات فلا تضع الكتلة.' +
+    '\n4) بعدها كمّل النقاش معي عادي — وكل ما اتفقنا على تعديل جديد أعطني كتلة جديدة.';
+  return { text: head + body + tail, request: q, chars: (head + body + tail).length, month: validMonth_(month) ? month : defaultMonth_() };
+}
+
+function claudeApplyPlan(token, month, text) {
+  guard_(token);
+  const raw = String(text || '');
+  const m = validMonth_(month) ? month : defaultMonth_();
+  let json = '';
+  const fence = raw.match(/```(?:json)?\s*([\s\S]*?)```/g);
+  if (fence) {
+    for (let i = fence.length - 1; i >= 0; i--) {
+      const inner = fence[i].replace(/^```(?:json)?\s*/, '').replace(/```$/, '').trim();
+      if (inner.indexOf('"actions"') > -1) { json = inner; break; }
+    }
+  }
+  if (!json) {
+    const at = raw.lastIndexOf('{"reply"') > -1 ? raw.lastIndexOf('{"reply"') : raw.indexOf('{');
+    if (at < 0) throw new Error('ما لقيت خطة في النص — انسخ رد كلود كاملاً مع كتلة الكود');
+    json = raw.slice(at, raw.lastIndexOf('}') + 1);
+  }
+  let parsed;
+  try { parsed = JSON.parse(json); }
+  catch (e) { throw new Error('الخطة غير مكتملة — تأكد أنك نسخت كتلة الكود كاملة'); }
+  const actions = agentValidate_(m, parsed.actions || []);
+  logAi_(m, 'كلود (محادثة)', 'خطة ملصوقة من محادثة كلود', String(parsed.reply || '') +
+    (actions.length ? ' | إجراءات: ' + actions.map(function (a) { return a.label; }).join('، ') : ''));
+  return { month: m, reply: String(parsed.reply || ''), actions: actions,
+           validCount: actions.filter(function (a) { return a.valid; }).length };
+}
