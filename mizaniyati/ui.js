@@ -132,12 +132,12 @@ modal = function(html, small){
 };
 var __after0 = after;
 after = function(r){
-  if (r && r.data) { S.flow = null; S.sens = null; }
+  if (r && r.data) { S.flow = null; S.sens = null; S._clBase = null; }
   __after0(r);
   if (S.view === 'dash' && S.data && !S.flow) loadDashFlow_();
 };
 var __refresh0 = refresh;
-refresh = function(l){ S.flow = null; S.sens = null; __refresh0(l); };
+refresh = function(l){ S.flow = null; S.sens = null; S._clBase = null; __refresh0(l); };
 var __lvd0 = loadViewData;
 loadViewData = function(view){
   __lvd0(view);
@@ -711,7 +711,8 @@ function ring_(){
   var next = d.incomes.filter(function(i){ return i.isBasic && !i.paused && !i.arrived && i.occurrenceDate && i.occurrenceDate >= TODAY_ISO; })
     .sort(function(a,b){ return a.occurrenceDate < b.occurrenceDate ? -1 : 1; })[0];
   var left = next ? days_(TODAY_ISO, next.occurrenceDate) : Math.max(0, days_(TODAY_ISO, cr.end) + 1);
-  var safe = s.safeRemaining;
+  var gap = s.remaining - s.buffer - (s.reservesMonthly || 0);
+  var safe = gap < 0 ? gap : s.safeRemaining;
   var tick = '';
   for (var t = 0; t < total; t++){
     var ta = -Math.PI/2 - t/total*2*Math.PI, o1 = at(ta, R + 15), o2 = at(ta, R + (t % 7 === 0 ? 20 : 17));
@@ -728,7 +729,7 @@ function ring_(){
     +   arc + marks
     +   (now ? '<circle cx="'+now[0].toFixed(1)+'" cy="'+now[1].toFixed(1)+'" r="17" fill="url(#rgG)"/><circle cx="'+now[0].toFixed(1)+'" cy="'+now[1].toFixed(1)+'" r="7.5" class="r-now"/>' : '')
     + '</svg>'
-    + '<div class="ring-c"><small>المتبقي الآمن</small><strong class="'+(safe<0?'neg':'')+'">'+(safe<0?'−':'')+num_(Math.abs(safe))+'</strong><em>ريال</em>'
+    + '<div class="ring-c"><small>'+(safe<0?'عجز الدورة':'المتبقي الآمن')+'</small><strong class="'+(safe<0?'neg':'')+'">'+(safe<0?'−':'')+num_(Math.abs(safe))+'</strong><em>ريال</em>'
     +   '<span class="ring-left">'+(next ? (left === 0 ? esc(next.name)+' ينزل اليوم' : 'باقي '+left+' '+(left===1?'يوم':left<=10?'أيام':'يوماً')+' على '+esc(next.name))
             : isCur ? 'باقي '+left+' '+(left<=10?'أيام':'يوماً')+' في الدورة' : monthName(d.month))+'</span></div>'
     + '<span class="ring-s r1">'+sd.d+' '+sd.m+'</span><span class="ring-s r2">'+ed.d+' '+ed.m+'</span>'
@@ -1203,26 +1204,49 @@ function claudeCard_(){
     +   '<button class="cl-s" onclick="claudePaste()"><i>٢</i><span><b>الصق خطة كلود</b><small>تراجعها وتوافق قبل التنفيذ</small></span></button>'
     + '</div></section>';
 }
+/* الحافظة في الآيفون لا تقبل النسخ إلا مباشرة داخل الضغطة — فالملف يُجهَّز مسبقاً عند فتح الصفحة،
+   والسؤال يُدرج فيه لحظة الضغط بلا انتظار. */
+var CL_MARK = '⟦سؤالك⟧';
+function claudePrefetch_(){
+  if (S._clBase || S._clLoading || !S.token) return;
+  S._clLoading = 1;
+  srv(function(r){ S._clLoading = 0; S._clBase = r; }, function(){ S._clLoading = 0; }).claudeBriefing(S.token, currentCycle(), CL_MARK);
+}
+function claudeText_(q){
+  var b = S._clBase; if (!b) return null;
+  var ask = q || 'حلّل وضعي المالي كاملاً، وقل لي رأيك الصريح: وش أسوي هذه الدورة والدورات الجاية؟';
+  return b.text.split(CL_MARK).join(ask);
+}
 function claudeCopy(){
   var q = el('clQ') ? el('clQ').value.trim() : '';
   S.clQ = q;
+  var ready = claudeText_(q);
+  if (ready){
+    S._clText = ready;
+    var ok = function(){ claudeDone_(ready.length, 'نسخت ملف وضعك'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ready).then(ok, function(){ claudeManual_(ready); });
+    else claudeManual_(ready);
+    return;
+  }
   busy(true,'جاري تجهيز ملف وضعك…');
   srv(function(r){
     busy(false);
     var text = r.text;
-    var done = function(how){
-      modal('<div class="sheet-t">جاهز ✓</div><div class="glist">'
-        + '<div class="grow quiet"><span class="g-ic ok">'+ico('check')+'</span><span class="g-tx"><b>'+how+'</b><small>'+num_(r.chars)+' حرف — كل التزاماتك ودخلك ودوراتك القادمة وسجل سدادك</small></span></div>'
-        + '<div class="grow quiet"><span class="g-ic">'+ico('spark')+'</span><span class="g-tx"><b>افتح محادثة مع كلود والصقه</b><small>أحلّل وأناقشك، وإذا اتفقنا على تعديلات أعطيك كتلة كود في آخر ردّي</small></span></div>'
-        + '<div class="grow quiet"><span class="g-ic">'+ico('down')+'</span><span class="g-tx"><b>انسخ ردّي كاملاً وارجع هنا</b><small>ثم «الصق خطة كلود»</small></span></div></div>'
-        + '<div class="macts"><button class="btn-main" onclick="closeModal()">تمام</button>'
-        + (navigator.share ? '<button class="btn" onclick="claudeShare_()">مشاركة</button>' : '') + '</div>');
-    };
+    var done = function(how){ claudeDone_(r.chars, how); };
+
     S._clText = text;
     if (navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(text).then(function(){ done('نسخت ملف وضعك'); }, function(){ claudeManual_(text); });
     } else claudeManual_(text);
   }, failBusy).claudeBriefing(S.token, currentCycle(), q);
+}
+function claudeDone_(chars, how){
+  modal('<div class="sheet-t">جاهز ✓</div><div class="glist">'
+    + '<div class="grow quiet"><span class="g-ic ok">'+ico('check')+'</span><span class="g-tx"><b>'+how+'</b><small>'+num_(chars)+' حرف — كل التزاماتك ودخلك ودوراتك القادمة وسجل سدادك</small></span></div>'
+    + '<div class="grow quiet"><span class="g-ic">'+ico('spark')+'</span><span class="g-tx"><b>افتح محادثة مع كلود والصقه</b><small>أحلّل وأناقشك، وإذا اتفقنا على تعديلات أعطيك كتلة كود في آخر ردّي</small></span></div>'
+    + '<div class="grow quiet"><span class="g-ic">'+ico('down')+'</span><span class="g-tx"><b>انسخ ردّي كاملاً وارجع هنا</b><small>ثم «الصق خطة كلود»</small></span></div></div>'
+    + '<div class="macts"><button class="btn-main" onclick="closeModal()">تمام</button>'
+    + (navigator.share ? '<button class="btn" onclick="claudeShare_()">مشاركة لتطبيق كلود</button>' : '') + '</div>');
 }
 function claudeShare_(){ try { navigator.share({ title:'وضعي من ميزانيتي', text:S._clText }); } catch (e) {} }
 function claudeManual_(text){
@@ -1253,6 +1277,7 @@ function claudeApply_(){
 }
 var __pAdv0 = pAdvisor;
 pAdvisor = function(){
+  claudePrefetch_();
   var st = S.ai.status;
   if (st && !st.hasKey){
     return claudeCard_() + (S.ai.last ? '<div class="bub a">'+esc(S.ai.last.answer)+'</div>' : '') + agentPanel() + batchPanel()
@@ -1382,3 +1407,14 @@ function openTrashSheet(){
         + '<span class="pay2"><button onclick="closeModal();restore(\''+x.sheet+'\',\''+x.id+'\')">استعادة</button><button class="pt" onclick="closeModal();purge(\''+x.sheet+'\',\''+x.id+'\',\''+attr(x.name)+'\')">حذف</button></span></div>'; }).join('') + '</div>'
     : '<div class="empty">السلة فارغة.</div>'));
 }
+
+/* التطبيق المثبّت يبقى في الذاكرة أياماً — «اليوم» يتجدد عند العودة إليه */
+function todayIso_(){ var d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function freshDay_(){
+  var t = todayIso_();
+  if (t !== TODAY_ISO){ TODAY_ISO = t; NOW = new Date(); S._clBase = null; if (S.token && S.data) { S.month = ''; refresh(false); } }
+}
+document.addEventListener('visibilitychange', function(){ if (!document.hidden) freshDay_(); });
+window.addEventListener('focus', freshDay_);
+setInterval(freshDay_, 60000);
+TODAY_ISO = todayIso_();

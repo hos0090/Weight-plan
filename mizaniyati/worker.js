@@ -1,6 +1,6 @@
 /* العامل الخلفي: يشغّل المحرك ويحفظ البيانات في قاعدة الجهاز (IndexedDB). */
 /* global RT, rtEncode_, rtDecode_ */
-importScripts('gas-runtime.js?v=1792570271486', 'engine.js?v=1792570271486', 'engine-ext.js?v=1792570271486', 'claude-ai.js?v=1792570271486');
+importScripts('gas-runtime.js?v=1792573365734', 'engine.js?v=1792573365734', 'engine-ext.js?v=1792573365734', 'claude-ai.js?v=1792573365734');
 
 RT.origin = String(self.location.href).replace(/[^/]*$/, '');
 
