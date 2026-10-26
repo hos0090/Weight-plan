@@ -1,6 +1,6 @@
 /* offline first: open from cache instantly, fetch fresh copies in the background (never from the browser's HTTP cache),
    and tell the open app when a new version arrived. The app's saved work lives in its own storage and is never touched here. */
-const C='tq-mvfi80r2',A=['./','index.html','app.enc','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable.png'];
+const C='tq-mvpc502v',A=['./','index.html','app.enc','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable.png','data.json'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>Promise.all(A.map(u=>fetch(new Request(u,{cache:'reload'})).then(r=>{if(!r.ok)throw new Error(u);return c.put(u,r)})))).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C&&k.indexOf('tq-')===0).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 function sameBytes(a,b){if(!a||!b||a.byteLength!==b.byteLength)return false;const x=new Uint8Array(a,16,24),y=new Uint8Array(b,16,24);for(let i=0;i<24;i++)if(x[i]!==y[i])return false;return true}
