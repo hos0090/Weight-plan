@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src wss:; img-src * data:; media-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self'">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f4f1ea">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="نشاهد سوا">
+<title>نشاهد سوا</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+:root{--bg:#f4f1ea;--card:#fff;--txt:#1b1d24;--txt2:#3b3f4a;--mut:#80848f;--line:#e6e1d6;--ac:#a8792a;--ac2:#c99a45;--ok:#1f9a6a;--warn:#c2334d;--sh:0 10px 30px -16px #2a221540}
+@media (prefers-color-scheme:dark){:root{--bg:#0d0f14;--card:#171a22;--txt:#eef0f5;--txt2:#cfd3dd;--mut:#9aa0ad;--line:#262a36;--ac:#e0b862;--ac2:#f6dea4;--sh:0 10px 30px -16px #000}}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:T,system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;padding:max(16px,env(safe-area-inset-top)) 16px max(20px,env(safe-area-inset-bottom))}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+header h1{font-size:22px;font-weight:800;display:flex;gap:8px;align-items:center}
+.st{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mut);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:5px 11px}
+.st i{width:8px;height:8px;border-radius:50%;background:var(--mut)}.st.on i{background:var(--ok);box-shadow:0 0 0 4px #1f9a6a22}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.now{display:flex;gap:14px;padding:14px;align-items:center}
+.now .po{width:66px;height:96px;border-radius:12px;background:var(--line) center/cover;flex:none}
+.now b{display:block;font-size:17px;line-height:1.5}.now small{color:var(--mut);font-size:13px}
+.vid{position:relative;background:#000;aspect-ratio:16/9;display:none}.vid.on{display:block}
+video{width:100%;height:100%;display:block;background:#000}
+.bar{height:6px;background:var(--line);border-radius:6px;margin:0 14px;overflow:hidden;position:relative;direction:ltr}
+.bar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--ac),var(--ac2));border-radius:6px;width:0;transition:width .9s linear}
+
+.tm{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);padding:6px 14px 12px;direction:ltr;font-family:R,system-ui}
+.ctl{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:10px;padding:0 14px 14px}
+.ctl button{padding:14px 0;border-radius:16px;background:var(--bg);border:1px solid var(--line);font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px}
+.ctl .pp{background:linear-gradient(150deg,var(--ac2),var(--ac));color:#fff;border:0;font-size:17px}
+.ctl button:active{transform:scale(.96)}
+.sync{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-top:1px solid var(--line);font-size:14px}
+.sw{width:50px;height:30px;border-radius:30px;background:var(--line);position:relative;transition:.2s}.sw::after{content:'';position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 6px #0003;transition:.2s}
+.sw.on{background:var(--ok)}.sw.on::after{right:23px}
+.react{display:flex;justify-content:space-between;padding:12px 14px;font-size:28px}
+.react button{width:48px;height:48px;border-radius:50%;background:var(--bg)}.react button:active{transform:scale(1.25)}
+.say{display:flex;gap:8px;padding:0 14px 14px}
+.say input{flex:1;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--bg);color:var(--txt);font:inherit;font-size:15px;-webkit-user-select:text;user-select:text}
+.say button{padding:0 16px;border-radius:14px;background:var(--ac);color:#fff;font-weight:700}
+.note{font-size:13px;color:var(--mut);line-height:1.8;padding:12px 14px}
+.note.warn{color:var(--warn)}
+.ext{display:none;gap:8px;padding:0 14px 14px}.ext.on{display:flex}
+.ext a,.ext button{flex:1;text-align:center;padding:12px;border-radius:14px;border:1px solid var(--line);font-size:14px;font-weight:700;color:var(--txt);text-decoration:none}
+.empty{text-align:center;padding:34px 18px;color:var(--mut);line-height:1.9}
+.empty .big{font-size:44px;margin-bottom:6px}
+#gate{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:28px;text-align:center;z-index:9}
+#gate.on{display:flex}#gate .big{font-size:52px}#gate p{color:var(--mut);line-height:1.8;max-width:320px}
+#gate input{width:240px;padding:14px;border-radius:16px;border:1px solid var(--line);background:var(--card);color:var(--txt);font:inherit;font-size:18px;text-align:center;-webkit-user-select:text;user-select:text}
+#gate button{width:240px;padding:14px;border-radius:16px;background:linear-gradient(150deg,var(--ac2),var(--ac));color:#fff;font-weight:800;font-size:17px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:var(--txt);color:var(--bg);padding:10px 18px;border-radius:14px;font-size:14px;transition:.3s;z-index:20}
+#toast.on{transform:translateX(-50%)}
+</style>
+<script src="icons.js" defer></script>
+<script src="far.js"></script>
+</head>
+<body>
+<header><h1>🍿 نشاهد سوا</h1><span class="st" id="st"><i></i><span id="stT">جاري الاتصال</span></span></header>
+
+<div class="card" id="main">
+  <div class="empty" id="empty"><div class="big">📺</div>الشاشة ما تعرض شي حالياً<br>أول ما يبدأ التشغيل يطلع هنا تلقائياً</div>
+  <div id="live" style="display:none">
+    <div class="vid" id="vid"><video id="v" playsinline webkit-playsinline preload="metadata"></video></div>
+    <div class="now"><div class="po" id="po"></div><div><b id="ti"></b><small id="sub"></small></div></div>
+    <div class="bar"><i id="pb"></i></div>
+    <div class="tm"><span id="tPos">0:00</span><span id="tDur">0:00</span></div>
+    <div class="ctl">
+      <button id="back">↩ ١٠ ث</button>
+      <button class="pp" id="pp">⏯ إيقاف</button>
+      <button id="fwd">١٠ ث ⏭</button>
+    </div>
+    <div class="sync" id="syncRow"><span>أشغّل الفيديو هنا ومزامن مع الشاشة</span><button class="sw on" id="sw" aria-label="مزامنة"></button></div>
+    <div class="ext" id="ext"><a id="vlc" href="#">افتح في «في إل سي»</a><button id="cp">نسخ رابط البث</button></div>
+    <div class="note" id="vnote"></div>
+  </div>
+</div>
+
+<div class="card noico">
+  <div class="react" id="react"><button>😂</button><button>❤️</button><button>😮</button><button>👏</button><button>😢</button><button>🔥</button></div>
+  <div class="say"><input id="msg" maxlength="80" placeholder="اكتب رسالة تطلع على الشاشة"><button id="send">أرسل</button></div>
+</div>
+<div class="note" id="con"></div>
+<div class="note">🔒 كل شي بينكم مشفّر من جهاز لجهاز. الرابط اللي دخلت منه انتهى، وجوالك صار مربوط للمشاهدة بس.</div>
+
+<div id="gate"><div class="big">🍿</div><h2 id="gT">أهلاً فيك</h2><p id="gP">وش اسمك؟ يطلع على الشاشة لما توقّف أو ترسل رسالة</p><input id="nm" maxlength="20" placeholder="اسمك"><button id="go">يلا نشاهد</button></div>
+<div id="toast"></div>
+
+<script>
+'use strict';
+const $ = (s) => document.querySelector(s);
+const LS = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+const ar = (n) => Number(n).toLocaleString('ar-SA');
+const fmt = (ms) => { const s = Math.max(0, Math.floor(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(x).padStart(2, '0'); };
+function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('on'), 2200); }
+let name = LS.get('partyName', ''), S = null, recvAt = 0, url = '', syncOn = LS.get('partySync', true), vidOk = null, joinT = 0, mine = 0;
+
+const MSG = { need: ['🔗', 'تحتاج رابط دعوة', 'اطلب من صاحب الشاشة يرسل لك رابط «نشاهد سوا»'], expired: ['⏳', 'الرابط انتهى أو انستخدم', 'كل رابط يشتغل مرة وحدة. اطلب رابط جديد'], nolink: ['📴', 'الشاشة مو متصلة', 'يمكن الشاشة طافية، أو تم إلغاء ربط جوالك'] };
+function gate(k) { const m = MSG[k]; $('#gate .big').textContent = m[0]; $('#gT').textContent = m[1]; $('#gP').textContent = m[2]; $('#nm').style.display = $('#go').style.display = 'none'; $('#gate').classList.add('on'); }
+function askName() { if (name) return; $('#gate').classList.add('on'); setTimeout(() => $('#nm').focus(), 300); }
+$('#go').onclick = () => { const v = $('#nm').value.trim(); if (!v) return; name = v; LS.set('partyName', v); $('#gate').classList.remove('on'); join(); };
+
+function send(o) { return FAR.send({ type: 'party', name, ...o }); }
+function join() { send({ a: 'join' }); clearInterval(joinT); joinT = setInterval(() => send({ a: 'join' }), 20000); }
+
+FAR.start({
+  state: (st) => {
+    $('#st').classList.toggle('on', st === 'ready'); $('#stT').textContent = st === 'ready' ? 'متصل' : 'جاري الاتصال';
+    if (st === 'ready') { $('#gate').classList.remove('on'); if (!name) askName(); else join(); }
+    else if (MSG[st]) gate(st);
+  },
+  msg: (m) => { if (m && m.type === 'party') onState(m.s, m.con); }
+});
+
+/* استقبال حالة الشاشة */
+const v = $('#v');
+function tvPos() { return S ? S.pos + (S.pl ? Date.now() - recvAt : 0) : 0; }
+function onState(s, con) {
+  if (con && con.max) $('#con').innerHTML = 'اشتراكك يسمح بـ <b>' + ar(con.max) + '</b> ' + (+con.max > 1 ? 'أجهزة بنفس الوقت' : 'جهاز واحد بس، فالتشغيل هنا ممكن يوقف الشاشة. استخدم المزامنة بدون فيديو');
+  if (!s) { S = null; $('#empty').style.display = ''; $('#live').style.display = 'none'; try { v.pause(); } catch {} return; }
+  S = s; recvAt = Date.now();
+  $('#empty').style.display = 'none'; $('#live').style.display = '';
+  $('#ti').textContent = s.sname || s.title || '';
+  $('#sub').textContent = s.sname ? s.title : (s.k === 'live' ? 'بث مباشر' : s.k === 'movie' ? 'فيلم' : '');
+  if (s.img) $('#po').style.backgroundImage = 'url("' + String(s.img).replace(/"/g, '') + '")';
+  $('#pp').innerHTML = s.pl ? '⏸ إيقاف' : '▶ تشغيل';
+  if (s.url && s.url !== url) { url = s.url; vidOk = null; loadVideo(); }
+  draw(); follow();
+}
+function draw() {
+  if (!S) return;
+  const p = tvPos();
+  $('#tPos').textContent = fmt(p); $('#tDur').textContent = S.dur ? fmt(S.dur) : '∞';
+  $('#pb').style.width = S.dur ? Math.min(100, p / S.dur * 100) + '%' : '100%';
+}
+setInterval(draw, 1000);
+
+/* الفيديو على الجوال: نجرب الرابط الآمن، وإذا ما اشتغل نعطي بديل */
+function loadVideo() {
+  $('#ext').classList.remove('on'); $('#vnote').textContent = '';
+  $('#vlc').href = 'vlc-x-callback://x-callback-url/stream?url=' + encodeURIComponent(url);
+  if (!syncOn) { $('#vid').classList.remove('on'); return; }
+  $('#vid').classList.add('on');
+  const tries = [url.replace(/^http:/, 'https:').replace(/:80\//, '/'), url];
+  let i = 0;
+  const next = () => {
+    if (i >= tries.length) { vidOk = false; $('#vid').classList.remove('on'); $('#ext').classList.add('on'); $('#vnote').textContent = 'جوالك ما قدر يشغّل البث داخل الصفحة. شغّله من «في إل سي» أو تطبيق الاشتراك عند نفس الدقيقة، والإيقاف والتكميل يتزامنون من هنا.'; return; }
+    v.src = tries[i++]; v.load();
+  };
+  v.onerror = next;
+  v.onloadedmetadata = () => { vidOk = true; follow(true); };
+  next();
+}
+function follow(force) {
+  if (!S || !syncOn || !vidOk) return;
+  const want = tvPos() / 1000;
+  if (S.k !== 'live' && (force || Math.abs(v.currentTime - want) > 2.5)) { try { v.currentTime = want; } catch {} }
+  if (S.pl && v.paused) v.play().catch(() => { $('#vnote').textContent = 'اضغط على الفيديو مرة عشان يبدأ'; });
+  if (!S.pl && !v.paused) v.pause();
+}
+setInterval(() => follow(false), 3000);
+v.addEventListener('play', () => { if (S && !S.pl && Date.now() - mine > 800) { mine = Date.now(); send({ a: 'play' }); } });
+v.addEventListener('pause', () => { if (S && S.pl && Date.now() - mine > 800 && !v.ended) { mine = Date.now(); send({ a: 'pause' }); } });
+
+/* التحكم */
+$('#pp').onclick = () => { if (!S) return; mine = Date.now(); send({ a: S.pl ? 'pause' : 'play' }); S.pl = !S.pl; recvAt = Date.now(); $('#pp').innerHTML = S.pl ? '⏸ إيقاف' : '▶ تشغيل'; follow(true); };
+const jump = (d) => { if (!S || S.k === 'live') return; const t = Math.max(0, tvPos() + d); mine = Date.now(); send({ a: 'seek', ms: t }); S.pos = t; recvAt = Date.now(); follow(true); draw(); };
+$('#back').onclick = () => jump(-10000);
+$('#fwd').onclick = () => jump(10000);
+$('#sw').classList.toggle('on', syncOn);
+$('#sw').onclick = () => { syncOn = !syncOn; LS.set('partySync', syncOn); $('#sw').classList.toggle('on', syncOn); if (syncOn && url) loadVideo(); else { v.pause(); $('#vid').classList.remove('on'); } };
+$('#cp').onclick = async () => { try { await navigator.clipboard.writeText(url); toast('تم نسخ الرابط'); } catch {} };
+
+/* الرسائل والتفاعل */
+document.querySelectorAll('#react button').forEach((b) => (b.onclick = () => { send({ a: 'react', t: b.textContent }); toast('وصلت للشاشة ' + b.textContent); }));
+$('#send').onclick = () => { const t = $('#msg').value.trim(); if (!t) return; send({ a: 'react', t }); $('#msg').value = ''; toast('وصلت رسالتك للشاشة'); };
+$('#msg').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#send').click(); });
+</script>
+</body>
+</html>
