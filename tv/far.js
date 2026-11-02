@@ -70,7 +70,7 @@
         try {
           var o = await open(D, s.ph, payload);
           if (!(o.ts > last)) return; last = o.ts;
-          if (o.m && o.m.type === 'ready') { ready = true; clearTimeout(timer); if (s.pk) { delete s.pk; LS.set('far', s); }
+          if (o.m && o.m.type === 'ready') { ready = true; FAR.role = o.m.r || 'full'; clearTimeout(timer); if (s.pk) { delete s.pk; LS.set('far', s); }
             // نحفظ الجلسة في الرابط نفسه (بعد #) عشان «إضافة للشاشة الرئيسية» في الآيفون تشتغل بدون ربط ثاني
             try { history.replaceState(null, '', location.pathname + '#s=' + b64(enc.encode(JSON.stringify({ id: s.id, d: s.d, ph: s.ph, b: s.b })))); } catch (e) {}
             h.state('ready'); }
