@@ -5,3 +5,8 @@
 @font-face{font-family:R;src:url(fonts/readex-pro-arabic-400-normal.woff2) format('woff2');font-weight:400;font-display:swap}
 @font-face{font-family:R;src:url(fonts/readex-pro-arabic-600-normal.woff2) format('woff2');font-weight:600;font-display:swap}
 @font-face{font-family:R;src:url(fonts/readex-pro-arabic-700-normal.woff2) format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:C;src:url(fonts/inter-latin-100-normal.woff2) format('woff2');font-weight:100;font-display:swap}
+@font-face{font-family:C;src:url(fonts/inter-latin-200-normal.woff2) format('woff2');font-weight:200;font-display:swap}
+@font-face{font-family:C;src:url(fonts/inter-latin-300-normal.woff2) format('woff2');font-weight:300;font-display:swap}
+@font-face{font-family:N;src:url(fonts/noto-naskh-arabic-arabic-500-normal.woff2) format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:N;src:url(fonts/noto-naskh-arabic-arabic-700-normal.woff2) format('woff2');font-weight:700;font-display:swap}
