@@ -1,1 +1,1 @@
-{"v":11,"mq":{"h":"broker.emqx.io","t":8883,"w":"wss://broker.emqx.io:8084/mqtt"}}
+{"v":12,"mq":{"h":"broker.emqx.io","t":8883,"w":"wss://broker.emqx.io:8084/mqtt"}}
