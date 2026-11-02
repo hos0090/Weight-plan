@@ -81,7 +81,7 @@ const MODES = {
     m.innerHTML = `<div class="sub" style="text-align:center">المستوى</div>
       <div class="lvls">${u.levels.map((l, i) => `<button class="${i === u.level ? 'on' : ''}" data-l="${i}">${l}</button>`).join('')}</div>
       <div class="sub" style="text-align:center">اختر لعبة 👇</div>
-      <div class="games">${u.games.map((g) => `<button data-g="${g.id}" class="${u.players < g.min ? 'lock' : ''}"><span class="i">${g.icon}</span><span class="t">${g.t}</span>${g.min > 1 ? `<span class="m">${ar(g.min)} لاعبين+</span>` : ''}</button>`).join('')}</div>
+      <div class="games">${u.games.map((g) => `<button data-g="${g.id}" class="${u.players < g.min ? 'lock' : ''}"><span class="i">${window.GIC ? GIC(g.id, g.icon) : g.icon}</span><span class="t">${g.t}</span>${g.min > 1 ? `<span class="m">${ar(g.min)} لاعبين+</span>` : ''}</button>`).join('')}</div>
       <button class="btn" id="rn" style="justify-content:center;font-size:15px;color:var(--mut)">تغيير الاسم أو الشخصية</button>`;
     $$('[data-l]').forEach((b) => (b.onclick = () => { vib(15); send({ action: 'level', level: +b.dataset.l }); }));
     $$('[data-g]').forEach((b) => (b.onclick = () => { vib(30); send({ action: 'start', game: b.dataset.g }); }));
