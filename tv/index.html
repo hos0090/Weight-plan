@@ -50,7 +50,7 @@ main{flex:1;position:relative;overflow:hidden}
 textarea{width:100%;min-height:90px;font:inherit;font-size:19px;padding:14px;border-radius:16px;border:2px solid var(--line);background:var(--card);color:var(--txt);outline:none;resize:none}
 textarea:focus{border-color:var(--gold)}
 input,textarea{-webkit-user-select:text;user-select:text}
-nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #ffffff12;background:#0b0e18ee;padding-bottom:4px}
+nav{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid #ffffff12;background:#0b0e18ee;padding-bottom:4px}
 nav button{padding:10px 0 12px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--mut)}
 nav button span{font-size:22px}
 nav button.on{color:var(--gold2)}
@@ -66,6 +66,16 @@ nav button.on{color:var(--gold2)}
 #pgo{width:260px;padding:15px;border-radius:16px;background:linear-gradient(150deg,var(--gold2),var(--gold));color:#1d1505;font-weight:800;font-size:18px}
 #perr{color:#ff8a9a;min-height:22px;font-size:14px}
 .lock{display:inline-flex;gap:6px;align-items:center;color:#7fd8a8;font-size:13px}
+#scrBox{position:relative;border-radius:18px;overflow:hidden;background:#000;aspect-ratio:16/9;border:1px solid #ffffff1a;touch-action:manipulation}
+#scr{width:100%;height:100%;display:block;object-fit:contain;-webkit-user-drag:none;user-select:none}
+#scrMsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#ffffff80;font-size:14px;text-align:center;padding:20px;pointer-events:none}
+#tapDot{position:absolute;width:34px;height:34px;margin:-17px;border-radius:50%;border:3px solid var(--gold);opacity:0;pointer-events:none;transition:opacity .4s}
+#tapDot.on{opacity:1;transition:none}
+.sdp{display:grid;grid-template-columns:1fr 1fr 1.4fr 1fr 1fr;gap:8px;direction:ltr}
+.sdp button{padding:14px 0;border-radius:14px;background:linear-gradient(160deg,#ffffff12,#ffffff06);border:1px solid #ffffff14;font-size:16px}
+.sdp .ok{background:linear-gradient(150deg,var(--gold2),var(--gold));color:#1d1505;font-weight:800}
+@media (orientation:landscape){#p-screen{flex-direction:row;flex-wrap:wrap;align-content:flex-start}#p-screen #scrBox{height:calc(100vh - 150px);aspect-ratio:16/9;width:auto}#p-screen .scrHint{display:none}#p-screen .sdp,#p-screen .mbtns{flex:1;min-width:200px}}
+.scrHint{color:var(--mut);font-size:13px;text-align:center;line-height:1.7}
 </style>
 <script src="icons.js" defer></script>
 <script src="far.js"></script>
@@ -102,6 +112,13 @@ nav button.on{color:var(--gold2)}
     <div class="sec">تطبيقاتك</div>
     <div class="apps" id="apps"></div>
   </section>
+  <section class="pane" id="p-screen">
+    <div id="scrBox"><img id="scr" alt=""><div id="scrMsg">جاري جلب صورة الشاشة…</div><i id="tapDot"></i></div>
+    <div class="scrHint">اضغط على أي مكان في الصورة وينضغط في الشاشة · ضغطة طويلة = ضغطة مطوّلة</div>
+    <div class="sdp noico"><button data-k="left">◀</button><button data-k="up">▲</button><button class="ok" data-k="ok">موافق</button><button data-k="down">▼</button><button data-k="right">▶</button></div>
+    <div class="mbtns"><button class="btn" data-k="back">↩︎ رجوع</button><button class="btn" data-k="home">🏠 الرئيسية</button><button class="btn" id="tvSet">⚙️ الإعدادات</button></div>
+    <div class="scrHint">لف الجوال بالعرض عشان تكبر الصورة</div>
+  </section>
   <section class="pane" id="p-type">
     <div class="note">وقّف على خانة الكتابة في الشاشة (مثل بحث يوتيوب)، واكتب هنا</div>
     <textarea id="tx" placeholder="اكتب هنا…"></textarea>
@@ -112,6 +129,7 @@ nav button.on{color:var(--gold2)}
 <nav>
   <button class="on" data-p="mouse"><span>🖱️</span>ماوس</button>
   <button data-p="keys"><span>✛</span>أسهم</button>
+  <button data-p="screen"><span>📺</span>الشاشة</button>
   <button data-p="apps"><span>▦</span>تطبيقات</button>
   <button data-p="type"><span>⌨️</span>كتابة</button>
 </nav>
@@ -132,7 +150,7 @@ function connect() {
         if (ready) { $('#pairV').classList.remove('on'); q.splice(0).forEach((x) => FAR.send(x)); }
         else if (st !== 'down') { $('#pairV').classList.add('on'); $('#perr').textContent = FAR_MSG[st] || ''; }
       },
-      msg: (m) => { if (m && m.type === 'apps' && onApps) onApps(m.list); if (m && m.type === 'invite') showInvite(m.url); }
+      msg: (m) => { if (m && m.type === 'frame') scrFrame(m.d); if (m && m.type === 'apps' && onApps) onApps(m.list); if (m && m.type === 'invite') showInvite(m.url); }
     });
     return;
   }
@@ -150,7 +168,7 @@ function connect() {
 function showInvite(url) {
   const v = document.createElement('div'); v.id = 'invV';
   v.style.cssText = 'position:fixed;inset:0;z-index:60;background:#0a0c13f2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:28px;text-align:center';
-  v.innerHTML = '<div style="font-size:40px">🍿</div><h2 style="font-size:22px">دعوة للمشاهدة معك</h2><p style="color:var(--mut);line-height:1.8;max-width:320px">أرسل الرابط للي تبيه يشاهد معك. يشتغل مرة وحدة وينتهي بعد ساعة، واللي يدخل منه يشاهد ويوقّف ويكمّل بس، ما يتحكم بالشاشة.</p>' +
+  v.innerHTML = '<div style="font-size:40px">🍿</div><h2 style="font-size:22px">دعوة للمشاهدة واللعب معك</h2><p style="color:var(--mut);line-height:1.8;max-width:320px">أرسل الرابط للي تبيه يشاهد معك. يشتغل مرة وحدة وينتهي بعد ساعة، واللي يدخل منه يقدر يشاهد معك ويلعب معكم الألعاب، بدون ما يتحكم بالشاشة.</p>' +
     '<button id="invS" style="width:260px;padding:15px;border-radius:16px;background:linear-gradient(150deg,var(--gold2),var(--gold));color:#1d1505;font-weight:800;font-size:17px">مشاركة الرابط</button><button id="invC" style="width:260px;padding:13px;border-radius:16px;border:1px solid var(--line);font-weight:700">نسخ الرابط</button><button id="invX" style="color:var(--mut);padding:8px">إغلاق</button>';
   document.body.appendChild(v);
   v.querySelector('#invS').onclick = () => { if (navigator.share) navigator.share({ title: 'نشاهد سوا', text: 'تعال نشاهد سوا 🍿', url }).catch(() => {}); else v.querySelector('#invC').click(); };
@@ -242,14 +260,14 @@ const QUICK = [
   { e: '🏡', t: 'الواجهة الأصلية', o: { cmd: 'stock' } },
   { e: '🌙', t: 'إطفاء الشاشة', o: { cmd: 'sleep' } }
 ];
-if (RELAY) QUICK.push({ e: '👥', t: 'نشاهد سوا', party: 1 }, { e: '🔗', t: 'ادعُ أحد يشاهد معك', invite: 1 });
+if (RELAY) QUICK.push({ e: '👥', t: 'نشاهد سوا', party: 1 }, { e: '🔗', t: 'ادعُ أحد يشاهد أو يلعب معك', invite: 1 });
 $('#quick').innerHTML = QUICK.map((x, i) => `<button class="app" data-q="${i}"><span class="e">${x.e}</span>${x.t}</button>`).join('');
 $$('[data-q]').forEach((b) => (b.onclick = () => {
   const x = QUICK[+b.dataset.q]; vib(20);
   if (x.cinema) { rc({ cmd: 'media', v: 'play' }); return; }
   if (x.party) { location.href = 'party.html'; return; }
   if (x.invite) { rc({ cmd: 'invite' }); return; }
-  rc(x.o); if (x.go && !RELAY) setTimeout(() => (location.href = x.go), 300);
+  rc(x.o); if (x.go) setTimeout(() => (location.href = RELAY ? 'play.html' : x.go), 300);
 }));
 let appsLoaded = false;
 async function loadApps() {
@@ -272,6 +290,34 @@ $('#bs').onclick = () => { vib(10); rc({ cmd: 'text', v: '\b' }); };
 
 /* منع النوم */
 (async () => { try { if ('wakeLock' in navigator) { await navigator.wakeLock.request('screen'); document.addEventListener('visibilitychange', async () => { if (document.visibilityState === 'visible') await navigator.wakeLock.request('screen'); }); } } catch {} })();
+
+/* الشاشة الحية: تشوف الشاشة وتضغط عليها */
+let scrOn = false, scrT = 0, scrUrl = '';
+function scrFrame(d) { const u = 'data:image/jpeg;base64,' + d; $('#scr').src = u; $('#scrMsg').textContent = ''; }
+async function scrLoop() {
+  if (!scrOn) return;
+  if (RELAY) { if (ready) rc({ cmd: 'screen' }); scrT = setTimeout(scrLoop, 15000); return; }
+  try {
+    const t = LAN.token(), r = await fetch('/shot.jpg?t=' + t + '&_=' + Date.now(), { cache: 'no-store' });
+    if (r.ok) { const b = await r.blob(); if (scrUrl) URL.revokeObjectURL(scrUrl); scrUrl = URL.createObjectURL(b); $('#scr').src = scrUrl; $('#scrMsg').textContent = ''; }
+    else $('#scrMsg').textContent = r.status === 404 ? 'الشاشة ما سمحت بالتصوير. تأكد إن «خدمة التحكم» شغّالة من إعدادات الشاشة' : 'جاري الاتصال…';
+  } catch { $('#scrMsg').textContent = 'جاري الاتصال…'; }
+  scrT = setTimeout(scrLoop, 500);
+}
+function scrSet(on) { if (on === scrOn) return; scrOn = on; clearTimeout(scrT); if (on) scrLoop(); }
+document.addEventListener('visibilitychange', () => scrSet(document.visibilityState === 'visible' && $('#p-screen').classList.contains('on')));
+$$('nav button').forEach((b) => b.addEventListener('click', () => scrSet(b.dataset.p === 'screen')));
+if ($('#p-screen').classList.contains('on')) scrSet(true);
+(() => {
+  const box = $('#scrBox'); let t0 = 0, lp = 0, pt = null;
+  const pos = (e) => { const r = $('#scr').getBoundingClientRect(), s = e.touches ? e.touches[0] : e; return { x: Math.max(0, Math.min(1, (s.clientX - r.left) / r.width)), y: Math.max(0, Math.min(1, (s.clientY - r.top) / r.height)), cx: s.clientX - box.getBoundingClientRect().left, cy: s.clientY - box.getBoundingClientRect().top }; };
+  const dot = (p) => { const d = $('#tapDot'); d.style.left = p.cx + 'px'; d.style.top = p.cy + 'px'; d.classList.add('on'); setTimeout(() => d.classList.remove('on'), 350); };
+  box.addEventListener('touchstart', (e) => { pt = pos(e); t0 = Date.now(); lp = setTimeout(() => { rc({ cmd: 'tap', x: pt.x, y: pt.y, long: true }); dot(pt); vib(40); pt = null; }, 600); }, { passive: true });
+  box.addEventListener('touchend', (e) => { clearTimeout(lp); if (pt) { rc({ cmd: 'tap', x: pt.x, y: pt.y }); dot(pt); vib(15); } pt = null; e.preventDefault(); });
+  box.addEventListener('touchmove', () => { clearTimeout(lp); pt = null; }, { passive: true });
+  box.addEventListener('click', (e) => { if ('ontouchstart' in window) return; const p = pos(e); rc({ cmd: 'tap', x: p.x, y: p.y }); dot(p); });
+})();
+$('#tvSet').onclick = () => { vib(20); rc({ cmd: 'settings' }); };
 </script>
 </body>
 </html>

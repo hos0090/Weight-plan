@@ -2,7 +2,7 @@
 // الوسيط ما يشوف إلا بيانات مشفّرة، والمفاتيح ما تطلع من جوالك وشاشتك أبداً.
 (function () {
   'use strict';
-  var enc = new TextEncoder(), dec = new TextDecoder();
+  var enc = new TextEncoder(), dec = new TextDecoder(), WS = window.WebSocket;
   var DEF = 'wss://broker.emqx.io:8084/mqtt';
   function b64(u8) { var s = ''; for (var i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
   function ub64(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; var b = atob(s), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
@@ -25,7 +25,7 @@
   function Mq(url, onMsg, onUp, onDown) {
     var ws, buf = new Uint8Array(0), ping, subs = [], dead = false, self = this, pid = 1;
     function go() {
-      try { ws = new WebSocket(url, 'mqtt'); } catch (e) { setTimeout(go, 3000); return; }
+      try { ws = new WS(url, 'mqtt'); } catch (e) { setTimeout(go, 3000); return; }
       ws.binaryType = 'arraybuffer';
       ws.onopen = function () {
         var body = cat([strB('MQTT'), new Uint8Array([4, 2, 0, 60]), strB('shz' + hex(rnd(8)))]);
