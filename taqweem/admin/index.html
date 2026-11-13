@@ -278,7 +278,7 @@ window.addEventListener('beforeunload',e=>{if(SDdirty){e.preventDefault();e.retu
 /* ---------- قائمة الزيارات ---------- */
 const vDates=v=>v.days.map(d=>d.g).filter(Boolean).sort();
 function vList(){TAB='sch';const L=SD.visits.map((v,i)=>[v,i]).sort((a,b)=>String(vDates(b[0])[0]||'9').localeCompare(String(vDates(a[0])[0]||'9')));
-  let h=tabs()+'<button class="btn g big addbtn" onclick="newVisit()">+ زيارة جديدة</button>';
+  let h=tabs()+'<div class="row" style="margin-bottom:14px"><button class="btn g big addbtn" style="margin:0;flex:2" onclick="newVisit()">+ زيارة جديدة</button><button class="btn big" style="flex:1" onclick="importFile()">استيراد ملف</button></div>';
   h+='<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">الزيارات</h2><span class="hint" id="svM" style="margin:0"></span></div><div class="list mt">'+(L.length?L.map(([v,i])=>{const ds=vDates(v),n=v.days.reduce((x,d)=>x+d.rows.filter(r=>r.t==='v').length,0),un=v.days.reduce((x,d)=>x+d.rows.filter(r=>r.t==='v'&&!(r.m||[]).length).length,0);
       return '<div class="acc" style="cursor:pointer" onclick="openVisit('+i+')"><div class="nm">'+esc(v.school||'زيارة بدون اسم')+(v.pubAt?' <span class="tag t-ok">منشورة</span>':' <span class="tag t-trial">ما انتشرت</span>')+(v.dirty&&v.pubAt?' <span class="tag t-bad">فيها تعديل ما انتشر</span>':'')+'</div><div class="meta">'+(ds.length?esc(ds.map(g=>dayName(g)+' '+hTxt(g)).join('، '))+'هـ':'بدون تاريخ')+'</div><div class="meta">'+n+' حصة'+(un?' · <span style="color:var(--bad)">'+un+' بدون عضو</span>':'')+' · '+esc((v.mem||[]).map(short).join('، ')||'بدون أعضاء')+'</div></div>'}).join(''):'<p class="hint">ما فيه زيارات. اضغط «+ زيارة جديدة».</p>')+'</div></div>';
   $('#main').innerHTML=h}
@@ -379,12 +379,14 @@ function solve(C,ms){const v=CV(),sup=v.sup&&ms.includes(v.sup)?v.sup:'',others=
   if(sup&&v.supJoin&&sc.J.length<others.length)notes.push('المشرف ما قدر يحضر مع الكل');
   return {a:best.a,J:sc.J,notes}}
 
+/* الصف كامل مثل صفحة الجدول: «الخامس الابتدائي»، وصفوف المتوسط والثانوي فوق الثالث تنحسب ابتدائي */
+function gFull(g,st){g=String(g||'').trim();if(!g||/الابتدائي|المتوسط|الثانوي/.test(g))return g;st=st||'ابتدائي';const ok=st==='ابتدائي'||['الأول','الثاني','الثالث'].includes(g);return g+' '+SFX[ok?st:'ابتدائي']}
 /* ---------- النشر: كل مشترك توصله حصصه من كل الزيارات ---------- */
 function payloadFor(e){const out=[];let team=[],lastG='';
   SD.visits.forEach(v=>{const inV=(v.mem||[]).includes(e);v.days.forEach(d=>{if(!d.g)return;const ab=d.absent||[],h=hijri(d.g);const rows=[],acts=[];
       d.rows.slice().sort((x,y)=>PERIODS.indexOf(x.p)-PERIODS.indexOf(y.p)).forEach(r=>{const m=r.m||[];
-        if(r.t==='v'&&m.includes(e))rows.push([r.p,r.subject||'',(r.grade?r.grade+' '+SFX[v.stage||'ابتدائي']:''),r.section||'',r.teacher||'',r.nid||'']);
-        if(r.t==='a'&&((m.includes('*')&&inV&&!ab.includes(e))||m.includes(e))){const t=String(r.text||'').trim();if(t&&!acts.includes(t))acts.push(t)}});
+        if(r.t==='v'&&(m.includes(e)||(m.includes('*')&&inV&&!ab.includes(e))))rows.push([r.p,r.subject||'',gFull(r.grade,v.stage),r.section||'',r.teacher||'',r.nid||'']);
+        if(r.t==='a'&&r.p!=='الطابور'&&((m.includes('*')&&inV&&!ab.includes(e))||m.includes(e)))[r.text,r.text2].forEach(t=>{t=String(t||'').trim();if(t&&!acts.includes(t))acts.push(t)})});
       if(rows.length||acts.length){out.push([dayName(d.g),h.d+'/'+h.m+'/'+h.y,v.school||'',rows,STG[v.stage]||'p',acts]);if(d.g>=lastG){lastG=d.g;team=(v.mem||[]).map(nm)}}})});
   return {k:'tq',f:nm(e),r:team.length?team:[nm(e)],d:out}}
 async function publish(){const v=CV(),bad=[];if(!v.school)bad.push('الزيارة بدون اسم مدرسة');v.days.forEach(d=>{if(!d.g)bad.push('يوم بدون تاريخ');d.rows.forEach(r=>{if(r.t==='v'&&!(r.m||[]).length)bad.push('حصة '+(r.subject||'')+' '+r.p+' بدون عضو')})});
@@ -402,5 +404,16 @@ async function publishTo(to){modal('<h2>نشر الحصص</h2><div id="pubL" cla
       await fs('PATCH','/inbox/'+encodeURIComponent(e),F({c,ts:Date.now(),n}));SD.pub[e]=Date.now();sp.textContent='وصلته '+n+' حصة من كل زياراته ✓';sp.className='ok'}
     catch(x){sp.textContent=errTxt(x);sp.className='err'}}
   saveSD(true)}
+
+/* ---------- استيراد زيارات من ملف (يجهّزه Claude في المحادثة) ----------
+   الأعضاء في الملف بأسماء الدخول أو الجوال، واللي ما له حساب يدخل باسمه */
+function importFile(){const i=document.createElement('input');i.type='file';i.accept='.json,application/json,text/plain';i.onchange=()=>{const f=i.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{importVisits(JSON.parse(r.result))}catch(e){alert('هذا الملف مو ملف زيارات')}};r.readAsText(f)};i.click()}
+function memOf(x){x=String(x||'').trim();if(!x)return null;if(x==='*')return '*';if(x.indexOf('x:')===0)return x;const u=normUser(x.replace(/^user:/,'')),e=emailOf(u);if(ACC.some(a=>a.email===e))return e;const byName=ACC.find(a=>(a.name||'').trim()===x);return byName?byName.email:'x:'+x}
+function importVisits(o){if(!o||o.kind!=='tq-visits'||!Array.isArray(o.visits))return alert('هذا الملف مو ملف زيارات');let add=0,upd=0;
+  o.visits.forEach(v=>{const nv={id:v.id||rid(),school:v.school||'',stage:v.stage||'ابتدائي',sup:memOf(v.sup)||'',supJoin:v.supJoin!==false,rules:(v.rules||[]).map(r=>({s:r.s,m:memOf(r.m)})),mem:[],dirty:1,
+      days:(v.days||[]).map(d=>({id:d.id||rid(),g:d.g,absent:(d.absent||[]).map(memOf).filter(Boolean),rows:(d.rows||[]).map(r=>Object.assign({},r,{id:r.id||rid(),m:(r.m||[]).map(memOf).filter(Boolean)}))}))};
+    nv.mem=[...new Set((v.mem||[]).map(memOf).filter(x=>x&&x!=='*').concat(nv.days.flatMap(d=>d.rows.flatMap(r=>r.m.filter(x=>x!=='*')))))];
+    const k=SD.visits.findIndex(x=>x.id===nv.id);if(k>=0){nv.pubMem=SD.visits[k].pubMem;nv.pubAt=SD.visits[k].pubAt;SD.visits[k]=nv;upd++}else{SD.visits.push(nv);add++}});
+  saveSD(true);vList();alert('انضافت '+add+' زيارة'+(upd?' وتحدّثت '+upd:'')+'. افتح كل زيارة وتأكد منها، ثم «اعتماد ونشر».')}
 </script>
 </body></html>
