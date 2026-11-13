@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0B3A2E">
+<title>لوحة المشتركين</title>
+<link rel="icon" href="../icon-192.png">
+<style>
+:root{--folio:#0B3A2E;--folio2:#145040;--gold:#C2A061;--paper:#FBF8F1;--card:#FFFFFF;--ink:#0F1F1A;--mut:#5C6B65;--line:#E4DCCB;--ok:#1E7A4F;--warn:#9A6A12;--bad:#A83434;--soft:#F3ECDC}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0E1714;--card:#15211D;--ink:#E8EFEB;--mut:#9FB0A8;--line:#2A3A34;--soft:#1D2B26}}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:system-ui,'Segoe UI',Tahoma,sans-serif;font-size:15px;line-height:1.6}
+header{background:var(--folio);color:#fff;padding:18px 16px 16px;border-bottom:3px solid var(--gold)}
+header .in,main{max-width:1100px;margin:0 auto}
+header h1{margin:0;font-size:21px}header p{margin:2px 0 0;color:#CFE0D8;font-size:13px}
+header .in{display:flex;align-items:center;gap:12px;flex-wrap:wrap}header .grow{flex:1}
+main{padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+h2{font-size:17px;margin:0 0 10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 12px}
+label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--mut)}
+input,select{font:inherit;font-size:15px;padding:10px 12px;border:1.5px solid var(--line);border-radius:11px;background:var(--card);color:var(--ink);min-width:0;width:100%}
+input:focus,select:focus{outline:none;border-color:var(--gold)}
+.ltr{direction:ltr;text-align:left}
+.btn{font:inherit;font-weight:700;font-size:14px;padding:9px 14px;border-radius:11px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;white-space:nowrap}
+.btn.p{background:var(--folio);border-color:var(--folio);color:#fff}.btn.g{background:var(--gold);border-color:var(--gold);color:#22180A}
+.btn.d{color:var(--bad)}.btn.s{font-size:13px;padding:6px 10px}.btn:disabled{opacity:.5}
+.hbtn{background:transparent;color:#fff;border-color:rgba(255,255,255,.35)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px}.stat b{display:block;font-size:24px}.stat span{color:var(--mut);font-size:13px}
+.err{color:var(--bad);font-weight:700;min-height:22px}.ok{color:var(--ok);font-weight:700}
+.tag{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.t-ok{background:#DDF1E6;color:#155C3A}.t-trial{background:#F6E7C4;color:#6B4E12}.t-bad{background:#F6D9D9;color:#7E2222}.t-off{background:#E4E4E4;color:#444}
+.list{display:flex;flex-direction:column;gap:10px}
+.acc{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--card)}
+.acc .top{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}.acc .nm{font-weight:800;font-size:16px}.acc .meta{color:var(--mut);font-size:13px}
+.acc .grow{flex:1;min-width:180px}
+.msg{white-space:pre-wrap;background:var(--soft);border-radius:12px;padding:12px;font-size:14px;margin:10px 0}
+.hint{color:var(--mut);font-size:13px;margin:6px 0 0}
+.scrim{position:fixed;inset:0;background:rgba(6,20,16,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal{background:var(--card);border-radius:18px;max-width:520px;width:100%;padding:18px;max-height:90vh;overflow:auto;border-top:4px solid var(--gold)}
+.login{max-width:420px;margin:40px auto}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.filters input{max-width:260px}
+.seg{display:inline-flex;max-width:100%;overflow-x:auto;border:1.5px solid var(--line);border-radius:11px;overflow:hidden}.seg button{font:inherit;font-size:13px;font-weight:700;border:0;background:transparent;color:var(--ink);padding:7px 12px;cursor:pointer;white-space:nowrap;flex:none}.seg button.on{background:var(--folio);color:#fff}
+</style></head>
+<body>
+<header><div class="in"><div class="grow"><h1>لوحة المشتركين</h1><p>بطاقات التقويم · إنشاء الحسابات والاشتراكات</p></div><span id="who"></span></div></header>
+<main id="main"></main>
+<script>
+"use strict";
+const FB={key:'AIzaSyBGdWVd1Xb3DEJzwiDmtG8W7-1gYdY7tXI',project:'taqweem-7050b',domain:'taqweem.app'};
+const APP_URL='https://hos0090.github.io/Weight-plan/taqweem/',APP_PIN='554894';
+const FS=()=>'https://firestore.googleapis.com/v1/projects/'+FB.project+'/databases/(default)/documents';
+const $=s=>document.querySelector(s),esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const DAY=864e5;let tok=null,ADM=null,ACC=[],FIL='all',Q='';
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}function lsSet(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}
+async function post(url,body,form){const r=await fetch(url,{method:'POST',headers:{'Content-Type':form?'application/x-www-form-urlencoded':'application/json'},body:form?body:JSON.stringify(body)});
+  const j=await r.json().catch(()=>({}));if(!r.ok){const m=(j.error&&(j.error.message||j.error))||('HTTP '+r.status);const e=new Error(String(m));e.code=String(m);throw e}return j}
+const emailOf=u=>{u=String(u||'').trim().toLowerCase();return u.indexOf('@')<0?u+'@'+FB.domain:u};
+async function idTok(force){if(!force&&tok&&tok.exp>Date.now())return tok.t;const rt=ADM&&ADM.rt;if(!rt)throw new Error('LOGIN');
+  const j=await post('https://securetoken.googleapis.com/v1/token?key='+FB.key,'grant_type=refresh_token&refresh_token='+encodeURIComponent(rt),true);
+  ADM.rt=j.refresh_token||rt;lsSet('tq_admin',JSON.stringify(ADM));tok={t:j.id_token,exp:Date.now()+(+j.expires_in||3600)*1000-60e3};return tok.t}
+async function fs(method,path,body,retry){const t=await idTok(false);const r=await fetch(FS()+path,{method,headers:{Authorization:'Bearer '+t,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+  if(r.status===401&&!retry){tok=null;await idTok(true);return fs(method,path,body,true)}if(r.status===404)return null;
+  const j=await r.json().catch(()=>({}));if(!r.ok){const e=new Error((j.error&&j.error.message)||('HTTP '+r.status));e.status=r.status;throw e}return j}
+const V=v=>v instanceof Date?{timestampValue:v.toISOString()}:typeof v==='boolean'?{booleanValue:v}:typeof v==='number'?{integerValue:String(v)}:{stringValue:String(v)};
+const F=o=>{const f={};Object.keys(o).forEach(k=>{if(o[k]!=null)f[k]=V(o[k])});return {fields:f}};
+const U=f=>{const o={};Object.keys(f||{}).forEach(k=>{const x=f[k];o[k]=x.timestampValue!=null?Date.parse(x.timestampValue):x.booleanValue!=null?x.booleanValue:x.integerValue!=null?+x.integerValue:x.stringValue});return o};
+const mask=o=>Object.keys(o).map(k=>'updateMask.fieldPaths='+encodeURIComponent(k)).join('&');
+const hdate=ms=>ms?new Date(ms).toLocaleDateString('ar-SA-u-ca-islamic-umalqura-nu-latn',{day:'numeric',month:'long',year:'numeric'}):'—';
+const gdate=ms=>ms?new Date(ms).toLocaleDateString('ar-SA-u-ca-gregory-nu-latn',{day:'numeric',month:'numeric',year:'numeric'}):'';
+function daysTxt(n){return n===1?'يوم':n===2?'يومين':(n>2&&n<=10)?n+' أيام':n+' يوم'}
+function status(a){if(!a.active)return ['off','موقوف','t-off'];const l=a.exp-Date.now();if(l<=0)return ['exp','منتهي','t-bad'];const d=Math.ceil(l/DAY);
+  if(a.plan==='trial')return ['trial','تجربة · باقي '+daysTxt(d),'t-trial'];return [d<=30?'soon':'ok',(d<=30?'ينتهي بعد ':'فعّال · باقي ')+daysTxt(d),d<=30?'t-trial':'t-ok']}
+function errTxt(e){const c=String(e.code||e.message||'');return /EMAIL_EXISTS/.test(c)?'اسم المستخدم مستخدم من قبل':/OPERATION_NOT_ALLOWED|ADMIN_ONLY_OPERATION/.test(c)?'إنشاء الحسابات موقوف في فايربيس. فعّل «إنشاء الحسابات» من إعدادات الدخول.':/WEAK_PASSWORD/.test(c)?'كلمة السر ضعيفة (٦ خانات على الأقل)':/INVALID_EMAIL/.test(c)?'اسم المستخدم فيه حروف غير مسموحة':/INVALID_LOGIN|INVALID_PASSWORD|EMAIL_NOT_FOUND/.test(c)?'اسم المستخدم أو كلمة السر غلط':/TOO_MANY/.test(c)?'محاولات كثيرة، انتظر شوي':/PERMISSION|403/.test(c)||e.status===403?'ما عندك صلاحية. تأكد إن قواعد الحماية الجديدة منشورة وإنك داخل بحساب المدير.':e instanceof TypeError?'ما فيه اتصال':'خطأ: '+c}
+function modal(h){closeM();const s=document.createElement('div');s.className='scrim';s.id='scrim';s.innerHTML='<div class="modal">'+h+'</div>';s.addEventListener('click',e=>{if(e.target===s)closeM()});document.body.appendChild(s)}
+function closeM(){const s=$('#scrim');if(s)s.remove()}
+function genPass(){const a='abcdefghjkmnpqrstuvwxyz',d='23456789';let s='';const r=new Uint32Array(10);crypto.getRandomValues(r);for(let i=0;i<10;i++)s+=(i===4||i===7?d:a)[r[i]%(i===4||i===7?d.length:a.length)];return s.slice(0,4)+'-'+s.slice(4)}
+
+/* ---------- الدخول ---------- */
+function vLogin(msg){$('#who').innerHTML='';$('#main').innerHTML='<div class="card login"><h2>دخول المدير</h2><div class="grid" style="grid-template-columns:1fr"><label>اسم المستخدم<input id="lu" class="ltr" autocomplete="username" value="hussam"></label><label>كلمة السر<input id="lp" class="ltr" type="password" autocomplete="current-password"></label></div><p class="err" id="le">'+esc(msg||'')+'</p><button class="btn p" id="lg" style="width:100%">دخول</button></div>';
+  $('#lp').addEventListener('keydown',e=>{if(e.key==='Enter')$('#lg').click()});
+  $('#lg').onclick=async()=>{const u=$('#lu').value,p=$('#lp').value;if(!u||!p)return;$('#lg').disabled=true;$('#le').textContent='لحظة…';
+    try{const j=await post('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+FB.key,{email:emailOf(u),password:p,returnSecureToken:true});
+      ADM={u:emailOf(u),rt:j.refreshToken};tok={t:j.idToken,exp:Date.now()+(+j.expiresIn||3600)*1000-60e3};lsSet('tq_admin',JSON.stringify(ADM));await load()}
+    catch(e){$('#lg').disabled=false;$('#le').textContent=errTxt(e)}}}
+function logout(){ADM=null;tok=null;lsSet('tq_admin',null);vLogin()}
+
+/* ---------- القائمة ---------- */
+async function load(){$('#main').innerHTML='<div class="card">لحظة…</div>';
+  try{const out=[];let pt='';do{const j=await fs('GET','/accounts?pageSize=300'+(pt?'&pageToken='+encodeURIComponent(pt):''));((j&&j.documents)||[]).forEach(d=>{const o=U(d.fields);o.email=decodeURIComponent(d.name.split('/').pop());out.push(o)});pt=j&&j.nextPageToken}while(pt);
+    ACC=out.sort((a,b)=>(b.created||0)-(a.created||0));view()}
+  catch(e){if(e.message==='LOGIN'||/INVALID_REFRESH|TOKEN_EXPIRED|USER_NOT_FOUND/.test(e.code||''))return vLogin();$('#main').innerHTML='<div class="card"><p class="err">'+esc(errTxt(e))+'</p><button class="btn" onclick="load()">إعادة المحاولة</button> <button class="btn" onclick="logout()">خروج</button></div>'}}
+function view(){$('#who').innerHTML='<span style="font-size:13px;color:#CFE0D8" class="ltr">'+esc(ADM.u)+'</span> <button class="btn s hbtn" onclick="logout()">خروج</button>';
+  const st=ACC.map(status),n=k=>st.filter(x=>x[0]===k).length;
+  let h='<div class="stats"><div class="stat"><b>'+ACC.length+'</b><span>كل الحسابات</span></div><div class="stat"><b>'+(n('ok')+n('soon'))+'</b><span>اشتراك فعّال</span></div><div class="stat"><b>'+n('trial')+'</b><span>في التجربة</span></div><div class="stat"><b>'+n('soon')+'</b><span>ينتهي خلال ٣٠ يوم</span></div><div class="stat"><b>'+(n('exp')+n('off'))+'</b><span>منتهي أو موقوف</span></div></div>';
+  h+='<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">المشتركين</h2><button class="btn g" onclick="vNew()">+ موظف جديد</button></div>';
+  h+='<div class="filters" style="margin-top:12px"><input id="q" placeholder="بحث بالاسم أو الفريق أو اسم المستخدم" value="'+esc(Q)+'"><div class="seg">'+[['all','الكل'],['trial','التجربة'],['ok','فعّال'],['soon','قرب ينتهي'],['exp','منتهي'],['off','موقوف']].map(([k,t])=>'<button class="'+(FIL===k?'on':'')+'" data-f="'+k+'">'+t+'</button>').join('')+'</div></div><div class="list" id="lst"></div></div>';
+  h+='<div class="card"><h2>ملاحظات</h2><p class="hint">• الموظف يدخل التطبيق برقم فتح التطبيق ثم اسم المستخدم وكلمة السر، وأول ما يدخل يطلب منه يختار كلمة سر جديدة يعرفها هو بس.<br>• تقييمات كل موظف مشفّرة بمفتاحه، وما أحد يقدر يقرأها ولا حتى من هذي اللوحة.<br>• إذا انتهى الاشتراك أو أوقفته: التطبيق يقفل عنده بس بياناته ما تنحذف، ويقدر يحفظ نسخة منها. وإذا جددت يرجع كل شي.<br>• إذا نسي الموظف كلمة السر: هذي اللوحة ما تقدر تغيّرها حاليًا. أعطه مفتاح الاسترجاع حقه (اللي كتبه أول مرة) وتواصل معي.</p></div>';
+  $('#main').innerHTML=h;list();
+  $('#q').oninput=e=>{Q=e.target.value;list()};document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{FIL=b.dataset.f;view()})}
+function list(){const q=Q.trim();const L=ACC.filter(a=>{const s=status(a)[0];if(FIL!=='all'&&s!==FIL&&!(FIL==='ok'&&s==='soon'))return false;return !q||[a.name,a.team,a.user,a.email].join(' ').indexOf(q)>=0});
+  $('#lst').innerHTML=L.length?L.map(a=>{const s=status(a),i=ACC.indexOf(a);return '<div class="acc"><div class="top"><div class="grow"><div class="nm">'+esc(a.name||a.user)+' <span class="tag '+s[2]+'">'+esc(s[1])+'</span>'+(a.mustChange?' <span class="tag t-off">لم يغيّر كلمة السر</span>':'')+'</div><div class="meta"><span class="ltr" style="display:inline-block">'+esc(a.user||a.email)+'</span> · '+(a.role==='coord'?'منسق الفريق':'عضو')+(a.team?' · '+esc(a.team):'')+(a.phone?' · <span class="ltr" style="display:inline-block">'+esc(a.phone)+'</span>':'')+'</div><div class="meta">'+(a.plan==='trial'?'تجربة':'سنوي')+' · ينتهي '+esc(hdate(a.exp))+' ('+esc(gdate(a.exp))+'م)</div></div>'+
+    '<div class="row"><button class="btn s p" onclick="renew('+i+')">تفعيل سنة</button>'+(a.plan==='trial'?'<button class="btn s" onclick="extend('+i+',7)">تمديد التجربة ٧ أيام</button>':'')+'<button class="btn s" onclick="vEdit('+i+')">تعديل</button><button class="btn s" onclick="share('+i+')">رسالة الدخول</button><button class="btn s'+(a.active?' d':'')+'" onclick="toggle('+i+')">'+(a.active?'إيقاف':'تفعيل')+'</button></div></div></div>'}).join(''):'<p class="hint">ما فيه حسابات'+(ACC.length?' بهذا البحث':' بعد. اضغط «موظف جديد».')+'</p>'}
+
+/* ---------- إنشاء ---------- */
+function vNew(){modal('<h2>موظف جديد</h2><div class="grid" style="grid-template-columns:1fr 1fr"><label style="grid-column:1/-1">الاسم الكامل<input id="nN"></label><label>اسم المستخدم (إنجليزي)<input id="nU" class="ltr" placeholder="ahmad.q" autocomplete="off"></label><label>كلمة السر المبدئية<input id="nP" class="ltr" value="'+genPass()+'" autocomplete="off"></label><label>الفريق<input id="nT" list="teams"><datalist id="teams">'+[...new Set(ACC.map(a=>a.team).filter(Boolean))].map(t=>'<option value="'+esc(t)+'">').join('')+'</datalist></label><label>الدور<select id="nR"><option value="member">عضو</option><option value="coord">منسق الفريق</option></select></label><label>الجوال (اختياري)<input id="nM" class="ltr" inputmode="tel" placeholder="05xxxxxxxx"></label><label>الاشتراك<select id="nS"><option value="trial">تجربة مجانية ٧ أيام</option><option value="year">سنة كاملة (مدفوع)</option></select></label></div><p class="err" id="nE"></p><div class="row"><button class="btn p" id="nGo">إنشاء الحساب</button><button class="btn" onclick="closeM()">إلغاء</button></div>');
+  $('#nGo').onclick=async()=>{const name=$('#nN').value.trim(),user=$('#nU').value.trim().toLowerCase(),pass=$('#nP').value.trim(),team=$('#nT').value.trim(),role=$('#nR').value,phone=$('#nM').value.trim(),plan=$('#nS').value;
+    if(!name)return $('#nE').textContent='اكتب الاسم';if(!/^[a-z][a-z0-9._-]{2,29}$/.test(user))return $('#nE').textContent='اسم المستخدم: حروف إنجليزية صغيرة وأرقام فقط، يبدأ بحرف، من ٣ خانات';if(pass.length<8)return $('#nE').textContent='كلمة السر ٨ خانات على الأقل';
+    const email=emailOf(user);if(ACC.some(a=>a.email===email))return $('#nE').textContent='اسم المستخدم موجود في القائمة';
+    $('#nGo').disabled=true;$('#nE').textContent='لحظة…';let linked=false;
+    try{await post('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+FB.key,{email,password:pass,returnSecureToken:false})}
+    catch(e){if(/EMAIL_EXISTS/.test(e.code||'')){if(!confirm('اسم المستخدم «'+user+'» موجود في فايربيس من قبل. تبي تربطه باشتراك بدون ما تتغير كلمة سره؟')){$('#nGo').disabled=false;$('#nE').textContent='';return}linked=true}else{$('#nGo').disabled=false;return $('#nE').textContent=errTxt(e)}}
+    const now=Date.now(),exp=new Date(now+(plan==='trial'?7:365)*DAY);
+    const o={name,user,role,team,phone,plan:plan==='trial'?'trial':'paid',active:true,mustChange:!linked,start:new Date(now),exp,created:new Date(now)};
+    try{await fs('PATCH','/accounts/'+encodeURIComponent(email)+'?currentDocument.exists=false',F(o));}catch(e){$('#nGo').disabled=false;return $('#nE').textContent=errTxt(e)}
+    const a=Object.assign({},o,{email,start:now,exp:+exp,created:now});ACC.unshift(a);view();shareTo(a,linked?'':pass)}}
+/* ---------- تعديل ---------- */
+function vEdit(i){const a=ACC[i];modal('<h2>تعديل '+esc(a.name||a.user)+'</h2><div class="grid" style="grid-template-columns:1fr 1fr"><label style="grid-column:1/-1">الاسم الكامل<input id="eN" value="'+esc(a.name)+'"></label><label>الفريق<input id="eT" value="'+esc(a.team)+'"></label><label>الدور<select id="eR"><option value="member"'+(a.role!=='coord'?' selected':'')+'>عضو</option><option value="coord"'+(a.role==='coord'?' selected':'')+'>منسق الفريق</option></select></label><label>الجوال<input id="eM" class="ltr" value="'+esc(a.phone)+'"></label><label>تاريخ الانتهاء (ميلادي)<input id="eX" type="date" class="ltr" value="'+new Date(a.exp).toISOString().slice(0,10)+'"></label></div><p class="err" id="eE"></p><div class="row"><button class="btn p" id="eGo">حفظ</button><button class="btn" onclick="closeM()">إلغاء</button></div>');
+  $('#eGo').onclick=async()=>{const x=$('#eX').value;const o={name:$('#eN').value.trim(),team:$('#eT').value.trim(),role:$('#eR').value,phone:$('#eM').value.trim(),exp:x?new Date(x+'T23:59:00+03:00'):new Date(a.exp)};await save(i,o,$('#eE'))&&closeM()}}
+async function save(i,o,errEl){const a=ACC[i];try{await fs('PATCH','/accounts/'+encodeURIComponent(a.email)+'?'+mask(o)+'&currentDocument.exists=true',F(o));Object.keys(o).forEach(k=>a[k]=o[k] instanceof Date?+o[k]:o[k]);view();return true}catch(e){(errEl?errEl:null)?errEl.textContent=errTxt(e):alert(errTxt(e));return false}}
+function renew(i){const a=ACC[i],base=Math.max(Date.now(),a.plan==='trial'?Date.now():a.exp||0),exp=new Date(base+365*DAY);
+  if(!confirm('تفعيل سنة لـ «'+(a.name||a.user)+'»؟\nينتهي في '+hdate(+exp)+' ('+gdate(+exp)+'م)'))return;save(i,{plan:'paid',active:true,exp})}
+function extend(i,d){const a=ACC[i];save(i,{exp:new Date(Math.max(Date.now(),a.exp||0)+d*DAY),active:true})}
+function toggle(i){const a=ACC[i];if(a.active&&!confirm('إيقاف «'+(a.name||a.user)+'»؟ التطبيق يقفل عنده، وبياناته تبقى محفوظة.'))return;save(i,{active:!a.active})}
+/* ---------- رسالة الدخول ---------- */
+function msgFor(a,pass){const s=status(a);return 'السلام عليكم أستاذ '+(a.name||'')+'\nهذي بيانات دخولك لتطبيق «بطاقات التقويم»:\n\nالرابط: '+APP_URL+'\nرقم فتح التطبيق: '+APP_PIN+'\nاسم المستخدم: '+a.user+'\nكلمة السر: '+(pass||'(اللي عندك)')+'\n\n'+(pass?'أول ما تدخل بيطلب منك تختار كلمة سر جديدة تعرفها أنت بس.\n':'')+(a.plan==='trial'?'اشتراكك: تجربة مجانية لين '+hdate(a.exp)+'.':'اشتراكك سنوي لين '+hdate(a.exp)+'.')+'\nعلى جوال أندرويد: افتح الرابط من كروم واضغط «تثبيت التطبيق».\nعلى الآيفون: افتحه من سفاري ثم زر المشاركة ثم «إضافة إلى الشاشة الرئيسية».'}
+function share(i){shareTo(ACC[i],'')}
+function shareTo(a,pass){const m=msgFor(a,pass),ph=(a.phone||'').replace(/\D/g,'').replace(/^0?5/,'9665').replace(/^9660/,'966');
+  modal('<h2>'+(pass?'انشأ الحساب ✓':'رسالة الدخول')+'</h2>'+(pass?'<p class="hint">انسخ الرسالة وأرسلها له الحين. <b>كلمة السر ما تظهر مرة ثانية.</b></p>':'')+'<div class="msg" id="mT">'+esc(m)+'</div><div class="row"><button class="btn p" id="mC">نسخ</button>'+(ph.length>=12?'<a class="btn g" target="_blank" rel="noopener" href="https://wa.me/'+ph+'?text='+encodeURIComponent(m)+'">إرسال واتساب</a>':'<a class="btn g" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(m)+'">واتساب</a>')+'<button class="btn" onclick="closeM()">تم</button></div>');
+  $('#mC').onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(m).then(()=>{$('#mC').textContent='انسخت ✓'}).catch(()=>{})}}
+
+try{ADM=JSON.parse(lsGet('tq_admin')||'null')}catch(e){}
+if(ADM&&ADM.rt)load();else vLogin();
+</script>
+</body></html>
