@@ -325,7 +325,7 @@ function vList(){TAB='sch';const L=SD.visits.map((v,i)=>[v,i]).sort((a,b)=>Strin
   let h=tabs()+'<div class="row" style="margin-bottom:14px"><button class="btn g big addbtn" style="margin:0;flex:2" onclick="newVisit()">+ زيارة جديدة</button><button class="btn big" style="flex:1" onclick="importFile()">استيراد ملف</button></div>';
   h+='<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">الزيارات</h2><span class="hint" id="svM" style="margin:0"></span></div><div class="list mt">'+(L.length?L.map(([v,i])=>{const ds=vDates(v),n=v.days.reduce((x,d)=>x+d.rows.filter(r=>r.t==='v').length,0),un=v.days.reduce((x,d)=>x+d.rows.filter(r=>r.t==='v'&&!(r.m||[]).length).length,0);
       return '<div class="acc" style="cursor:pointer" onclick="openVisit('+i+')"><div class="nm">'+esc(v.school||'زيارة بدون اسم')+(v.pubAt?' <span class="tag t-ok">منشورة</span>':' <span class="tag t-trial">ما انتشرت</span>')+(v.dirty&&v.pubAt?' <span class="tag t-bad">فيها تعديل ما انتشر</span>':'')+'</div><div class="meta">'+(ds.length?esc(ds.map(g=>dayName(g)+' '+hTxt(g)).join('، '))+'هـ':'بدون تاريخ')+'</div><div class="meta">'+n+' حصة'+(un?' · <span style="color:var(--bad)">'+un+' بدون عضو</span>':'')+' · '+esc((v.mem||[]).map(short).join('، ')||'بدون أعضاء')+'</div></div>'}).join(''):'<p class="hint">ما فيه زيارات. اضغط «+ زيارة جديدة».</p>')+'</div></div>';
-  h+='<div id="pend"></div>';$('#main').innerHTML=h;pendingCheck()}
+  $('#main').innerHTML=h}
 /* مشتركين في الزيارات وما وصلتهم حصصهم: إذا فتحوا التطبيق (صار لهم مفتاح) ينشر لهم بضغطة */
 async function pendingCheck(){const es=[...new Set(SD.visits.flatMap(v=>(v.mem||[]).filter(e=>e.indexOf('x:')!==0)))].filter(e=>!SD.pub[e]);if(!es.length)return;
   const ready=[],wait=[];for(const e of es){try{const k=await fs('GET','/keys/'+encodeURIComponent(e));(k?ready:wait).push(e)}catch(x){}}
@@ -444,14 +444,15 @@ async function publish(){const v=CV(),bad=[];if(!v.school)bad.push('الزيار
   const to=[...new Set((v.mem||[]).concat(v.pubMem||[]))].filter(e=>e.indexOf('x:')!==0);v.pubMem=(v.mem||[]).filter(e=>e.indexOf('x:')!==0);v.pubAt=Date.now();v.dirty=0;
   if(!to.length){saveSD(true);return uiAlert('الزيارة انحفظت. ما فيها مشتركين ينرسل لهم.')}
   await publishTo(to)}
+/* مفتاح التوصيل المشترك: ينصنع مرة وحدة، ويقرأه المشتركين بس */
+let DK=null;async function deliveryKey(){if(DK)return DK;const d=await fs('GET','/cfg/inbox');if(d){DK=b64d(U(d.fields).k);return DK}const k=nacl.randomBytes(32);await fs('PATCH','/cfg/inbox?currentDocument.exists=false',F({k:b64e(k)}));DK=k;return DK}
 async function publishTo(to){modal('<h2>نشر الحصص</h2><div id="pubL" class="plist"></div><div class="row mt"><button class="btn" onclick="closeM();VI>=0?vSch():vList()">تم</button></div>');
   const L=$('#pubL'),line=t=>{L.insertAdjacentHTML('beforeend','<div class="prow"><b>'+esc(t)+'</b><span></span></div>');return L.lastChild.querySelector('span')};
   await saveSD(true);
   for(const e of to){const sp=line(nm(e));sp.textContent='لحظة…';
-    try{const k=await fs('GET','/keys/'+encodeURIComponent(e));if(!k){sp.textContent='ما دخل التطبيق للحين. أول ما يدخل انشر مرة ثانية';sp.className='err';continue}
-      const pk=b64d(U(k.fields).pk),pl=payloadFor(e),n=pl.d.reduce((x,d)=>x+d[3].length,0);
-      const ek=nacl.box.keyPair(),nn=nacl.randomBytes(24),c=b64e(cat(ek.publicKey,nn,nacl.box(enc(JSON.stringify(pl)),nn,pk,ek.secretKey)));
-      await fs('PATCH','/inbox/'+encodeURIComponent(e),F({c,ts:Date.now(),n}));SD.pub[e]=Date.now();sp.textContent='وصلته '+n+' حصة من كل زياراته ✓';sp.className='ok'}
+    try{const K=await deliveryKey(),pl=payloadFor(e),n=pl.d.reduce((x,d)=>x+d[3].length,0);
+      const nn=nacl.randomBytes(24),c=b64e(cat(nn,nacl.secretbox(enc(JSON.stringify(pl)),nn,K)));
+      await fs('PATCH','/inbox/'+encodeURIComponent(e),F({c,ts:Date.now(),n,v:2}));SD.pub[e]=Date.now();sp.textContent='وصلته '+n+' حصة من كل زياراته ✓';sp.className='ok'}
     catch(x){sp.textContent=errTxt(x);sp.className='err'}}
   saveSD(true)}
 
