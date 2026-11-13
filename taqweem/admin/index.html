@@ -56,6 +56,10 @@ input:focus,select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
 .info .nm{font-weight:700;font-size:16px}.pills{display:flex;gap:6px;flex-wrap:wrap;margin:3px 0}.info .meta{color:var(--mut);font-size:12.5px}
 .icons{display:flex;gap:2px;flex-wrap:wrap;justify-content:flex-end}
 .ib{font:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:50px;padding:6px 4px;border:0;border-radius:12px;background:transparent;color:var(--folio2);cursor:pointer;transition:background .12s}
+.newsnow{background:var(--soft);border-radius:12px;padding:10px 12px}.newsnow small{color:var(--mut);font-size:12px}.newsnow p{margin:4px 0 0;white-space:pre-line;line-height:1.8}
+.nbadge{background:var(--bad);color:#fff;border-radius:99px;padding:0 6px;font-size:10px}
+.notes{display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow:auto}.note{border:1px solid var(--line);border-inline-start:4px solid var(--gold,#B8913A);border-radius:12px;padding:10px 12px}.note.rd{border-inline-start-color:var(--line);opacity:.8}.note .nhead{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.note .nhead small{color:var(--mut);font-size:12px}.note p{margin:6px 0;white-space:pre-line;line-height:1.8}
+textarea{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:inherit;box-sizing:border-box}
 .ib span{font-size:10.5px;font-weight:600;color:var(--mut);white-space:nowrap}.ib:hover{background:var(--soft)}.ib.pri{color:var(--ok)}.ib.wa{color:#1E9E55}.ib.dan{color:var(--bad)}.ib.light{color:#fff}.ib.light span{color:#CFE0D8}.ib.light:hover{background:rgba(255,255,255,.1)}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .ib{color:var(--gold2)}}
 @media(max-width:700px){.sub{grid-template-columns:1fr}.icons{grid-column:1/-1;justify-content:space-between;border-top:1px solid var(--line);padding-top:6px}.ib{min-width:0;flex:1}}
@@ -209,7 +213,7 @@ async function load(){$('#main').innerHTML='<div class="card">لحظة…</div>'
   try{if(!PK){const e=await fs('GET','/admin/escrow');if(!e){$('#who').innerHTML='<button class="btn s hbtn" onclick="logout()">خروج</button>';return vSetup()}PK=b64d(U(e.fields).pk)}
     const out=[];let pt='';do{const j=await fs('GET','/accounts?pageSize=300'+(pt?'&pageToken='+encodeURIComponent(pt):''));((j&&j.documents)||[]).forEach(d=>{const o=U(d.fields);o.email=decodeURIComponent(d.name.split('/').pop());out.push(o)});pt=j&&j.nextPageToken}while(pt);
     out.forEach(a=>{try{a.pays=JSON.parse(a.payLog||'[]')}catch(e){a.pays=[]}});ACC=out.sort((a,b)=>(b.created||0)-(a.created||0));
-    try{const st=await fs('GET','/admin/settings');if(st){const o=U(st.fields);if(+o.price>0)PRICE=+o.price}}catch(e){}view()}
+    try{const st=await fs('GET','/admin/settings');if(st){const o=U(st.fields);if(+o.price>0)PRICE=+o.price}}catch(e){}await Promise.all([loadNews(),loadNotes()]);view()}
   catch(e){if(e.message==='LOGIN'||/INVALID_REFRESH|TOKEN_EXPIRED|USER_NOT_FOUND/.test(e.code||''))return vLogin();$('#main').innerHTML='<div class="card"><p class="err">'+esc(errTxt(e))+'</p><button class="btn" onclick="load()">إعادة المحاولة</button> <button class="btn" onclick="logout()">خروج</button></div>'}}
 /* ---------- أيقونات ---------- */
 const I=(p,extra)=>'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>';
@@ -234,6 +238,7 @@ function view(){TAB='acc';$('#who').innerHTML='<span class="who-n">'+esc((ADM&&A
   let h=tabs();
   h+='<div class="money"><div class="mbox"><span>الدخل الكلي</span><b>'+SAR(total)+'</b><small>'+P.length+' دفعة</small></div><div class="mbox"><span>دخل هالشهر</span><b>'+SAR(month)+'</b><small>'+now.toLocaleDateString('ar-SA-u-ca-gregory-nu-latn',{month:'long'})+'</small></div><div class="mbox warn"><span>متوقع من اللي ما دفعوا</span><b>'+SAR(expect)+'</b><small>'+dueL.length+' شخص</small></div></div>';
   h+='<div class="stats">'+card('all',ACC.length,'الكل')+card('paid',np('paid'),'دفعوا','s-ok')+card('due',np('due'),'ما دفعوا','s-bad')+card('trial',n('trial'),'تجربة','s-warn')+card('soon',n('soon'),'قرب ينتهي','s-warn')+card('off',n('exp')+n('off'),'منتهي/موقوف')+'</div>';
+  h+=msgsCard();
   h+='<div class="card"><div class="lhead"><h2>المشتركين'+(FIL!=='all'?' <button class="tag t-off fx" onclick="FIL=\'all\';view()">'+esc({paid:'دفعوا',due:'ما دفعوا',trial:'تجربة',soon:'قرب ينتهي',off:'منتهي/موقوف'}[FIL]||'')+' ✕</button>':'')+'</h2><button class="btn g" onclick="vNew()">+ موظف</button></div><div class="filters"><input id="q" placeholder="بحث بالاسم أو الجوال أو الفريق" value="'+esc(Q)+'"><select id="sortS" class="sortS"><option value="new">الأحدث</option><option value="exp">الأقرب انتهاء</option><option value="name">الاسم</option><option value="team">الفريق</option></select></div><div class="list" id="lst"></div></div>';
   h+='<div class="card"><div class="lhead"><h2>سجل الدفعات</h2></div><div id="payLst" class="plist">'+(P.length?P.slice(0,PAYN).map(p=>'<div class="prow"><b>'+esc(p.who)+'</b><span class="row" style="gap:4px"><span class="amt">'+SAR(p.a)+'</span>'+ib('trash','حذف','undoPay('+ACC.findIndex(x=>x.email===p.email)+','+p.k+')','dan')+'</span><span class="hint" style="margin:0">'+gdate(p.d)+'م'+(p.m?' · '+esc(p.m):'')+(p.n?' · '+esc(p.n):'')+'</span></div>').join('')+(P.length>PAYN?'<button class="btn s" onclick="PAYN+=20;view()">عرض المزيد</button>':''):'<p class="hint">ما سجلت أي دفعة بعد.</p>')+'</div></div>';
   h+='<div class="card"><div class="lhead"><h2>السعر السنوي</h2></div><div class="row"><input id="prI" type="number" inputmode="numeric" value="'+PRICE+'" style="max-width:140px"><span>ريال</span><button class="btn" id="prS">حفظ</button><span class="hint" id="prM" style="margin:0"></span></div></div>';
@@ -529,7 +534,7 @@ function gFull(g,st){g=String(g||'').trim();if(!g||/الابتدائي|المت�
 function payloadFor(e){const out=[];let team=[],lastG='';
   SD.visits.forEach(v=>{const inV=(v.mem||[]).includes(e);v.days.forEach(d=>{if(!d.g)return;const ab=d.absent||[],h=hijri(d.g);const rows=[],acts=[];
       d.rows.slice().sort((x,y)=>PERIODS.indexOf(x.p)-PERIODS.indexOf(y.p)).forEach(r=>{const m=r.m||[];
-        if(r.t==='v'&&(m.includes(e)||(m.includes('*')&&inV&&!ab.includes(e))))rows.push([r.p,r.subject||'',gFull(r.grade,v.stage),r.section||'',r.teacher||'',r.nid||'']);
+        if(r.t==='v'&&(m.includes(e)||(m.includes('*')&&inV&&!ab.includes(e)))){const co=[...new Set((m.includes('*')?(v.mem||[]).filter(x=>!ab.includes(x)):[]).concat(m.filter(x=>x!=='*')))].filter(x=>x!==e).map(nm).filter(Boolean);rows.push([r.p,r.subject||'',gFull(r.grade,v.stage),r.section||'',r.teacher||'',r.nid||''].concat(co.length?[co]:[]));}
         if(r.t==='a'&&r.p!=='الطابور'&&((m.includes('*')&&inV&&!ab.includes(e))||m.includes(e)))[r.text,r.text2].forEach(t=>{t=String(t||'').trim();if(t&&!acts.includes(t))acts.push(t)})});
       if(rows.length||acts.length){out.push([dayName(d.g),h.d+'/'+h.m+'/'+h.y,v.school||'',rows,STG[v.stage]||'p',acts]);if(d.g>=lastG){lastG=d.g;team=(v.mem||[]).map(nm)}}})});
   return {k:'tq',f:nm(e),r:team.length?team:[nm(e)],d:out}}
@@ -560,5 +565,30 @@ function importVisits(o){if(!o||o.kind!=='tq-visits'||!Array.isArray(o.visits))r
     nv.mem=[...new Set((v.mem||[]).map(memOf).filter(x=>x&&x!=='*').concat(nv.days.flatMap(d=>d.rows.flatMap(r=>r.m.filter(x=>x!=='*')))))];
     const k=SD.visits.findIndex(x=>x.id===nv.id);if(k>=0){nv.pubMem=SD.visits[k].pubMem;nv.pubAt=SD.visits[k].pubAt;SD.visits[k]=nv;upd++}else{SD.visits.push(nv);add++}});
   saveSD(true);vList();uiAlert('انضافت '+add+' زيارة'+(upd?' وتحدّثت '+upd:'')+'. افتح كل زيارة وتأكد منها، ثم «اعتماد ونشر».')}
+
+/* ================= الرسائل: رسالة للكل + ملاحظات الموظفين =================
+   رسالة للكل: تنحفظ في cfg/news ويشوفها كل مشترك بأعلى التطبيق لين يضغط «تمام».
+   ملاحظات الموظفين: كل موظف يرسل من التطبيق ملاحظة مقفولة بمفتاح اللوحة، ما يقرأها غيرك. */
+let NEWS=null,NOTES=null,NOTES_ERR='';
+const NOTE_READ=()=>{try{return JSON.parse(lsGet('tq_nread')||'{}')}catch(e){return {}}};
+async function loadNews(){try{const d=await fs('GET','/cfg/news');NEWS=d?U(d.fields):{t:'',ts:0}}catch(e){NEWS={t:'',ts:0}}}
+async function loadNotes(){NOTES_ERR='';try{const d=await fs('GET','/notes?pageSize=300');NOTES=((d&&d.documents)||[]).map(x=>Object.assign(U(x.fields),{id:x.name.split('/').pop()})).sort((a,b)=>(+b.ts||0)-(+a.ts||0))}catch(e){NOTES=[];NOTES_ERR=/PERMISSION|403/.test(String(e.message||e.code||e.status))?'rules':'net'}}
+function unreadNotes(){const R=NOTE_READ();return (NOTES||[]).filter(n=>!R[n.id]).length}
+function msgsCard(){const nu=unreadNotes(),nw=NEWS&&NEWS.t;
+  return '<div class="card"><div class="lhead"><h2>الرسائل</h2><span class="row" style="gap:6px">'+ib('send','رسالة للكل','vNews()')+'<button class="ib" onclick="vNotes()" title="ملاحظات الموظفين" aria-label="ملاحظات الموظفين">'+IC.edit+'<span>ملاحظاتهم'+(nu?' <b class="nbadge">'+nu+'</b>':'')+'</span></button></span></div>'+
+    (nw?'<div class="newsnow"><small>الرسالة الحالية عند الكل · '+gdate(NEWS.ts)+'م</small><p>'+esc(NEWS.t)+'</p></div>':'<p class="hint" style="margin:0">ما فيه رسالة معروضة للمشتركين الحين.</p>')+
+    (NOTES_ERR==='rules'?'<p class="hint" style="color:#B23A3A">الملاحظات تحتاج تحديث قواعد فايربيس.</p>':'')+'</div>'}
+function vNews(){const cur=(NEWS&&NEWS.t)||'';
+  modal('<h2>رسالة للكل</h2><p class="hint">تطلع لكل المشتركين بأعلى الصفحة الرئيسية في التطبيق، وتختفي عند كل واحد لما يضغط «تمام». الرسالة الجديدة تحل محل القديمة.</p><textarea id="nwT" rows="5" maxlength="600" placeholder="مثال: الأسبوع الجاي زيارة ثانوية الملك فهد، الحصص بتنزل لكم الخميس.">'+esc(cur)+'</textarea><p class="hint" id="nwM"></p><div class="row mt"><button class="btn g" id="nwS">نشر للكل</button>'+(cur?'<button class="btn dan" id="nwD">إخفاء الرسالة</button>':'')+'<button class="btn" onclick="closeM()">إلغاء</button></div>');
+  $('#nwS').onclick=async()=>{const t=$('#nwT').value.trim();if(!t){$('#nwM').textContent='اكتب الرسالة';return}
+    if(!await uiConfirm('تنشر هالرسالة لكل المشتركين؟\n\n'+t))return;
+    try{await fs('PATCH','/cfg/news',F({t,ts:Date.now()}));await loadNews();closeM();view();uiAlert('انشرت ✓ تطلع لهم أول ما يفتحون التطبيق وفيه نت.')}catch(e){uiAlert(errTxt(e))}};
+  if(cur)$('#nwD').onclick=async()=>{if(!await uiConfirm('إخفاء الرسالة الحالية من عند الكل؟'))return;try{await fs('PATCH','/cfg/news',F({t:'',ts:Date.now()}));await loadNews();closeM();view()}catch(e){uiAlert(errTxt(e))}}}
+function vNotes(){askPhrase(()=>{const R=NOTE_READ(),L=NOTES||[];
+  const body=L.length?L.map(n=>{let t='';try{t=openPw(n.c)||''}catch(e){}return '<div class="note'+(R[n.id]?' rd':'')+'"><div class="nhead"><b>'+esc(n.name||n.from||'')+'</b><small>'+gdate(+n.ts)+'م · '+new Date(+n.ts).toLocaleTimeString('ar-SA-u-nu-latn',{hour:'numeric',minute:'2-digit'})+'</small></div><p>'+(t?esc(t):'<i class="hint">ما قدرت أفتحها</i>')+'</p><div class="row" style="gap:6px">'+(R[n.id]?'':ib('play','قريتها','noteRead(\''+n.id+'\')'))+ib('wa','رد واتساب','noteReply(\''+n.id+'\')')+ib('trash','حذف','noteDel(\''+n.id+'\')','dan')+'</div></div>'}).join(''):'<p class="hint">ما وصلت ملاحظات للحين.</p>';
+  modal('<h2>ملاحظات الموظفين</h2><p class="hint">يرسلونها من التطبيق: الإعدادات ← «ملاحظة لحسام». مقفولة وما يقرأها غيرك.</p><div class="notes">'+body+'</div><div class="row mt"><button class="btn" onclick="closeM();view()">رجوع</button></div>')})}
+function noteRead(id){const R=NOTE_READ();R[id]=1;lsSet('tq_nread',JSON.stringify(R));vNotes()}
+function noteReply(id){const n=(NOTES||[]).find(x=>x.id===id),a=n&&ACC.find(x=>x.email===n.from);if(!a||!a.phone)return uiAlert('ما عندي رقم جواله');window.open('https://wa.me/'+a.phone.replace(/^0?5/,'9665')+'?text='+encodeURIComponent('هلا أستاذ '+(a.name||'')+'، بخصوص ملاحظتك: '),'_blank')}
+async function noteDel(id){if(!await uiConfirm('حذف الملاحظة نهائيًا؟'))return;try{await fs('DELETE','/notes/'+id);NOTES=NOTES.filter(x=>x.id!==id);vNotes()}catch(e){uiAlert(errTxt(e))}}
 </script>
 </body></html>
