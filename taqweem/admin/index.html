@@ -255,7 +255,7 @@ function vNew(){const P=genPass();let role='member',plan='trial';
     const email=emailOf(user);if(ACC.some(a=>a.email===email))return $('#nE').textContent='هذا '+(custom?'الاسم':'الرقم')+' موجود في القائمة';
     $('#nGo').disabled=true;$('#nE').textContent='لحظة…';let linked=false,known=pw;
     try{await post('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+FB.key,{email,password:pw,returnSecureToken:false})}
-    catch(e){if(/EMAIL_EXISTS/.test(e.code||'')){if(!await uiConfirm('«'+user+'» مسجّل في فايربيس من قبل. تبي تضيفه للقائمة بدون ما تتغير كلمة سره؟')){$('#nGo').disabled=false;$('#nE').textContent='';return}linked=true;known=normPass(await uiPrompt('إذا تعرف كلمة سره الحالية اكتبها عشان تنحفظ عندك (أو اتركها فاضية):')||'')}else{$('#nGo').disabled=false;return $('#nE').textContent=errTxt(e)}}
+    catch(e){if(/EMAIL_EXISTS/.test(e.code||'')){/* أي أحد يقدر يسجّل رقم قبلك، فما نربط إلا حساب تعرف إنك أنت اللي سويته */if(!await uiConfirm('«'+user+'» مسجّل في فايربيس من قبل، وأنت ما أضفته في اللوحة.\nإذا ما كنت أنت اللي سويته (مثل حساب الوالد ali)، ممكن يكون شخص سجّل الرقم قبلك. الأمان: ألغِ واستخدم اسم دخول مختلف من «خيارات أخرى».\n\nمتأكد إنه حسابك وتبي تربطه؟')){$('#nGo').disabled=false;$('#nE').textContent='هذا الرقم مسجّل من قبل. استخدم اسم دخول مختلف من «خيارات أخرى».';return}linked=true;known=normPass(await uiPrompt('إذا تعرف كلمة سره الحالية اكتبها عشان تنحفظ عندك (أو اتركها فاضية):')||'')}else{$('#nGo').disabled=false;return $('#nE').textContent=errTxt(e)}}
     const now=Date.now(),exp=new Date(now+(plan==='trial'?7:365)*DAY);
     const o={name,user,role,team,phone,plan:plan==='trial'?'trial':'paid',active:true,mustChange:false,start:new Date(now),exp,created:new Date(now)};
     try{await fs('PATCH','/accounts/'+encodeURIComponent(email)+'?currentDocument.exists=false',F(o));}catch(e){$('#nGo').disabled=false;return $('#nE').textContent=errTxt(e)}
@@ -293,7 +293,7 @@ if(ADM&&ADM.rt)load();else vLogin();
    كل زيارة (مدرسة وأيامها) لها أعضاءها: مشتركين أو أسماء بدون حساب، والفريق يتغير من زيارة لزيارة.
    كل مشترك توصله حصصه هو بس من كل الزيارات، مقفولة بمفتاحه.
    كل الزيارات تنحفظ مقفولة بمفتاح المدير، وما تنفتح إلا بالعبارة السرية. */
-let TAB='acc',SD=null,VI=-1,SDdirty=false,SDsave=null,OPEN={};
+let SDut=null,TAB='acc',SD=null,VI=-1,SDdirty=false,SDsave=null,OPEN={};
 const PERIODS=['الطابور','الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة','السابعة'];
 const STAGES=['ابتدائي','متوسط','ثانوي'],STG={'ابتدائي':'p','متوسط':'m','ثانوي':'s'},SFX={'ابتدائي':'الابتدائي','متوسط':'المتوسط','ثانوي':'الثانوي'};
 const GR={'ابتدائي':['الأول','الثاني','الثالث','الرابع','الخامس','السادس'],'متوسط':['الأول','الثاني','الثالث'],'ثانوي':['الأول','الثاني','الثالث']};
@@ -313,9 +313,9 @@ function openObj(c){const u=b64d(c),o=nacl.box.open(u.slice(56),u.slice(32,56),u
 function goTab(t){if(t==='sch')askPhrase(loadSD);else{TAB='acc';view()}}
 function tabs(){return '<div class="tabs"><button class="'+(TAB==='acc'?'on':'')+'" onclick="goTab(\'acc\')">المشتركين</button><button class="'+(TAB==='sch'?'on':'')+'" onclick="goTab(\'sch\')">الزيارات والتوزيع</button></div>'}
 async function loadSD(){TAB='sch';$('#main').innerHTML=tabs()+'<div class="card">لحظة…</div>';
-  try{const d=await fs('GET','/admin/sched');SD=d?openObj(U(d.fields).c):null}catch(e){$('#main').innerHTML=tabs()+'<div class="card"><p class="err">'+esc(errTxt(e))+'</p></div>';return}
+  try{const d=await fs('GET','/admin/sched');SD=d?openObj(U(d.fields).c):null;SDut=d?d.updateTime:null}catch(e){$('#main').innerHTML=tabs()+'<div class="card"><p class="err">'+esc(errTxt(e))+'</p></div>';return}
   if(!SD)SD={visits:[],pub:{}};SD.pub=SD.pub||{};VI=-1;vList()}
-function saveSD(now){SDdirty=true;clearTimeout(SDsave);const go=async()=>{try{await fs('PATCH','/admin/sched',F({c:sealObj(SD),u:new Date()}));SDdirty=false;const m=$('#svM');if(m)m.textContent='انحفظ ✓'}catch(e){const m=$('#svM');if(m)m.textContent=errTxt(e)}};
+function saveSD(now){SDdirty=true;clearTimeout(SDsave);const go=async()=>{try{const j=await fs('PATCH','/admin/sched?'+(SDut?'currentDocument.updateTime='+encodeURIComponent(SDut):'currentDocument.exists=false'),F({c:sealObj(SD),u:new Date()}));SDut=j&&j.updateTime;SDdirty=false;const m=$('#svM');if(m)m.textContent='انحفظ ✓'}catch(e){if(/FAILED_PRECONDITION|ALREADY_EXISTS|NOT_FOUND/.test(e.message||'')||e.status===400||e.status===409||e.status===404){SDdirty=false;await uiAlert('الزيارات تعدّلت من جهاز ثاني قبل شوي، فما حفظت تعديلك الأخير عشان ما يضيع شي.\nبحدّث الصفحة الحين، وعيد آخر تعديل.');loadSD();return}const m=$('#svM');if(m)m.textContent=errTxt(e)}};
   const m=$('#svM');if(m)m.textContent='يحفظ…';if(now)return go();SDsave=setTimeout(go,900)}
 window.addEventListener('beforeunload',e=>{if(SDdirty){e.preventDefault();e.returnValue=''}});
 
