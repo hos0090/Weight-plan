@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>تثبيت بطاقات التقويم</title>
+<meta name="description" content="تثبيت تطبيق بطاقات التقويم على الجوال وطريقة استخدامه بالصور والفيديو">
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#0B3A2E">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="بطاقات التقويم"><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F3F1EA;--card:#fff;--ink:#14231D;--mut:#5A6B63;--line:#E2DDCF;--folio:#0B3A2E;--folio2:#145040;--gold:#C2A061;--gold2:#E6CF9F;--soft:#F7F2E6;--sh:0 10px 30px rgba(11,58,46,.10)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0C1713;--card:#13221C;--ink:#E9EFEB;--mut:#9DB0A6;--line:#24372F;--soft:#1A2B24;--sh:0 10px 30px rgba(0,0,0,.35)}}
+:root[data-theme="dark"]{--bg:#0C1713;--card:#13221C;--ink:#E9EFEB;--mut:#9DB0A6;--line:#24372F;--soft:#1A2B24}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Arabic',system-ui,Tahoma,sans-serif;font-size:18px;line-height:1.75}
+.hero{background:var(--folio);color:#fff;padding:28px 16px 70px;text-align:center;background-image:radial-gradient(circle at 20% 0,rgba(194,160,97,.25),transparent 55%)}
+.hero img{width:84px;height:84px;border-radius:22px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.hero h1{margin:12px 0 2px;font-size:28px}.hero p{margin:0;color:#CFE0D8;font-size:16px}
+.wrap{max-width:640px;margin:-48px auto 0;padding:0 16px 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px 18px;box-shadow:var(--sh);margin-bottom:16px}
+.card h2{margin:0 0 6px;font-size:22px}.card p{margin:0 0 12px;color:var(--mut)}
+.big{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;font:inherit;font-size:20px;font-weight:700;padding:16px;border:0;border-radius:16px;background:var(--folio);color:#fff;text-decoration:none;cursor:pointer}
+.big.gold{background:var(--gold);color:#1C140A}.big.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line);font-size:17px;padding:13px}
+.big+.big{margin-top:10px}
+ol.steps{list-style:none;margin:8px 0 0;padding:0;counter-reset:s}
+ol.steps li{counter-increment:s;display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+ol.steps li:first-child{border-top:0}
+ol.steps li::before{content:counter(s);flex:none;width:34px;height:34px;border-radius:50%;background:var(--gold);color:#1C140A;font-weight:700;display:grid;place-items:center;font-size:17px}
+.ico{display:inline-grid;place-items:center;vertical-align:middle;width:30px;height:30px;border-radius:8px;background:var(--soft);border:1px solid var(--line);margin:0 2px}
+.ico svg{width:20px;height:20px;stroke:#0A84FF}
+.mock{margin:12px 0 4px;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--soft)}
+.mock svg{display:block;width:100%;height:auto}
+.note{background:var(--soft);border-radius:14px;padding:10px 14px;font-size:16px;color:var(--mut);margin-top:10px}
+.done{display:none;text-align:center}.done b{font-size:22px;display:block;margin-bottom:6px}
+video{width:100%;border-radius:18px;background:#000;display:block}
+.g{display:grid;gap:14px}
+.gi{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--sh)}
+.gi .t{padding:14px 16px 4px;font-weight:700;font-size:19px}.gi .d{padding:0 16px 14px;color:var(--mut);font-size:16px}
+.gi img{display:block;width:100%;height:auto;border-top:1px solid var(--line)}
+.sec{margin:26px 4px 10px;font-size:22px}
+.qr{display:flex;gap:16px;align-items:center}.qr img{width:150px;height:150px;border-radius:12px;background:#fff;padding:8px;border:1px solid var(--line)}
+.arrow{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);z-index:9;display:none;flex-direction:column;align-items:center;color:#fff;background:var(--folio);border-radius:16px;padding:8px 14px;font-weight:700;font-size:15px;box-shadow:0 8px 24px rgba(0,0,0,.3);animation:bob 1.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translate(-50%,6px)}}
+[hidden]{display:none!important}
+footer{text-align:center;color:var(--mut);font-size:14px;padding:10px 16px 30px}
+</style></head><body>
+<header class="hero"><img src="icon-192.png" alt=""><h1>بطاقات التقويم</h1><p>تطبيق تعبئة بطاقات التقويم المدرسي</p></header>
+<main class="wrap">
+
+<section class="card" id="cAndroid" hidden>
+  <h2>تثبيت التطبيق</h2><p>اضغط الزر، وبعدها «تثبيت». يطلع التطبيق في شاشة جوالك مثل أي برنامج.</p>
+  <button class="big gold" id="inst">تثبيت التطبيق</button>
+  <div id="andHelp" hidden>
+    <ol class="steps"><li><span>اضغط زر القائمة <span class="ico"><svg viewBox="0 0 24 24" fill="#0A84FF" stroke="none"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></span> فوق على اليسار (أو تحت في بعض الجوالات).</span></li>
+    <li><span>اختر <b>«تثبيت التطبيق»</b> أو <b>«إضافة إلى الشاشة الرئيسية»</b>.</span></li><li><span>اضغط <b>«تثبيت»</b> أو <b>«إضافة»</b>، وبيطلع في شاشتك.</span></li></ol>
+  </div>
+  <a class="big ghost" href="./#k=554894" style="margin-top:10px">فتح التطبيق بدون تثبيت</a>
+</section>
+
+<section class="card" id="cIOS" hidden>
+  <h2>إضافة التطبيق لشاشة الآيفون</h2><p>ثلاث خطوات من متصفح سفاري، وبعدها يفتح من شاشتك مثل أي تطبيق.</p>
+  <ol class="steps">
+    <li><span>اضغط زر المشاركة <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11v9h12v-9"/></svg></span> أسفل الشاشة.<br><small style="color:var(--mut)">إذا ما لقيته: اضغط <span class="ico"><svg viewBox="0 0 24 24" fill="#0A84FF" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span> تحت، ثم «مشاركة».</small></span></li>
+    <li><span>انزل شوي واضغط <b>«إضافة إلى الشاشة الرئيسية»</b> <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></svg></span></span></li>
+    <li><span>اضغط <b>«إضافة»</b> فوق. خلاص! افتحه من شاشتك.</span></li>
+  </ol>
+  <div class="mock" aria-hidden="true"><svg viewBox="0 0 360 250" font-family="IBM Plex Sans Arabic,system-ui" direction="rtl">
+    <rect width="360" height="250" fill="#F2F2F7"/>
+    <rect x="18" y="14" width="324" height="142" rx="14" fill="#fff"/>
+    <text x="324" y="44" font-size="15" fill="#8E8E93" text-anchor="start">بطاقات التقويم</text>
+    <g><rect x="30" y="58" width="300" height="40" rx="10" fill="#E9F3FF" stroke="#0A84FF" stroke-width="2"/><text x="312" y="84" font-size="16" font-weight="700" fill="#111" text-anchor="start">إضافة إلى الشاشة الرئيسية</text><rect x="44" y="66" width="24" height="24" rx="6" fill="none" stroke="#111" stroke-width="2"/><path d="M56 72v12M50 78h12" stroke="#111" stroke-width="2"/></g>
+    <text x="312" y="128" font-size="15" fill="#111" text-anchor="start">نسخ</text><line x1="30" y1="104" x2="330" y2="104" stroke="#E5E5EA"/>
+    <rect x="0" y="182" width="360" height="68" fill="#F9F9F9"/><line x1="0" y1="182" x2="360" y2="182" stroke="#D1D1D6"/>
+    <g stroke="#0A84FF" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M40 210l-8 6 8 6"/><path d="M96 210l8 6-8 6"/><path d="M252 206h16v16h-16z"/><path d="M314 208h16v14h-16z"/></g>
+    <circle cx="180" cy="216" r="26" fill="none" stroke="#C2A061" stroke-width="3"><animate attributeName="r" values="22;28;22" dur="1.4s" repeatCount="indefinite"/></circle>
+    <g stroke="#0A84FF" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M180 202v16M174 208l6-6 6 6"/><path d="M171 214v12h18v-12"/></g>
+    <path d="M180 176 L180 160" stroke="#C2A061" stroke-width="3" marker-end="url(#a)"/><defs><marker id="a" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0L8 4L0 8z" fill="#C2A061"/></marker></defs>
+  </svg></div>
+  <div class="note" id="notSafari" hidden>فتحت الرابط من داخل برنامج ثاني (مثل واتساب). اضغط <b>«فتح في سفاري»</b> أو انسخ الرابط والصقه في سفاري، ثم سوّ الخطوات.</div>
+  <a class="big ghost" href="./#k=554894" style="margin-top:12px">فتح التطبيق بدون إضافة</a>
+</section>
+
+<section class="card" id="cDesk" hidden>
+  <h2>افتحه من جوالك</h2>
+  <div class="qr"><img src="guide/qr.png" alt="باركود صفحة التثبيت"><p style="margin:0">صوّر الباركود بكاميرا الجوال، ويفتح لك صفحة التثبيت على طول.</p></div>
+  <a class="big ghost" href="./#k=554894" style="margin-top:14px">فتح التطبيق على هذا الجهاز</a>
+</section>
+
+<section class="card done" id="cDone"><b>التطبيق مثبّت ✓</b><p>افتحه من شاشة جوالك. اسمه «بطاقات التقويم».</p><a class="big" href="./#k=554894">فتح التطبيق</a></section>
+
+<h2 class="sec">شرح بالفيديو</h2>
+<video controls playsinline preload="metadata" poster="guide/poster.jpg" src="guide/guide.mp4"></video>
+<p style="color:var(--mut);font-size:15px;margin:8px 4px 0">دقيقتين تقريبًا، والشرح مكتوب على الشاشة كمان.</p>
+
+<h2 class="sec">الشرح بالصور</h2>
+<div class="g" id="g"></div>
+</main>
+<footer>أي مشكلة؟ من داخل التطبيق: الإعدادات ← «ملاحظة لحسام»</footer>
+<div class="arrow" id="arr">زر المشاركة تحت ↓</div>
+<script>
+var STEPS=[
+['01-gate','افتح التطبيق واضغط «دخول»','أول مرة بس.'],
+['02-login','اكتب رقم جوالك والرقم السري','الرقم السري وصلك من حسام. تدخل مرة وحدة، وبعدها يفتح على طول حتى بدون نت.'],
+['03-home','الصفحة الرئيسية','فيها اسمك وتاريخ اليوم ومدة اشتراكك، وتحتها حصصك.'],
+['04-news','رسالة من حسام','إذا وصلتك رسالة تطلع فوق. اقرأها واضغط «تمام».'],
+['05-today','حصص اليوم','تنزل لحالها من حسام. تحت كل حصة اسم المعلم واللي معك فيها. اضغط الحصة عشان تفتحها.'],
+['06-fetch','تحديث الحصص','الحصص تتحدث لحالها، ولو تبغى تتأكد اضغط هذا الزر.'],
+['07-meta','بيانات المعلم والحصة','جاهزة من الجدول، ما تحتاج تكتب شي.'],
+['08-item','علّم على الشواهد','علّم على اللي شفته، والدرجة تطلع لحالها. بعدها «الفقرة التالية».'],
+['09-change','المعلم غايب؟','اكتب اسم البديل وهويته في البيانات، واضغط «تأكيد التغيير»، ويوصل لحسام والفريق.'],
+['10-visit','صفحة المدرسة','كل البطاقات وش باقي عليك، ومنها «مختصر الزيارة كاملة» للطباعة.'],
+['12-week','جدولي هذا الأسبوع','من الصفحة الرئيسية اضغط «ملخص الأسبوع».'],
+['13-stats','إحصائياتي','كم مدرسة وحصة قيّمت. محسوبة على جهازك بس.'],
+['14-tools','الإعدادات ← أدواتي','ملاحظة لحسام، وتنبيه قبل الحصة بعشر دقايق.'],
+['15-note','ملاحظة لحسام','اكتب مشكلتك أو اقتراحك واضغط «إرسال»، توصله على طول.']];
+document.getElementById('g').innerHTML=STEPS.map(function(s,i){return '<div class="gi"><div class="t">'+(i+1)+'. '+s[1]+'</div><div class="d">'+s[2]+'</div><img loading="lazy" src="guide/'+s[0]+'.jpg" alt="'+s[1]+'"></div>'}).join('');
+var ua=navigator.userAgent,ios=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),and=/Android|HarmonyOS|HUAWEI/i.test(ua);
+var standalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+function show(id){document.getElementById(id).hidden=false}
+if(standalone){location.replace('./#k=554894')}
+else if(ios){show('cIOS');if(/CriOS|FxiOS|EdgiOS|FBAN|FBAV|Instagram|Line\//.test(ua))show('notSafari');else{var a=document.getElementById('arr');a.style.display='flex';setTimeout(function(){a.style.display='none'},9000)}}
+else if(and){show('cAndroid')}else{show('cDesk')}
+var dp=null,ib=document.getElementById('inst');
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;});
+setTimeout(function(){if(!dp&&and){/* المتصفح ما يدعم زر التثبيت المباشر: نعرض الخطوات */}},3000);
+ib.onclick=function(){if(dp){dp.prompt();dp.userChoice.then(function(r){if(r.outcome==='accepted'){document.getElementById('cAndroid').hidden=true;document.getElementById('cDone').style.display='block'}dp=null})}else{document.getElementById('andHelp').hidden=false;ib.hidden=true}};
+window.addEventListener('appinstalled',function(){document.getElementById('cAndroid').hidden=true;document.getElementById('cDone').style.display='block'});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
+</script></body></html>
