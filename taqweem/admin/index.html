@@ -120,6 +120,7 @@ details summary{cursor:pointer;font-weight:700;color:var(--mut)}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .bnav button.on{color:var(--gold2)}}
 @keyframes up{from{transform:translateY(40px);opacity:.5}to{transform:none;opacity:1}}
  @media(max-width:700px){.dtab{min-width:0;font-size:13px}.dtab .nidc{display:none}.dtab td{padding:7px 6px}.dtab td.per{width:56px;font-size:12px}.dtab .tch{font-size:12px;color:var(--mut)}.dtab td.tm{white-space:normal}}
+.swb{font:inherit;text-align:right;border:0;cursor:pointer;color:var(--ink);width:100%}.swb:hover{outline:2px solid var(--gold)}.swp summary{font-weight:700;color:var(--folio2)}
 .vset summary{font-weight:700;color:var(--ink);padding:4px 0}
 </style></head>
 <body>
@@ -443,20 +444,24 @@ function dayTable(d,i,rows,ms){if(!rows.length)return '<p class="hint">ما في
   return h+'</tbody></table></div>'}
 /* اختيار مين يحضر الحصة بضغطة */
 function pickWho(i,j){const v=CV(),d=v.days[i],r=d.rows[j],ms=members(),ab=d.absent||[];
-  modal('<h2>'+esc(r.t==='a'?(r.text||'نشاط'):(r.subject||'حصة')+' · '+gFull(r.grade,v.stage)+(r.section?' '+r.section:''))+'</h2><p class="hint" style="margin-top:0">'+esc(r.p)+' · '+esc(dayName(d.g))+'</p><div class="tg" style="grid-template-columns:1fr 1fr">'+(r.t==='a'?'<button data-m="*" class="'+((r.m||[]).includes('*')?'on':'')+'">كامل الفريق</button>':'')+ms.map(a=>'<button data-m="'+esc(a.email)+'" class="'+((r.m||[]).includes(a.email)?'on':'')+'"'+(ab.includes(a.email)?' style="opacity:.45"':'')+'>'+esc(a.name)+(ab.includes(a.email)?' (غايب)':'')+'</button>').join('')+'</div><div class="row mt"><button class="btn p" onclick="closeM();vSch()">تم</button></div>');
+  modal('<h2>'+esc(r.t==='a'?(r.text||'نشاط'):(r.subject||'حصة')+' · '+gFull(r.grade,v.stage)+(r.section?' '+r.section:''))+'</h2><p class="hint" style="margin-top:0">'+esc(r.p)+' · '+esc(dayName(d.g))+'</p><div class="tg" style="grid-template-columns:1fr 1fr">'+(r.t==='a'?'<button data-m="*" class="'+((r.m||[]).includes('*')?'on':'')+'">كامل الفريق</button>':'')+ms.map(a=>'<button data-m="'+esc(a.email)+'" class="'+((r.m||[]).includes(a.email)?'on':'')+'"'+(ab.includes(a.email)?' style="opacity:.45"':'')+'>'+esc(a.name)+(ab.includes(a.email)?' (غايب)':'')+'</button>').join('')+'</div>'+swapList(i,j)+'<div class="row mt"><button class="btn p" onclick="closeM();vSch()">تم</button></div>');
+  document.querySelectorAll('#scrim [data-sw]').forEach(b=>b.onclick=()=>{const [i2,j2]=b.dataset.sw.split('.').map(Number),o=v.days[i2].rows[j2],t=r.m;r.m=o.m;o.m=t;touchV();closeM();vSch()});
   document.querySelectorAll('#scrim .tg button').forEach(b=>b.onclick=()=>{const m=b.dataset.m;r.m=r.m||[];if(m==='*')r.m=r.m.includes('*')?[]:['*'];else{r.m=r.m.filter(x=>x!=='*');r.m=r.m.includes(m)?r.m.filter(x=>x!==m):r.m.concat([m])}touchV();
     document.querySelectorAll('#scrim .tg button').forEach(x=>x.classList.toggle('on',(r.m||[]).includes(x.dataset.m)))})}
-/* طباعة بتصميم جدولنا: صفحة لكل يوم */
-function printVisit(only){const v=CV(),ms=members();const days=v.days.map((d,i)=>[d,i]).filter(([d,i])=>only==null||i===only);
-  const sheet=([d,i])=>{const rows=d.rows.map((r,j)=>[r,j]).sort((x,y)=>PERIODS.indexOf(x[0].p)-PERIODS.indexOf(y[0].p)||x[1]-y[1]);const asm=rows.filter(([r])=>r.p==='الطابور'),rest=rows.filter(([r])=>r.p!=='الطابور');
-    const ab=d.absent||[],team=ms.filter(a=>!ab.includes(a.email)),nV=rows.filter(([r])=>r.t==='v').length;
-    const cnt=e=>rows.filter(([r])=>r.t==='v'&&(r.m||[]).includes(e)).length;
-    let t='<section class="sheet"><div class="sh-top"><div><b>فريق التقويم الخارجي</b><small>زيارة تقويم مدرسة</small></div><div class="sh-orn">◈</div><div style="text-align:left"><b>'+esc(dayName(d.g))+'</b><small>'+esc(hTxt(d.g))+' هـ</small></div></div>';
-    t+='<h1>جدول العمل اليومي لزيارة</h1><h3>'+esc(v.school||'')+' · '+esc(v.stage||'')+'</h3><div class="sh-stats"><div><small>الزيارات الصفية</small><b>'+nV+'</b></div><div><small>أعضاء الفريق</small><b>'+team.length+'</b></div></div>';
-    if(asm.length)t+='<div class="sh-asm"><span>الطابور الصباحي</span><b>'+esc(asm.map(([r])=>r.text).join(' · '))+'</b><em>'+esc(who(asm[0][0],d))+'</em></div>';
-    t+=dayTable(d,i,rest,ms).replace(/ onclick="pickWho\([^)]*\)"/g,'')+'<div class="sh-foot"><small>أعضاء فريق التقويم الخارجي</small><div>'+team.map(a=>'<span><b>'+esc(a.name)+'</b> '+cnt(a.email)+' زيارة صفية</span>').join('')+'</div></div></section>';return t};
-  let p=document.getElementById('printRoot');if(!p){p=document.createElement('div');p.id='printRoot';document.body.appendChild(p)}
-  p.innerHTML=days.map(sheet).join('');document.body.classList.add('printing');setTimeout(()=>{window.print();setTimeout(()=>document.body.classList.remove('printing'),500)},150)}
+/* تبديل حصة بحصة: كل عضو ياخذ حصة الثاني */
+function swapList(i,j){const v=CV(),r=v.days[i].rows[j];if(r.t!=='v')return '';const L=[];v.days.forEach((d,i2)=>d.rows.forEach((o,j2)=>{if(o.t!=='v'||(i2===i&&j2===j))return;const om=(o.m||[]).join(),rm=(r.m||[]).join();if(om===rm)return;L.push([i2,j2,d,o])}));
+  if(!L.length)return '';return '<details class="mt swp"><summary>تبديل مع حصة ثانية</summary><p class="hint">اختر الحصة، ويتبادل أصحابها: كل واحد ياخذ حصة الثاني.</p><div class="plist">'+L.map(([i2,j2,d,o])=>'<button class="prow swb" data-sw="'+i2+'.'+j2+'"><b>'+esc(o.p)+' · '+esc(o.subject||'')+' '+esc(gFull(o.grade,v.stage)+(o.section?' '+o.section:''))+'</b><span>'+esc((o.m||[]).map(short).join(' + ')||'بدون')+'</span><span class="hint" style="margin:0">'+esc(dayName(d.g))+(i2===i?' · نفس اليوم':'')+'</span></button>').join('')+'</div></details>'}
+/* طباعة بتصميم صفحة جدولنا نفسها: نحوّل الزيارة لشكل الصفحة ونفتحها للتصدير */
+function printVisit(only){const v=CV();const nmx=e=>e==='*'?'*':nm(e);
+  const days=v.days.map((d,i)=>[d,i]).filter(([d,i])=>only==null||i===only).filter(([d])=>d.g).map(([d])=>{const h=hijri(d.g);
+    const rows=d.rows.slice().sort((x,y)=>PERIODS.indexOf(x.p)-PERIODS.indexOf(y.p));const asm=rows.find(r=>r.p==='الطابور');const ps=[];
+    rows.filter(r=>r.p!=='الطابور').forEach(r=>{let p=ps.find(x=>x.name===r.p);if(!p)ps.push(p={id:rid(),name:r.p,rows:[]});
+      p.rows.push(r.t==='v'?{id:r.id||rid(),t:'v',subject:r.subject||'',grade:gBase(r.grade),section:r.section||'',teacher:r.teacher||'',nid:r.nid||'',members:(r.m||[]).map(nmx)}:{id:r.id||rid(),t:'a',text:r.text||'',text2:r.text2||null,members:(r.m||[]).map(nmx)})});
+    return {id:d.id||rid(),dayName:dayName(d.g),date:h.d+' / '+h.m+' / '+h.y+' هـ',school:v.school||'',gender:'بنين',stage:v.stage||'ابتدائي',assembly:asm?{text:asm.text||'',members:(asm.m||[]).map(nmx)}:{text:'',members:[]},periods:ps,absent:(d.absent||[]).map(nmx)}});
+  if(!days.length)return uiAlert('حط تاريخ لليوم أول');
+  const data=JSON.stringify({days,roster:(v.mem||[]).map(nm),team:'فريق التقويم الخارجي'});
+  try{sessionStorage.setItem('tq_print',data)}catch(e){}try{localStorage.setItem('tq_print',data)}catch(e){}
+  const w=window.open('print.html','_blank');if(!w)location.href='print.html'}
 const gBase=g=>String(g||'').replace(/\s*(الابتدائي|المتوسط|الثانوي)$/,'').trim();
 function rowEd(d,i,r,j,ms){const grades=GR[CV().stage]||GR['ابتدائي'],ab=d.absent||[],gb=gBase(r.grade);
   let h='<div class="rowE '+(r.t==='a'?'act':'')+'"><select data-r="'+i+'.'+j+'" data-k="p" class="per">'+PERIODS.map(p=>'<option'+(r.p===p?' selected':'')+'>'+p+'</option>').join('')+'</select>';
