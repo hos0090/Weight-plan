@@ -141,7 +141,7 @@ function view(){$('#who').innerHTML='<button class="btn s hbtn" onclick="logout(
   $('#q').oninput=e=>{Q=e.target.value;list()};document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{FIL=b.dataset.f;view()})}
 function list(){const q=digits(Q).trim();const L=ACC.filter(a=>{const s=status(a)[0];if(FIL!=='all'&&s!==FIL&&!(FIL==='ok'&&s==='soon'))return false;return !q||[a.name,a.team,a.user,a.phone,a.email].join(' ').indexOf(q)>=0});
   $('#lst').innerHTML=L.length?L.map(a=>{const s=status(a),i=ACC.indexOf(a);return '<div class="acc"><div class="top"><div class="grow"><div class="nm">'+esc(a.name||a.user)+' <span class="tag '+s[2]+'">'+esc(s[1])+'</span></div><div class="meta">الدخول: <b class="ltr" style="display:inline-block">'+esc(a.user||a.email)+'</b> · '+(a.role==='coord'?'منسق الفريق':'عضو')+(a.team?' · '+esc(a.team):'')+'</div><div class="meta">'+(a.plan==='trial'?'تجربة':'سنوي')+' · ينتهي '+esc(hdate(a.exp))+' ('+esc(gdate(a.exp))+'م)</div></div>'+
-    '<div class="row"><button class="btn s p" onclick="renew('+i+')">تفعيل سنة</button>'+(a.plan==='trial'?'<button class="btn s" onclick="extend('+i+',7)">تمديد التجربة أسبوع</button>':'')+'<button class="btn s" onclick="showPw('+i+')">الرقم السري</button><button class="btn s" onclick="share('+i+')">رسالة الدخول</button><button class="btn s" onclick="vEdit('+i+')">تعديل</button><button class="btn s'+(a.active?' d':'')+'" onclick="toggle('+i+')">'+(a.active?'إيقاف':'تفعيل')+'</button></div></div></div>'}).join(''):'<p class="hint">ما فيه حسابات'+(ACC.length?' بهذا البحث':' بعد. اضغط «إضافة موظف».')+'</p>'}
+    '<div class="row"><button class="btn s p" onclick="renew('+i+')">تفعيل سنة</button>'+(a.plan==='trial'?'<button class="btn s" onclick="extend('+i+',7)">تمديد التجربة أسبوع</button>':'')+'<button class="btn s" onclick="showPw('+i+')">الرقم السري</button><button class="btn s" onclick="share('+i+')">رسالة الدخول</button><button class="btn s" onclick="vEdit('+i+')">تعديل</button><button class="btn s'+(a.active?' d':'')+'" onclick="toggle('+i+')">'+(a.active?'إيقاف':'تفعيل')+'</button><button class="btn s d" onclick="del('+i+')">حذف</button></div></div></div>'}).join(''):'<p class="hint">ما فيه حسابات'+(ACC.length?' بهذا البحث':' بعد. اضغط «إضافة موظف».')+'</p>'}
 
 /* ---------- إضافة موظف ---------- */
 const teams=()=>[...new Set(ACC.map(a=>a.team).filter(Boolean))];
@@ -180,6 +180,9 @@ function renew(i){const a=ACC[i],base=Math.max(Date.now(),a.plan==='trial'?Date.
   if(!confirm('تفعيل سنة لـ «'+(a.name||a.user)+'»؟\nينتهي في '+hdate(+exp)+' ('+gdate(+exp)+'م)'))return;save(i,{plan:'paid',active:true,exp})}
 function extend(i,d){const a=ACC[i];save(i,{exp:new Date(Math.max(Date.now(),a.exp||0)+d*DAY),active:true})}
 function toggle(i){const a=ACC[i];if(a.active&&!confirm('إيقاف «'+(a.name||a.user)+'»؟ التطبيق يقفل عنده، وبياناته تبقى محفوظة.'))return;save(i,{active:!a.active})}
+/* حذف موظف: يشيل اشتراكه ورقمه السري، فما يقدر يدخل أبد. تقييماته المشفّرة تبقى مقفولة في مكانها */
+async function del(i){const a=ACC[i];if(!confirm('حذف «'+(a.name||a.user)+'» نهائيًا من المشتركين؟\nما يقدر يدخل التطبيق بعدها. وتقدر تضيفه مرة ثانية بنفس الرقم إذا احتجت.'))return;
+  try{await fs('DELETE','/accounts/'+encodeURIComponent(a.email));try{await fs('DELETE','/vault/'+encodeURIComponent(a.email))}catch(e){}ACC.splice(i,1);view()}catch(e){alert(errTxt(e))}}
 /* ---------- الرقم السري ---------- */
 function showPw(i){const a=ACC[i];askPhrase(async()=>{modal('<h2>'+esc(a.name||a.user)+'</h2><p class="hint">لحظة…</p>');
   try{const d=await fs('GET','/vault/'+encodeURIComponent(a.email));const pw=d?openPw(U(d.fields).c):null;
