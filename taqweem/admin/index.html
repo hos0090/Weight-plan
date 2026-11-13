@@ -4,7 +4,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#0A3328">
 <title>لوحة بطاقات التقويم</title>
-<link rel="icon" href="../icon-192.png">
+<link rel="icon" href="../icon-192.png"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="../icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="لوحة التقويم">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
 <style>
@@ -92,6 +92,35 @@ details summary{cursor:pointer;font-weight:700;color:var(--mut)}
 .pchips{display:flex;gap:6px;flex-wrap:wrap}.pchip{background:var(--soft);border-radius:999px;padding:3px 10px;font-size:12.5px}.pchip.sub-p{background:#E4EFE9;font-weight:600}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .pchip.sub-p{background:#1E3A30}}
 .okc{color:var(--ok)}.wc{color:var(--warn)}
+.tblw{overflow-x:auto;margin-top:10px;border-radius:14px;border:1px solid var(--line)}
+.dtab{width:100%;border-collapse:collapse;font-size:14px;min-width:640px}.dtab th{background:var(--folio);color:#fff;font-weight:600;padding:9px 8px;text-align:right;font-size:13px}
+.dtab td{padding:8px;border-top:1px solid var(--line);vertical-align:middle}.dtab td.per{background:var(--soft);font-weight:700;text-align:center;width:72px}
+.dtab tr.first td{border-top:2px solid #CDBF9C}.dtab tr.act td.acttx{background:#F6F0E1;color:#5B4A22;font-weight:600}.dtab td.tm{cursor:pointer;font-weight:600;color:var(--folio2);white-space:nowrap}.dtab td.tm:hover{background:var(--soft)}.dtab td.tm.none{color:var(--bad)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .dtab tr.act td.acttx{background:#2A2618;color:var(--gold2)}:root:not([data-theme="light"]) .dtab td.tm{color:var(--gold2)}}
+#printRoot{display:none}
+@media print{@page{size:A4;margin:0}body.printing>*:not(#printRoot){display:none!important}body.printing{background:#fff}body.printing #printRoot{display:block}
+ .sheet{width:210mm;min-height:297mm;padding:14mm 12mm;box-sizing:border-box;page-break-after:always;color:#13221D;background:#FFFDF8;font-family:'IBM Plex Sans Arabic',sans-serif;border:0}
+ .sh-top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #C2A061;padding-bottom:8px}.sh-top b{display:block;color:#0A3328}.sh-top small{color:#8A7A55}.sh-orn{color:#C2A061;font-size:22px}
+ .sheet h1{font:700 30px 'Amiri',serif;text-align:center;color:#0A3328;margin:14px 0 2px}.sheet h3{text-align:center;color:#8A6A2A;margin:0 0 10px;font:700 18px 'Amiri',serif}
+ .sh-stats{display:flex;justify-content:center;gap:40px;border-top:1px solid #E6DECD;border-bottom:1px solid #E6DECD;padding:6px;margin-bottom:10px}.sh-stats div{text-align:center}.sh-stats small{display:block;color:#8A7A55;font-size:11px}.sh-stats b{font-size:18px}
+ .sh-asm{display:flex;gap:10px;align-items:center;border:1px solid #E6DECD;border-radius:10px;padding:8px 10px;margin-bottom:10px}.sh-asm span{background:#B89553;color:#fff;border-radius:8px;padding:4px 8px;font-weight:700;font-size:12px}.sh-asm em{font-style:normal;color:#5B6B62;font-size:12px;margin-inline-start:auto}
+ .sheet .tblw{border:1px solid #CDBF9C;overflow:visible}.sheet .dtab{min-width:0;font-size:12px}.sheet .dtab th{background:#0A3328!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.sheet .dtab td.per,.sheet .dtab tr.act td.acttx{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .sh-foot{text-align:center;margin-top:12px;border-top:1px solid #E6DECD;padding-top:8px}.sh-foot small{color:#8A7A55}.sh-foot div{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;font-size:12px}}
+.bnav{display:none}
+@media(max-width:700px){
+ header{padding:calc(10px + env(safe-area-inset-top)) 14px 22px;position:sticky;top:0;z-index:20}header h1{font-size:19px}header p{display:none}.logo{width:36px;height:36px;font-size:18px;border-radius:11px}
+ .tabs{display:none}main{padding:14px 12px calc(96px + env(safe-area-inset-bottom))}
+ .bnav{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;position:fixed;inset:auto 0 0 0;z-index:40;background:var(--card);border-top:1px solid var(--line);padding:6px 18px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -6px 24px rgba(10,51,40,.08)}
+ .bnav button{font:inherit;border:0;background:none;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px;font-weight:600;padding:4px;cursor:pointer}.bnav button.on{color:var(--folio2)}
+ .bnav .fab{width:62px;height:62px;border-radius:50%;margin-top:-30px;background:linear-gradient(160deg,#D2B57A,var(--gold));color:#22180A;box-shadow:0 8px 20px rgba(194,160,97,.45);justify-content:center}.bnav .fab span{font-size:10.5px}
+ .addbtn,.lhead .btn.g{display:none}.vtools .btn.big{font-size:14px;padding:10px 12px}
+ .card{border-radius:16px;padding:14px}.modal{border-radius:22px 22px 0 0;max-height:88vh;position:fixed;bottom:0;left:0;right:0;max-width:none;padding-bottom:calc(20px + env(safe-area-inset-bottom));animation:up .2s ease}
+ .scrim{align-items:flex-end;padding:0}.scrim.dlg .modal{border-radius:22px}.scrim.dlg{align-items:center;padding:16px}.scrim.dlg .modal{position:static}
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .bnav button.on{color:var(--gold2)}}
+@keyframes up{from{transform:translateY(40px);opacity:.5}to{transform:none;opacity:1}}
+ @media(max-width:700px){.dtab{min-width:0;font-size:13px}.dtab .nidc{display:none}.dtab td{padding:7px 6px}.dtab td.per{width:56px;font-size:12px}.dtab .tch{font-size:12px;color:var(--mut)}.dtab td.tm{white-space:normal}}
+.vset summary{font-weight:700;color:var(--ink);padding:4px 0}
 </style></head>
 <body>
 <header><div class="in"><div class="logo">ب</div><div class="grow"><h1>لوحة بطاقات التقويم</h1><p>المشتركين · الدفعات · الزيارات والتوزيع</p></div><span id="who"></span></div></header>
@@ -293,6 +322,7 @@ function shareTo(a,pass,isNew){const m=msgFor(a,pass),ph=(a.phone||'').replace(/
   modal('<h2>'+(isNew?'انضاف ✓ ':'')+esc(a.name||a.user)+'</h2><div class="cred"><div><span>اسم الدخول</span><b class="ltr">'+esc(a.user)+'</b></div><div><span>الرقم السري</span><b class="ltr">'+esc(pass?grp(pass):'—')+'</b></div></div><p class="hint">أرسل له الرسالة:</p><div class="msg" id="mT">'+esc(m)+'</div><div class="row">'+(/^9665\d{8}$/.test(ph)?'<a class="btn g big" target="_blank" rel="noopener" href="https://wa.me/'+ph+'?text='+encodeURIComponent(m)+'">إرسال واتساب</a>':'<a class="btn g big" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(m)+'">واتساب</a>')+'<button class="btn" id="mC">نسخ</button><button class="btn" onclick="closeM()">تم</button></div>');
   $('#mC').onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(m).then(()=>{$('#mC').textContent='انسخت ✓'}).catch(()=>{})}}
 
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 try{ADM=JSON.parse(lsGet('tq_admin')||'null')}catch(e){}
 if(ADM&&ADM.rt)load();else vLogin();
 
@@ -318,7 +348,11 @@ function sealObj(o){const e=nacl.box.keyPair(),n=nacl.randomBytes(24);return b64
 function openObj(c){const u=b64d(c),o=nacl.box.open(u.slice(56),u.slice(32,56),u.slice(0,32),SK);return o?JSON.parse(dec(o)):null}
 
 function goTab(t){if(t==='sch')askPhrase(loadSD);else{TAB='acc';view()}}
-function tabs(){return '<div class="tabs"><button class="'+(TAB==='acc'?'on':'')+'" onclick="goTab(\'acc\')">المشتركين</button><button class="'+(TAB==='sch'?'on':'')+'" onclick="goTab(\'sch\')">الزيارات والتوزيع</button></div>'}
+function bnav(){let n=document.getElementById('bnav');if(!n){n=document.createElement('nav');n.id='bnav';n.className='bnav';document.body.appendChild(n)}
+  n.innerHTML='<button class="'+(TAB==='acc'?'on':'')+'" onclick="goTab(\'acc\')">'+I('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.3-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20c-.4-2.6-1.9-4.3-4-5"/>')+'<span>المشتركين</span></button>'+
+   '<button class="fab" onclick="'+(TAB==='sch'?'newVisit()':'vNew()')+'">'+I('<path d="M12 5v14M5 12h14"/>')+'<span>'+(TAB==='sch'?'زيارة':'موظف')+'</span></button>'+
+   '<button class="'+(TAB==='sch'?'on':'')+'" onclick="goTab(\'sch\')">'+I('<rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4M7.5 13.5h3M13.5 13.5h3M7.5 17h3"/>')+'<span>الزيارات</span></button>'}
+function tabs(){setTimeout(bnav,0);return '<div class="tabs"><button class="'+(TAB==='acc'?'on':'')+'" onclick="goTab(\'acc\')">المشتركين</button><button class="'+(TAB==='sch'?'on':'')+'" onclick="goTab(\'sch\')">الزيارات والتوزيع</button></div>'}
 async function loadSD(){TAB='sch';$('#main').innerHTML=tabs()+'<div class="card">لحظة…</div>';
   try{const d=await fs('GET','/admin/sched');SD=d?openObj(U(d.fields).c):null;SDut=d?d.updateTime:null}catch(e){$('#main').innerHTML=tabs()+'<div class="card"><p class="err">'+esc(errTxt(e))+'</p></div>';return}
   if(!SD)SD={visits:[],pub:{}};SD.pub=SD.pub||{};VI=-1;vList()}
@@ -365,12 +399,12 @@ function back(){VI=-1;vList()}
 function vSch(){const v=CV(),ms=members(),subs=ACC.filter(a=>a.active!==false&&!(v.mem||[]).includes(a.email));
   let h=tabs()+'<div class="row" style="margin-bottom:10px"><button class="btn" onclick="back()">→ كل الزيارات</button><span class="grow"></span><span class="hint" id="svM" style="margin:0"></span></div>';
   h+='<div class="card"><div class="grid2"><label>المدرسة<input id="vS" value="'+esc(v.school||'')+'" placeholder="مثال: مدرسة الفيصلية الابتدائية"></label><label>المرحلة<select id="vG">'+STAGES.map(s=>'<option'+(v.stage===s?' selected':'')+'>'+s+'</option>').join('')+'</select></label></div>';
-  h+='<div class="mt"><div class="lbl">أعضاء الزيارة</div><div class="mchips">'+ms.map(a=>'<span class="chip">'+esc(a.name)+(a.extra?' · بدون حساب':'')+' <a href="#" class="rmx" data-x="'+esc(a.email)+'">✕</a></span>').join('')+'</div>'+
+  h+='<details class="mt vset"'+(ms.length?'':' open')+'><summary>أعضاء الزيارة وخيارات التوزيع <span class="hint" style="margin:0">('+ms.length+' أعضاء)</span></summary><div class="mt"><div class="lbl">أعضاء الزيارة</div><div class="mchips">'+ms.map(a=>'<span class="chip">'+esc(a.name)+(a.extra?' · بدون حساب':'')+' <a href="#" class="rmx" data-x="'+esc(a.email)+'">✕</a></span>').join('')+'</div>'+
     '<div class="row mt"><select id="mA" style="max-width:240px"><option value="">+ مشترك…</option>'+subs.map(a=>'<option value="'+esc(a.email)+'">'+esc(a.name||a.user)+(a.team?' ('+esc(a.team)+')':'')+'</option>').join('')+'</select><input id="xN" placeholder="أو اسم عضو ما عنده حساب" style="max-width:240px"><button class="btn s" id="xAdd">إضافة</button></div></div>';
   if(ms.length>1)h+='<div class="grid2 mt"><label>المشرف (يحضر مع الأعضاء)<select id="supS"><option value="">بدون</option>'+ms.map(a=>'<option value="'+esc(a.email)+'"'+(v.sup===a.email?' selected':'')+'>'+esc(a.name)+'</option>').join('')+'</select></label><label class="chk" style="align-self:end"><input type="checkbox" id="supJ"'+(v.supJoin?' checked':'')+'> يحضر مع كل عضو مرة في الزيارة</label></div>'+
     '<div class="mt"><div class="lbl">قواعد المواد (مادة تروح دايمًا لعضو)</div>'+(v.rules||[]).map((r,i)=>'<div class="row rule"><span class="chip">'+esc(r.s)+' ← '+esc(nm(r.m))+'</span><button class="btn s d" onclick="CV().rules.splice('+i+',1);saveSD();vSch()">حذف</button></div>').join('')+
     '<div class="row mt"><input id="rS" list="subjL" placeholder="المادة" style="max-width:200px"><select id="rM" style="max-width:220px">'+ms.map(a=>'<option value="'+esc(a.email)+'">'+esc(a.name)+'</option>').join('')+'</select><button class="btn s" id="rAdd">إضافة قاعدة</button></div></div>';
-  h+='</div><div class="row" style="margin-bottom:12px"><button class="btn g big" onclick="addDay()">+ يوم</button>'+(ms.length>1?'<button class="btn p big" onclick="autoDist()">توزيع تلقائي</button>':'')+'<button class="btn big" onclick="publish()">اعتماد ونشر</button><span class="grow"></span><button class="btn d" onclick="delVisit()">حذف الزيارة</button></div>';
+  h+='</details></div><div class="row vtools" style="margin-bottom:12px"><button class="btn g big" onclick="addDay()">+ يوم</button>'+(ms.length>1?'<button class="btn p big" onclick="autoDist()">توزيع تلقائي</button>':'')+'<button class="btn big" onclick="publish()">اعتماد ونشر</button><button class="btn big" onclick="printVisit()">طباعة / PDF</button><span class="grow"></span><button class="btn d" onclick="delVisit()">حذف الزيارة</button></div>';
   h+='<div id="days">'+(v.days.length?v.days.map((d,i)=>dayCard(d,i)).join(''):'<div class="card"><p class="hint">اضغط «+ يوم».</p></div>')+'</div>';
   h+='<div class="card" id="sumC">'+summary()+'</div>';
   h+='<datalist id="subjL">'+SUBJ.map(s=>'<option value="'+s+'">').join('')+'</datalist><datalist id="actL">'+ACTS.map(s=>'<option value="'+s+'">').join('')+'</datalist>';
@@ -385,18 +419,48 @@ function vSch(){const v=CV(),ms=members(),subs=ACC.filter(a=>a.active!==false&&!
 function touchV(){CV().dirty=1;saveSD()}
 async function delVisit(){const v=CV();if(!await uiConfirm('حذف زيارة «'+(v.school||'')+'» بكل أيامها؟'+(v.pubAt?'\nبعد الحذف اضغط «اعتماد ونشر» في أي زيارة لنفس الأعضاء عشان تنشال من عندهم، أو أنا أنشر عنك.':'')))return;
   const gone=(v.mem||[]).filter(e=>e.indexOf('x:')!==0);SD.visits.splice(VI,1);VI=-1;saveSD(true);if(v.pubAt&&gone.length)publishTo(gone);else vList()}
-function dayCard(d,i){const ms=members(),open=OPEN[d.id]!==false,nC=d.rows.filter(r=>r.t==='v').length;
+let EDIT={};
+/* عرض اليوم مثل جدولنا: الحصة، المادة، الصف، المعلم، السجل المدني، الفريق. والتعديل بزر */
+function dayCard(d,i){const ms=members(),open=OPEN[d.id]!==false,nC=d.rows.filter(r=>r.t==='v').length,ed=!!EDIT[d.id];
   let h='<div class="card day"><div class="row dhead" onclick="OPEN[\''+d.id+'\']='+(!open)+';vSch()"><b>'+esc(dayName(d.g)||'يوم')+' '+esc(hTxt(d.g))+(d.g?'هـ':'')+'</b><span class="grow"></span><span class="hint" style="margin:0">'+nC+' حصة</span><span>'+(open?'▲':'▼')+'</span></div>';
   if(!open)return h+'</div>';
+  const rows=d.rows.map((r,j)=>[r,j]).sort((x,y)=>PERIODS.indexOf(x[0].p)-PERIODS.indexOf(y[0].p)||x[1]-y[1]);
+  if(!ed){h+=dayTable(d,i,rows,ms);
+    h+='<div class="row mt"><button class="btn p s" onclick="EDIT[\''+d.id+'\']=1;vSch()">تعديل اليوم</button><button class="btn s" onclick="printVisit('+i+')">طباعة اليوم</button><span class="grow"></span><span class="hint" style="margin:0">اضغط خانة «الفريق» عشان تغيّر مين يحضر</span></div></div>';return h}
   h+='<div class="grid3 mt"><label>التاريخ (ميلادي)<input type="date" class="ltr" data-d="'+i+'" data-k="g" value="'+esc(d.g||'')+'"></label></div>';
   if(ms.length>1)h+='<div class="mt"><span class="lbl">غايبين هاليوم:</span> '+ms.map(a=>'<button class="chipb'+((d.absent||[]).includes(a.email)?' on bad':'')+'" data-abs="'+i+'" data-m="'+esc(a.email)+'">'+esc(short(a.email))+'</button>').join(' ')+'</div>';
-  const rows=d.rows.map((r,j)=>[r,j]).sort((x,y)=>PERIODS.indexOf(x[0].p)-PERIODS.indexOf(y[0].p)||x[1]-y[1]);
   h+='<div class="rows mt">'+rows.map(([r,j])=>rowEd(d,i,r,j,ms)).join('')+'</div>';
-  h+='<div class="row mt"><button class="btn s" onclick="addRow('+i+',\'v\')">+ حصة</button><button class="btn s" onclick="addRow('+i+',\'a\')">+ نشاط</button><span class="grow"></span><button class="btn s" onclick="dupDay('+i+')">نسخ اليوم</button><button class="btn s d" onclick="delDay('+i+')">حذف اليوم</button></div></div>';
+  h+='<div class="row mt"><button class="btn s" onclick="addRow('+i+',\'v\')">+ حصة</button><button class="btn s" onclick="addRow('+i+',\'a\')">+ نشاط</button><button class="btn p s" onclick="delete EDIT[\''+d.id+'\'];vSch()">تم التعديل</button><span class="grow"></span><button class="btn s" onclick="dupDay('+i+')">نسخ اليوم</button><button class="btn s d" onclick="delDay('+i+')">حذف اليوم</button></div></div>';
   return h}
-function rowEd(d,i,r,j,ms){const grades=GR[CV().stage]||GR['ابتدائي'],ab=d.absent||[];
+const who=(r,d)=>{const m=r.m||[];if(m.includes('*'))return 'كامل الفريق';return m.map(short).join(' + ')};
+function dayTable(d,i,rows,ms){if(!rows.length)return '<p class="hint">ما فيه حصص. اضغط «تعديل اليوم» وأضف.</p>';
+  const groups=[];rows.forEach(([r,j])=>{let g=groups[groups.length-1];if(!g||g.p!==r.p)groups.push(g={p:r.p,rows:[]});g.rows.push([r,j])});
+  let h='<div class="tblw"><table class="dtab"><thead><tr><th>الحصة</th><th>المادة</th><th>الصف</th><th class="tch">المعلم</th><th class="nidc">السجل المدني</th><th>الفريق</th></tr></thead><tbody>';
+  groups.forEach(g=>g.rows.forEach(([r,j],k)=>{h+='<tr class="'+(r.t==='a'?'act':'')+(k===0?' first':'')+'">'+(k===0?'<td class="per" rowspan="'+g.rows.length+'">'+esc(g.p)+'</td>':'');
+    if(r.t==='a')h+='<td colspan="4" class="acttx actc">'+esc([r.text,r.text2].filter(Boolean).join(' · '))+'</td>';
+    else h+='<td>'+esc(r.subject||'')+'</td><td>'+esc(gFull(r.grade,CV().stage)+(r.section?' '+r.section:''))+'</td><td class="tch">'+esc(r.teacher||'')+'</td><td class="ltr nidc">'+esc(r.nid||'')+'</td>';
+    const w=who(r,d);h+='<td class="tm'+(w?'':' none')+'" onclick="pickWho('+i+','+j+')">'+(w?esc(w):'اختر')+'</td></tr>'}));
+  return h+'</tbody></table></div>'}
+/* اختيار مين يحضر الحصة بضغطة */
+function pickWho(i,j){const v=CV(),d=v.days[i],r=d.rows[j],ms=members(),ab=d.absent||[];
+  modal('<h2>'+esc(r.t==='a'?(r.text||'نشاط'):(r.subject||'حصة')+' · '+gFull(r.grade,v.stage)+(r.section?' '+r.section:''))+'</h2><p class="hint" style="margin-top:0">'+esc(r.p)+' · '+esc(dayName(d.g))+'</p><div class="tg" style="grid-template-columns:1fr 1fr">'+(r.t==='a'?'<button data-m="*" class="'+((r.m||[]).includes('*')?'on':'')+'">كامل الفريق</button>':'')+ms.map(a=>'<button data-m="'+esc(a.email)+'" class="'+((r.m||[]).includes(a.email)?'on':'')+'"'+(ab.includes(a.email)?' style="opacity:.45"':'')+'>'+esc(a.name)+(ab.includes(a.email)?' (غايب)':'')+'</button>').join('')+'</div><div class="row mt"><button class="btn p" onclick="closeM();vSch()">تم</button></div>');
+  document.querySelectorAll('#scrim .tg button').forEach(b=>b.onclick=()=>{const m=b.dataset.m;r.m=r.m||[];if(m==='*')r.m=r.m.includes('*')?[]:['*'];else{r.m=r.m.filter(x=>x!=='*');r.m=r.m.includes(m)?r.m.filter(x=>x!==m):r.m.concat([m])}touchV();
+    document.querySelectorAll('#scrim .tg button').forEach(x=>x.classList.toggle('on',(r.m||[]).includes(x.dataset.m)))})}
+/* طباعة بتصميم جدولنا: صفحة لكل يوم */
+function printVisit(only){const v=CV(),ms=members();const days=v.days.map((d,i)=>[d,i]).filter(([d,i])=>only==null||i===only);
+  const sheet=([d,i])=>{const rows=d.rows.map((r,j)=>[r,j]).sort((x,y)=>PERIODS.indexOf(x[0].p)-PERIODS.indexOf(y[0].p)||x[1]-y[1]);const asm=rows.filter(([r])=>r.p==='الطابور'),rest=rows.filter(([r])=>r.p!=='الطابور');
+    const ab=d.absent||[],team=ms.filter(a=>!ab.includes(a.email)),nV=rows.filter(([r])=>r.t==='v').length;
+    const cnt=e=>rows.filter(([r])=>r.t==='v'&&(r.m||[]).includes(e)).length;
+    let t='<section class="sheet"><div class="sh-top"><div><b>فريق التقويم الخارجي</b><small>زيارة تقويم مدرسة</small></div><div class="sh-orn">◈</div><div style="text-align:left"><b>'+esc(dayName(d.g))+'</b><small>'+esc(hTxt(d.g))+' هـ</small></div></div>';
+    t+='<h1>جدول العمل اليومي لزيارة</h1><h3>'+esc(v.school||'')+' · '+esc(v.stage||'')+'</h3><div class="sh-stats"><div><small>الزيارات الصفية</small><b>'+nV+'</b></div><div><small>أعضاء الفريق</small><b>'+team.length+'</b></div></div>';
+    if(asm.length)t+='<div class="sh-asm"><span>الطابور الصباحي</span><b>'+esc(asm.map(([r])=>r.text).join(' · '))+'</b><em>'+esc(who(asm[0][0],d))+'</em></div>';
+    t+=dayTable(d,i,rest,ms).replace(/ onclick="pickWho\([^)]*\)"/g,'')+'<div class="sh-foot"><small>أعضاء فريق التقويم الخارجي</small><div>'+team.map(a=>'<span><b>'+esc(a.name)+'</b> '+cnt(a.email)+' زيارة صفية</span>').join('')+'</div></div></section>';return t};
+  let p=document.getElementById('printRoot');if(!p){p=document.createElement('div');p.id='printRoot';document.body.appendChild(p)}
+  p.innerHTML=days.map(sheet).join('');document.body.classList.add('printing');setTimeout(()=>{window.print();setTimeout(()=>document.body.classList.remove('printing'),500)},150)}
+const gBase=g=>String(g||'').replace(/\s*(الابتدائي|المتوسط|الثانوي)$/,'').trim();
+function rowEd(d,i,r,j,ms){const grades=GR[CV().stage]||GR['ابتدائي'],ab=d.absent||[],gb=gBase(r.grade);
   let h='<div class="rowE '+(r.t==='a'?'act':'')+'"><select data-r="'+i+'.'+j+'" data-k="p" class="per">'+PERIODS.map(p=>'<option'+(r.p===p?' selected':'')+'>'+p+'</option>').join('')+'</select>';
-  if(r.t==='v')h+='<input data-r="'+i+'.'+j+'" data-k="subject" list="subjL" placeholder="المادة" value="'+esc(r.subject||'')+'"><select data-r="'+i+'.'+j+'" data-k="grade"><option value="">الصف</option>'+grades.map(g=>'<option'+(r.grade===g?' selected':'')+'>'+g+'</option>').join('')+'</select><input data-r="'+i+'.'+j+'" data-k="section" placeholder="الفصل" value="'+esc(r.section||'')+'" class="sec"><input data-r="'+i+'.'+j+'" data-k="teacher" placeholder="المعلم" value="'+esc(r.teacher||'')+'"><input data-r="'+i+'.'+j+'" data-k="nid" placeholder="السجل المدني" class="ltr nid" inputmode="numeric" value="'+esc(r.nid||'')+'">';
+  if(r.t==='v')h+='<input data-r="'+i+'.'+j+'" data-k="subject" list="subjL" placeholder="المادة" value="'+esc(r.subject||'')+'"><select data-r="'+i+'.'+j+'" data-k="grade"><option value="">الصف</option>'+grades.concat(gb&&!grades.includes(gb)?[gb]:[]).map(g=>'<option'+(gb===g?' selected':'')+'>'+g+'</option>').join('')+'</select><input data-r="'+i+'.'+j+'" data-k="section" placeholder="الفصل" value="'+esc(r.section||'')+'" class="sec"><input data-r="'+i+'.'+j+'" data-k="teacher" placeholder="المعلم" value="'+esc(r.teacher||'')+'"><input data-r="'+i+'.'+j+'" data-k="nid" placeholder="السجل المدني" class="ltr nid" inputmode="numeric" value="'+esc(r.nid||'')+'">';
   else h+='<input data-r="'+i+'.'+j+'" data-k="text" list="actL" placeholder="النشاط" value="'+esc(r.text||'')+'" class="wide">';
   h+='<button class="btn s d x" onclick="delRow('+i+','+j+')">✕</button><div class="who">'+(r.t==='a'?'<button class="chipb'+((r.m||[]).includes('*')?' on':'')+'" data-w="'+i+'.'+j+'" data-m="*">كامل الفريق</button>':'')+ms.map(a=>'<button class="chipb'+((r.m||[]).includes(a.email)?' on':'')+(ab.includes(a.email)?' dim':'')+'" data-w="'+i+'.'+j+'" data-m="'+esc(a.email)+'">'+esc(short(a.email))+'</button>').join('')+(ms.length?'':'<span class="hint" style="margin:0">أضف أعضاء الزيارة فوق</span>')+'</div></div>';
   return h}
