@@ -325,7 +325,13 @@ function vList(){TAB='sch';const L=SD.visits.map((v,i)=>[v,i]).sort((a,b)=>Strin
   let h=tabs()+'<div class="row" style="margin-bottom:14px"><button class="btn g big addbtn" style="margin:0;flex:2" onclick="newVisit()">+ زيارة جديدة</button><button class="btn big" style="flex:1" onclick="importFile()">استيراد ملف</button></div>';
   h+='<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">الزيارات</h2><span class="hint" id="svM" style="margin:0"></span></div><div class="list mt">'+(L.length?L.map(([v,i])=>{const ds=vDates(v),n=v.days.reduce((x,d)=>x+d.rows.filter(r=>r.t==='v').length,0),un=v.days.reduce((x,d)=>x+d.rows.filter(r=>r.t==='v'&&!(r.m||[]).length).length,0);
       return '<div class="acc" style="cursor:pointer" onclick="openVisit('+i+')"><div class="nm">'+esc(v.school||'زيارة بدون اسم')+(v.pubAt?' <span class="tag t-ok">منشورة</span>':' <span class="tag t-trial">ما انتشرت</span>')+(v.dirty&&v.pubAt?' <span class="tag t-bad">فيها تعديل ما انتشر</span>':'')+'</div><div class="meta">'+(ds.length?esc(ds.map(g=>dayName(g)+' '+hTxt(g)).join('، '))+'هـ':'بدون تاريخ')+'</div><div class="meta">'+n+' حصة'+(un?' · <span style="color:var(--bad)">'+un+' بدون عضو</span>':'')+' · '+esc((v.mem||[]).map(short).join('، ')||'بدون أعضاء')+'</div></div>'}).join(''):'<p class="hint">ما فيه زيارات. اضغط «+ زيارة جديدة».</p>')+'</div></div>';
-  $('#main').innerHTML=h}
+  h+='<div id="pend"></div>';$('#main').innerHTML=h;pendingCheck()}
+/* مشتركين في الزيارات وما وصلتهم حصصهم: إذا فتحوا التطبيق (صار لهم مفتاح) ينشر لهم بضغطة */
+async function pendingCheck(){const es=[...new Set(SD.visits.flatMap(v=>(v.mem||[]).filter(e=>e.indexOf('x:')!==0)))].filter(e=>!SD.pub[e]);if(!es.length)return;
+  const ready=[],wait=[];for(const e of es){try{const k=await fs('GET','/keys/'+encodeURIComponent(e));(k?ready:wait).push(e)}catch(x){}}
+  const el=$('#pend');if(!el||(!ready.length&&!wait.length))return;
+  el.innerHTML='<div class="card" style="border-color:var(--gold)">'+(ready.length?'<div class="lhead"><h2>جاهزين يستلمون حصصهم</h2><button class="btn p" id="pendGo">انشر لهم الحين</button></div><p class="hint" style="margin-top:0">'+esc(ready.map(nm).join('، '))+' فتحوا التطبيق، وحصصهم ما انرسلت لهم من اللوحة للحين.</p>':'')+(wait.length?'<p class="hint">ينتظرون يفتحون التطبيق مرة بالنت عشان توصلهم حصصهم: '+esc(wait.map(nm).join('، '))+'. لين ذاك الوقت يكملون على الطريقة القديمة بدون أي تغيير.</p>':'')+'</div>';
+  const b=$('#pendGo');if(b)b.onclick=()=>publishTo(ready)}
 function newVisit(){const v={id:rid(),school:'',stage:'ابتدائي',mem:[],sup:'',supJoin:true,rules:[],days:[]};SD.visits.push(v);VI=SD.visits.length-1;addDay(true);saveSD();vSch()}
 function openVisit(i){VI=i;vSch()}
 function back(){VI=-1;vList()}
