@@ -361,7 +361,7 @@ function bnav(){let n=document.getElementById('bnav');if(!n){n=document.createEl
 function tabs(){setTimeout(bnav,0);return '<div class="tabs"><button class="'+(TAB==='acc'?'on':'')+'" onclick="goTab(\'acc\')">المشتركين</button><button class="'+(TAB==='sch'?'on':'')+'" onclick="goTab(\'sch\')">الزيارات والتوزيع</button></div>'}
 async function loadSD(){TAB='sch';$('#main').innerHTML=tabs()+'<div class="card">لحظة…</div>';
   try{const d=await fs('GET','/admin/sched');SD=d?openObj(U(d.fields).c):null;SDut=d?d.updateTime:null}catch(e){$('#main').innerHTML=tabs()+'<div class="card"><p class="err">'+esc(errTxt(e))+'</p></div>';return}
-  if(!SD)SD={visits:[],pub:{}};SD.pub=SD.pub||{};VI=-1;vList()}
+  if(!SD)SD={visits:[],pub:{}};SD.pub=SD.pub||{};VI=-1;try{await loadNotes()}catch(e){}const nc=chgApply();vList();if(nc)uiAlert('انطبق '+nc+' تغيير معلم أرسله الأعضاء من المدرسة. الزيارات اللي تغيّرت عليها علامة «فيها تعديل ما انتشر»، انشرها عشان توصل لباقي الفريق.')}
 function saveSD(now){SDdirty=true;clearTimeout(SDsave);const go=async()=>{try{const j=await fs('PATCH','/admin/sched?'+(SDut?'currentDocument.updateTime='+encodeURIComponent(SDut):'currentDocument.exists=false'),F({c:sealObj(SD),u:new Date()}));SDut=j&&j.updateTime;SDdirty=false;const m=$('#svM');if(m)m.textContent='انحفظ ✓'}catch(e){if(/FAILED_PRECONDITION|ALREADY_EXISTS|NOT_FOUND/.test(e.message||'')||e.status===400||e.status===409||e.status===404){SDdirty=false;await uiAlert('الزيارات تعدّلت من جهاز ثاني قبل شوي، فما حفظت تعديلك الأخير عشان ما يضيع شي.\nبحدّث الصفحة الحين، وعيد آخر تعديل.');loadSD();return}const m=$('#svM');if(m)m.textContent=errTxt(e)}};
   const m=$('#svM');if(m)m.textContent='يحفظ…';if(now)return go();SDsave=setTimeout(go,900)}
 window.addEventListener('beforeunload',e=>{if(SDdirty){e.preventDefault();e.returnValue=''}});
@@ -585,10 +585,24 @@ function vNews(){const cur=(NEWS&&NEWS.t)||'';
     try{await fs('PATCH','/cfg/news',F({t,ts:Date.now()}));await loadNews();closeM();view();uiAlert('انشرت ✓ تطلع لهم أول ما يفتحون التطبيق وفيه نت.')}catch(e){uiAlert(errTxt(e))}};
   if(cur)$('#nwD').onclick=async()=>{if(!await uiConfirm('إخفاء الرسالة الحالية من عند الكل؟'))return;try{await fs('PATCH','/cfg/news',F({t:'',ts:Date.now()}));await loadNews();closeM();view()}catch(e){uiAlert(errTxt(e))}}}
 function vNotes(){askPhrase(()=>{const R=NOTE_READ(),L=NOTES||[];
-  const body=L.length?L.map(n=>{let t='';try{t=openPw(n.c)||''}catch(e){}return '<div class="note'+(R[n.id]?' rd':'')+'"><div class="nhead"><b>'+esc(n.name||n.from||'')+'</b><small>'+gdate(+n.ts)+'م · '+new Date(+n.ts).toLocaleTimeString('ar-SA-u-nu-latn',{hour:'numeric',minute:'2-digit'})+'</small></div><p>'+(t?esc(t):'<i class="hint">ما قدرت أفتحها</i>')+'</p><div class="row" style="gap:6px">'+(R[n.id]?'':ib('play','قريتها','noteRead(\''+n.id+'\')'))+ib('wa','رد واتساب','noteReply(\''+n.id+'\')')+ib('trash','حذف','noteDel(\''+n.id+'\')','dan')+'</div></div>'}).join(''):'<p class="hint">ما وصلت ملاحظات للحين.</p>';
+  const body=L.length?L.map(n=>{let t='';try{t=openPw(n.c)||''}catch(e){}const o=noteObj(n);if(o){const st=SD&&SD.chg&&SD.chg[n.id];t='تغيير معلم · '+o.school+' · '+String(o.day).replace(/\s*هـ/,'')+' · الحصة '+o.period+' ('+o.subj+')\nمن: '+(o.old.teacher||'—')+(o.old.nid?' ('+o.old.nid+')':'')+'\nإلى: '+o.teacher+(o.nid?' ('+o.nid+')':'')+'\n'+(!st?'ينطبق أول ما تفتح «الزيارات»':st.r==='ok'?'✓ انطبق في الجدول':'ما لقيت الحصة في الجدول، عدّلها يدوي')}return '<div class="note'+(R[n.id]?' rd':'')+'"><div class="nhead"><b>'+esc(n.name||n.from||'')+'</b><small>'+gdate(+n.ts)+'م · '+new Date(+n.ts).toLocaleTimeString('ar-SA-u-nu-latn',{hour:'numeric',minute:'2-digit'})+'</small></div><p>'+(t?esc(t):'<i class="hint">ما قدرت أفتحها</i>')+'</p><div class="row" style="gap:6px">'+(R[n.id]?'':ib('play','قريتها','noteRead(\''+n.id+'\')'))+ib('wa','رد واتساب','noteReply(\''+n.id+'\')')+ib('trash','حذف','noteDel(\''+n.id+'\')','dan')+'</div></div>'}).join(''):'<p class="hint">ما وصلت ملاحظات للحين.</p>';
   modal('<h2>ملاحظات الموظفين</h2><p class="hint">يرسلونها من التطبيق: الإعدادات ← «ملاحظة لحسام». مقفولة وما يقرأها غيرك.</p><div class="notes">'+body+'</div><div class="row mt"><button class="btn" onclick="closeM();view()">رجوع</button></div>')})}
 function noteRead(id){const R=NOTE_READ();R[id]=1;lsSet('tq_nread',JSON.stringify(R));vNotes()}
 function noteReply(id){const n=(NOTES||[]).find(x=>x.id===id),a=n&&ACC.find(x=>x.email===n.from);if(!a||!a.phone)return uiAlert('ما عندي رقم جواله');window.open('https://wa.me/'+a.phone.replace(/^0?5/,'9665')+'?text='+encodeURIComponent('هلا أستاذ '+(a.name||'')+'، بخصوص ملاحظتك: '),'_blank')}
 async function noteDel(id){if(!await uiConfirm('حذف الملاحظة نهائيًا؟'))return;try{await fs('DELETE','/notes/'+id);NOTES=NOTES.filter(x=>x.id!==id);vNotes()}catch(e){uiAlert(errTxt(e))}}
+
+/* ---------- طلبات تغيير المعلم من الأعضاء: تتطبق لحالها أول ما تفتح الزيارات ---------- */
+const normA=x=>String(x||'').toLowerCase().replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/\s+/g,' ').trim();
+function noteObj(n){if(n._o!==undefined)return n._o;let o=null;try{const t=openPw(n.c);if(t&&t[0]==='{'){const j=JSON.parse(t);if(j&&j.k==='chg')o=j}}catch(e){}n._o=o;return o}
+function chgApply(){if(!SD||!SK||!NOTES)return 0;SD.chg=SD.chg||{};let n=0;const R=NOTE_READ();
+  NOTES.slice().reverse().forEach(nt=>{if(SD.chg[nt.id])return;const o=noteObj(nt);if(!o)return;
+    const mm=/^d(\d+)\/(\d+)\/(\d+)\/(.+?)\|(.*)$/.exec(o.src||'');let res='nf';
+    if(mm){const date=mm[1]+'/'+mm[2]+'/'+mm[3],per=mm[4],key=mm[5];const C=[];
+      SD.visits.forEach(v=>v.days.forEach(d=>{if(hTxt(d.g)!==date)return;d.rows.forEach(r=>{if(r.t==='v'&&r.p===per)C.push({v,d,r})})}));
+      const mine=x=>{const m=x.r.m||[];return m.includes(nt.from)||(m.includes('*')&&(x.v.mem||[]).includes(nt.from)&&!(x.d.absent||[]).includes(nt.from))};
+      let hit=C.find(x=>((x.r.nid||'').trim()||normA(x.r.teacher))===key);if(!hit){const M=C.filter(mine);if(M.length===1)hit=M[0]}
+      if(hit){if(hit.r.teacher!==o.teacher||(hit.r.nid||'')!==o.nid){hit.r.teacher=o.teacher;hit.r.nid=o.nid;hit.v.dirty=1;n++}res='ok'}}
+    SD.chg[nt.id]={r:res,at:Date.now()};R[nt.id]=1});
+  lsSet('tq_nread',JSON.stringify(R));if(Object.keys(SD.chg).length)saveSD(true);return n}
 </script>
 </body></html>
