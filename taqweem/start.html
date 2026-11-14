@@ -14,7 +14,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans A
 .hero{background:var(--folio);color:#fff;padding:28px 16px 70px;text-align:center;background-image:radial-gradient(circle at 20% 0,rgba(194,160,97,.25),transparent 55%)}
 .hero img{width:84px;height:84px;border-radius:22px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
 .hero h1{margin:12px 0 2px;font-size:28px}.hero p{margin:0;color:#CFE0D8;font-size:16px}
-.wrap{max-width:640px;margin:-48px auto 0;padding:0 16px 40px}
+.wrap{max-width:900px;margin:-48px auto 0;padding:0 16px 40px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:20px 18px;box-shadow:var(--sh);margin-bottom:16px}
 .card h2{margin:0 0 6px;font-size:22px}.card p{margin:0 0 12px;color:var(--mut)}
 .big{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;font:inherit;font-size:20px;font-weight:700;padding:16px;border:0;border-radius:16px;background:var(--folio);color:#fff;text-decoration:none;cursor:pointer}
@@ -35,7 +35,7 @@ video{width:100%;border-radius:18px;background:#000;display:block}
 .gi{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--sh)}
 .gi .t{padding:14px 16px 4px;font-weight:700;font-size:19px}.gi .d{padding:0 16px 14px;color:var(--mut);font-size:16px}
 .gi img{display:block;width:100%;height:auto;border-top:1px solid var(--line)}
-.sec{margin:26px 4px 10px;font-size:22px}
+.sec{margin:26px 4px 10px;font-size:22px}.chap{margin:18px 4px 2px;font-size:19px;color:var(--gold)}
 .qr{display:flex;gap:16px;align-items:center}.qr img{width:150px;height:150px;border-radius:12px;background:#fff;padding:8px;border:1px solid var(--line)}
 .arrow{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);z-index:9;display:none;flex-direction:column;align-items:center;color:#fff;background:var(--folio);border-radius:16px;padding:8px 14px;font-weight:700;font-size:15px;box-shadow:0 8px 24px rgba(0,0,0,.3);animation:bob 1.2s ease-in-out infinite}
 @keyframes bob{50%{transform:translate(-50%,6px)}}
@@ -56,9 +56,9 @@ footer{text-align:center;color:var(--mut);font-size:14px;padding:10px 16px 30px}
 </section>
 
 <section class="card" id="cIOS" hidden>
-  <h2>إضافة التطبيق لشاشة الآيفون</h2><p>ثلاث خطوات من متصفح سفاري، وبعدها يفتح من شاشتك مثل أي تطبيق.</p>
+  <h2>إضافة التطبيق لشاشة <span id="devN">الآيفون</span></h2><p>ثلاث خطوات من متصفح سفاري، وبعدها يفتح من شاشتك مثل أي تطبيق.</p>
   <ol class="steps">
-    <li><span>اضغط زر المشاركة <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11v9h12v-9"/></svg></span> أسفل الشاشة.<br><small style="color:var(--mut)">إذا ما لقيته: اضغط <span class="ico"><svg viewBox="0 0 24 24" fill="#0A84FF" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span> تحت، ثم «مشاركة».</small></span></li>
+    <li><span>اضغط زر المشاركة <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11v9h12v-9"/></svg></span> <span id="whereS">أسفل الشاشة</span>.<br><small style="color:var(--mut)">إذا ما لقيته: اضغط <span class="ico"><svg viewBox="0 0 24 24" fill="#0A84FF" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span> <span id="whereM">تحت</span>، ثم «مشاركة».</small></span></li>
     <li><span>انزل شوي واضغط <b>«إضافة إلى الشاشة الرئيسية»</b> <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></svg></span></span></li>
     <li><span>اضغط <b>«إضافة»</b> فوق. خلاص! افتحه من شاشتك.</span></li>
   </ol>
@@ -86,37 +86,24 @@ footer{text-align:center;color:var(--mut);font-size:14px;padding:10px 16px 30px}
 
 <section class="card done" id="cDone"><b>التطبيق مثبّت ✓</b><p>افتحه من شاشة جوالك. اسمه «بطاقات التقويم».</p><a class="big" href="./#k=554894">فتح التطبيق</a></section>
 
-<h2 class="sec">شرح بالفيديو</h2>
+<section class="card"><h2>جدولك ينزل لحالك</h2><p style="margin:0">شارك جدول زياراتك مع منشئ التطبيق، وهو يضيفه لك، وينزل عندك كامل بكل حصصه. ما تحتاج تضيف ولا شي. ولو حبيت تضيف زيارة أو حصة بنفسك، تقدر بعد.</p></section>
+<h2 class="sec">جولة بالفيديو</h2>
 <video controls playsinline preload="metadata" poster="guide/poster.jpg" src="guide/guide.mp4"></video>
-<p style="color:var(--mut);font-size:15px;margin:8px 4px 0">دقيقتين تقريبًا، والشرح مكتوب على الشاشة كمان.</p>
+<p style="color:var(--mut);font-size:15px;margin:8px 4px 0">جولة كاملة في التطبيق، والشرح مكتوب على الشاشة كمان.</p>
 
-<h2 class="sec">الشرح بالصور</h2>
+<h2 class="sec">الجولة بالصور</h2>
 <div class="g" id="g"></div>
 </main>
-<footer>أي مشكلة؟ من داخل التطبيق: الإعدادات ← «ملاحظة لحسام»</footer>
+<footer>أي مشكلة؟ من داخل التطبيق: الإعدادات ← «ملاحظة لمنشئ التطبيق»</footer>
 <div class="arrow" id="arr">زر المشاركة تحت ↓</div>
 <script>
-var STEPS=[
-['01-gate','افتح التطبيق واضغط «دخول»','أول مرة بس.'],
-['02-login','اكتب رقم جوالك والرقم السري','الرقم السري وصلك من حسام. تدخل مرة وحدة، وبعدها يفتح على طول حتى بدون نت.'],
-['03-home','الصفحة الرئيسية','فيها اسمك وتاريخ اليوم ومدة اشتراكك، وتحتها حصصك.'],
-['04-news','رسالة من حسام','إذا وصلتك رسالة تطلع فوق. اقرأها واضغط «تمام».'],
-['05-today','حصص اليوم','تنزل لحالها من حسام. تحت كل حصة اسم المعلم واللي معك فيها. اضغط الحصة عشان تفتحها.'],
-['06-fetch','تحديث الحصص','الحصص تتحدث لحالها، ولو تبغى تتأكد اضغط هذا الزر.'],
-['07-meta','بيانات المعلم والحصة','جاهزة من الجدول، ما تحتاج تكتب شي.'],
-['08-item','علّم على الشواهد','علّم على اللي شفته، والدرجة تطلع لحالها. بعدها «الفقرة التالية».'],
-['09-change','المعلم غايب؟','اكتب اسم البديل وهويته في البيانات، واضغط «تأكيد التغيير»، ويوصل لحسام والفريق.'],
-['10-visit','صفحة المدرسة','كل البطاقات وش باقي عليك، ومنها «مختصر الزيارة كاملة» للطباعة.'],
-['12-week','جدولي هذا الأسبوع','من الصفحة الرئيسية اضغط «ملخص الأسبوع».'],
-['13-stats','إحصائياتي','كم مدرسة وحصة قيّمت. محسوبة على جهازك بس.'],
-['14-tools','الإعدادات ← أدواتي','ملاحظة لحسام، وتنبيه قبل الحصة بعشر دقايق.'],
-['15-note','ملاحظة لحسام','اكتب مشكلتك أو اقتراحك واضغط «إرسال»، توصله على طول.']];
-document.getElementById('g').innerHTML=STEPS.map(function(s,i){return '<div class="gi"><div class="t">'+(i+1)+'. '+s[1]+'</div><div class="d">'+s[2]+'</div><img loading="lazy" src="guide/'+s[0]+'.jpg" alt="'+s[1]+'"></div>'}).join('');
-var ua=navigator.userAgent,ios=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),and=/Android|HarmonyOS|HUAWEI/i.test(ua);
+var STEPS=[["t01-gate", "اضغط «دخول»", "أول مرة بس", "الدخول"], ["t02-login", "رقم جوالك والرقم السري", "تدخل مرة وحدة، وبعدها يفتح حتى بدون نت", "الدخول"], ["t03-home", "زيارة جديدة وتحديث الحصص", "تحت الترحيب، مع مدة اشتراكك", "الصفحة الرئيسية"], ["t04-tools", "أزرار فوق", "تكبير الخط، طريقة الاستخدام، الإعدادات", "الصفحة الرئيسية"], ["t04b-newvisit", "تضيف زيارة بنفسك", "اسم المدرسة والتاريخ والمرحلة", "الصفحة الرئيسية"], ["t05-news", "رسالة من منشئ التطبيق", "اقرأها واضغط «تمام»", "الصفحة الرئيسية"], ["t06-today", "حصص اليوم", "تنزل لحالها، ومكتوب مين معك", "زيارة اليوم"], ["t07-todaycards", "بطاقات اليوم", "المقابلات والوثائق المطلوبة منك اليوم", "زيارة اليوم"], ["t08-list", "كل زياراتك", "بحث، وفرز بالشهر", "الزيارات"], ["t09-day", "صفحة المدرسة", "كل بطاقة ونسبة إنجازها", "يوم الزيارة"], ["t09b-edit", "تعديل بيانات الزيارة", "تغيّر الاسم أو التاريخ أو المرحلة", "يوم الزيارة"], ["t09c-addcls", "تضيف حصة يدوي", "«إضافة حصة»", "يوم الزيارة"], ["t10-meta", "بيانات المعلم والحصة", "جاهزة من الجدول، وتقدر تعدّلها", "تعبئة البطاقة"], ["t11-ev", "علّم على الشواهد", "اللي شفتها في الحصة", "تعبئة البطاقة"], ["t12-score", "الدرجة تطلع لحالها", "حسب عدد الشواهد", "تعبئة البطاقة"], ["t13-override", "تبغى تغيّر الدرجة؟", "اضغط عليها، وترجع للتلقائي بضغطة", "تعبئة البطاقة"], ["t14-note", "ملاحظة على الفقرة", "وشواهد أخرى لو فيه", "تعبئة البطاقة"], ["t15-pen", "الكتابة بالقلم", "على كل فقرة، وملاحظات عامة آخر البطاقة", "تعبئة البطاقة"], ["t16-step", "الفقرة التالية", "أو تخطي الفقرة والرجوع لها بعدين", "تعبئة البطاقة"], ["t17-dots", "أرقام الفقرات", "تنقّل بينها، وتعرف وش باقي", "تعبئة البطاقة"], ["t18-modes", "طريقة العرض", "فقرة فقرة، أو كل الفقرات، أو مثل النموذج", "تعبئة البطاقة"], ["t19-form", "مثل النموذج", "نفس شكل الورقة", "تعبئة البطاقة"], ["t20-sum", "مختصر البطاقة", "بعد «إنهاء البطاقة»", "التقارير"], ["t21-multi", "المقابلات بمجموعات", "«إضافة مجموعة» لكل مجموعة", "بطاقات أخرى"], ["t22-sumall", "مختصر الزيارة كاملة", "ينبهك لو فيه فقرة بدون درجة", "التقارير"], ["t23-subj", "مختصر مادة معيّنة", "اختر المادة وتطلع حصصها بس", "التقارير"], ["t24-style", "اختر شكل التقرير", "مثل الورقة، أو جدول مختصر، أو البطاقة كاملة", "التقارير"], ["t25-preview", "الدرجة فقط أو مع الملاحظات", "وتشوفه قبل لا تحفظ", "التقارير"], ["t26-savepdf", "حفظ ملف أو طباعة", "«حفظ PDF» أو «طباعة»", "التقارير"], ["t27-export", "تصدير أكثر من مدرسة", "علّم على المدارس واطبعها مرة وحدة", "التقارير"], ["t28-week", "جدولي هذا الأسبوع", "من «ملخص الأسبوع»", "ملخص الأسبوع"], ["t29-weeksum", "أرقام الأسبوع", "المدارس والحصص ومتوسط كل بطاقة", "ملخص الأسبوع"], ["t30-weekpdf", "احفظ ملخص الأسبوع", "ملف أو طباعة", "ملخص الأسبوع"], ["t31-change", "المعلم غايب؟", "اكتب البديل واضغط «تأكيد التغيير»", "المعلم الغايب"], ["t32-stats", "إحصائياتي", "كم مدرسة وحصة قيّمت", "إحصائياتي"], ["t33-font", "حجم الخط والمظهر", "كبّر الخط، أو خلّه داكن", "الإعدادات"], ["t34-dark", "المظهر الداكن", "مريح للعين", "الإعدادات"], ["t35-tools", "أدواتي", "ملاحظة لمنشئ التطبيق، وتنبيه قبل الحصة", "الإعدادات"], ["t36-note", "ملاحظة لمنشئ التطبيق", "اكتب واضغط «إرسال»", "الإعدادات"], ["t37-pass", "تغيير الرقم السري", "وحسابك ومدة اشتراكك", "الإعدادات"], ["t38-backup", "نسخة احتياطية", "احفظ نسخة من شغلك، وترجعها وقت الحاجة", "الإعدادات"], ["t39-update", "تحديث التطبيق", "يتحدث لحاله، وهذا الزر للتأكيد", "الإعدادات"], ["t40-trash", "حذفت مدرسة بالغلط؟", "ترجع من «المحذوفات»", "المحذوفات"]];
+(function(){var o='',ch='',n=0;STEPS.forEach(function(s){if(s[3]!==ch){ch=s[3];o+='<h3 class="chap">'+ch+'</h3>'}n++;o+='<div class="gi"><div class="t">'+n+'. '+s[1]+'</div><div class="d">'+s[2]+'</div><img loading="lazy" src="guide/'+s[0]+'.jpg" alt="'+s[1]+'"></div>'});document.getElementById('g').innerHTML=o})();
+var ipad=/iPad/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);var ua=navigator.userAgent,ios=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),and=/Android|HarmonyOS|HUAWEI/i.test(ua);
 var standalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
 function show(id){document.getElementById(id).hidden=false}
 if(standalone){location.replace('./#k=554894')}
-else if(ios){show('cIOS');if(/CriOS|FxiOS|EdgiOS|FBAN|FBAV|Instagram|Line\//.test(ua))show('notSafari');else{var a=document.getElementById('arr');a.style.display='flex';setTimeout(function(){a.style.display='none'},9000)}}
+else if(ios){show('cIOS');if(ipad){document.getElementById('devN').textContent='الآيباد';document.getElementById('whereS').textContent='فوق، جنب خانة الرابط';document.getElementById('whereM').textContent='فوق';document.getElementById('arr').textContent='زر المشاركة فوق ↑';document.getElementById('arr').style.bottom='auto';document.getElementById('arr').style.top='8px';}if(/CriOS|FxiOS|EdgiOS|FBAN|FBAV|Instagram|Line\//.test(ua))show('notSafari');else{var a=document.getElementById('arr');a.style.display='flex';setTimeout(function(){a.style.display='none'},9000)}}
 else if(and){show('cAndroid')}else{show('cDesk')}
 var dp=null,ib=document.getElementById('inst');
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;});
