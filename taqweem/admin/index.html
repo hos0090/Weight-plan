@@ -585,10 +585,10 @@ function importVisits(o){if(!o||o.kind!=='tq-visits'||!Array.isArray(o.visits))r
 let NEWS=null,NOTES=null,NOTES_ERR='',SUPW='';
 const NOTE_READ=()=>{try{return JSON.parse(lsGet('tq_nread')||'{}')}catch(e){return {}}};
 async function loadNews(){try{const d=await fs('GET','/cfg/news');NEWS=d?U(d.fields):{t:'',ts:0}}catch(e){NEWS={t:'',ts:0}}}
-async function loadSup(){try{const d=await fs('GET','/pub/support');SUPW=d?String(U(d.fields).wa||''):''}catch(e){}}
-function vSup(){modal('<h2>رقم التواصل واتساب</h2><p class="hint">يطلع للمشتركين زر «تواصل واتساب» في الإعدادات، وفي شاشة الاشتراك المنتهي أو الموقوف، وجنب الملاحظة. تقدر تغيّره أي وقت، ولو مسحته يختفي الزر.</p><label>رقم الجوال<input id="spW" inputmode="tel" dir="ltr" placeholder="05xxxxxxxx" value="'+esc(SUPW)+'"></label><p class="hint" id="spM"></p><div class="row mt"><button class="btn g" id="spS">حفظ</button><button class="btn" onclick="closeM()">إلغاء</button></div>');
+async function loadSup(){try{const d=await fs('GET','/cfg/support');SUPW=d?String(U(d.fields).wa||''):''}catch(e){}}
+function vSup(){modal('<h2>رقم التواصل واتساب</h2><p class="hint">الرقم يشوفه المشتركين بس، ما يطلع لأحد غيرهم. يطلع لهم زر «تواصل واتساب» في الإعدادات، وفي شاشة الاشتراك المنتهي أو الموقوف، وجنب الملاحظة. تقدر تغيّره أي وقت، ولو مسحته يختفي الزر.</p><label>رقم الجوال<input id="spW" inputmode="tel" dir="ltr" placeholder="05xxxxxxxx" value="'+esc(SUPW)+'"></label><p class="hint" id="spM"></p><div class="row mt"><button class="btn g" id="spS">حفظ</button><button class="btn" onclick="closeM()">إلغاء</button></div>');
   $('#spS').onclick=async()=>{const w=String($('#spW').value||'').replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c)).replace(/\D/g,'');if(w&&!/^(05\d{8}|9665\d{8})$/.test(w)){$('#spM').textContent='اكتب رقم جوال سعودي صحيح، مثل 05xxxxxxxx';return}
-    try{await fs('PATCH','/pub/support',F({wa:w,ts:Date.now()}));SUPW=w;closeM();view();uiAlert(w?'تم ✓ يطلع الزر للمشتركين خلال دقايق.':'انشال الرقم، والزر اختفى.')}catch(e){uiAlert(errTxt(e))}}}
+    try{await fs('PATCH','/cfg/support',F({wa:w,ts:Date.now()}));SUPW=w;closeM();view();uiAlert(w?'تم ✓ يطلع الزر للمشتركين خلال دقايق.':'انشال الرقم، والزر اختفى.')}catch(e){uiAlert(errTxt(e))}}}
 async function loadNotes(){NOTES_ERR='';try{const d=await fs('GET','/notes?pageSize=300');NOTES=((d&&d.documents)||[]).map(x=>Object.assign(U(x.fields),{id:x.name.split('/').pop()})).sort((a,b)=>(+b.ts||0)-(+a.ts||0))}catch(e){NOTES=[];NOTES_ERR=/PERMISSION|403/.test(String(e.message||e.code||e.status))?'rules':'net'}}
 function unreadNotes(){const R=NOTE_READ();return (NOTES||[]).filter(n=>!R[n.id]).length}
 function msgsCard(){const nu=unreadNotes(),nw=NEWS&&NEWS.t;
