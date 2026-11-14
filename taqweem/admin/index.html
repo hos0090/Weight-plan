@@ -56,6 +56,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
 .info .nm{font-weight:700;font-size:16px}.pills{display:flex;gap:6px;flex-wrap:wrap;margin:3px 0}.info .meta{color:var(--mut);font-size:12.5px}
 .icons{display:flex;gap:2px;flex-wrap:wrap;justify-content:flex-end}
 .ib{font:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:50px;padding:6px 4px;border:0;border-radius:12px;background:transparent;color:var(--folio2);cursor:pointer;transition:background .12s}
+.plans{display:flex;flex-direction:column;gap:10px}.plrow{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px 12px}#pP button{line-height:1.3;padding:8px 12px}
 .newsnow{background:var(--soft);border-radius:12px;padding:10px 12px}.newsnow small{color:var(--mut);font-size:12px}.newsnow p{margin:4px 0 0;white-space:pre-line;line-height:1.8}
 .nbadge{background:var(--bad);color:#fff;border-radius:99px;padding:0 6px;font-size:10px}
 .notes{display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow:auto}.note{border:1px solid var(--line);border-inline-start:4px solid var(--gold,#B8913A);border-radius:12px;padding:10px 12px}.note.rd{border-inline-start-color:var(--line);opacity:.8}.note .nhead{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.note .nhead small{color:var(--mut);font-size:12px}.note p{margin:6px 0;white-space:pre-line;line-height:1.8}
@@ -138,7 +139,14 @@ const FB={key:'AIzaSyBGdWVd1Xb3DEJzwiDmtG8W7-1gYdY7tXI',project:'taqweem-7050b',
 const APP_URL='https://hos0090.github.io/Weight-plan/taqweem/',APP_PIN='554894';
 const FS=()=>'https://firestore.googleapis.com/v1/projects/'+FB.project+'/databases/(default)/documents';
 const $=s=>document.querySelector(s),esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const DAY=864e5;let tok=null,ADM=null,ACC=[],FIL='all',Q='',PK=null,SK=null,PRICE=500;
+const DAY=864e5;let tok=null,ADM=null,ACC=[],FIL='all',Q='',PK=null,SK=null,PRICE=600;
+/* الباقات: سنة، نصف سنة، ولين نهاية العام الدراسي (تاريخ ثابت). تتعدّل من «الباقات والأسعار» */
+let PLANS=[{k:'sy',n:'لين نهاية العام الدراسي',p:600,until:'2027-06-24'},{k:'h',n:'نصف سنة',p:600,mo:6},{k:'y',n:'سنة كاملة',p:1000,mo:12}],DEFPLAN='sy';
+const planOf=k=>PLANS.find(x=>x.k===k)||PLANS[0];
+function addMonths(t,n){const d=new Date(t);const day=d.getDate();d.setMonth(d.getMonth()+n);if(d.getDate()<day)d.setDate(0);return +d}
+function planBase(a){return a&&a.plan!=='trial'&&!a.free&&a.exp>Date.now()?a.exp:Date.now()}
+function planUntil(pl,base){if(pl.until)return Date.parse(pl.until+'T23:59:00+03:00');return addMonths(base,pl.mo||12)}
+function offerTxt(){return PLANS.map(x=>x.n+' '+SAR(x.p)).join('، أو ')}
 function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}function lsSet(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}
 /* ---------- أدوات ---------- */
 const enc=s=>new TextEncoder().encode(s),dec=u=>new TextDecoder().decode(u);
@@ -213,7 +221,7 @@ async function load(){$('#main').innerHTML='<div class="card">لحظة…</div>'
   try{if(!PK){const e=await fs('GET','/admin/escrow');if(!e){$('#who').innerHTML='<button class="btn s hbtn" onclick="logout()">خروج</button>';return vSetup()}PK=b64d(U(e.fields).pk)}
     const out=[];let pt='';do{const j=await fs('GET','/accounts?pageSize=300'+(pt?'&pageToken='+encodeURIComponent(pt):''));((j&&j.documents)||[]).forEach(d=>{const o=U(d.fields);o.email=decodeURIComponent(d.name.split('/').pop());out.push(o)});pt=j&&j.nextPageToken}while(pt);
     out.forEach(a=>{try{a.pays=JSON.parse(a.payLog||'[]')}catch(e){a.pays=[]}});ACC=out.sort((a,b)=>(b.created||0)-(a.created||0));
-    try{const st=await fs('GET','/admin/settings');if(st){const o=U(st.fields);if(+o.price>0)PRICE=+o.price}}catch(e){}await Promise.all([loadNews(),loadNotes(),loadSup()]);view()}
+    try{const st=await fs('GET','/admin/settings');if(st){const o=U(st.fields);if(+o.price>0)PRICE=+o.price;try{if(o.plans){const L=JSON.parse(o.plans);if(Array.isArray(L)&&L.length)PLANS=L}}catch(e){}if(o.defPlan)DEFPLAN=o.defPlan;PRICE=planOf(DEFPLAN).p}}catch(e){}await Promise.all([loadNews(),loadNotes(),loadSup()]);view()}
   catch(e){if(e.message==='LOGIN'||/INVALID_REFRESH|TOKEN_EXPIRED|USER_NOT_FOUND/.test(e.code||''))return vLogin();$('#main').innerHTML='<div class="card"><p class="err">'+esc(errTxt(e))+'</p><button class="btn" onclick="load()">إعادة المحاولة</button> <button class="btn" onclick="logout()">خروج</button></div>'}}
 /* ---------- أيقونات ---------- */
 const I=(p,extra)=>'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>';
@@ -241,11 +249,13 @@ function view(){TAB='acc';$('#who').innerHTML='<span class="who-n">'+esc((ADM&&A
   h+=msgsCard();
   h+='<div class="card"><div class="lhead"><h2>المشتركين'+(FIL!=='all'?' <button class="tag t-off fx" onclick="FIL=\'all\';view()">'+esc({paid:'دفعوا',due:'ما دفعوا',trial:'تجربة',soon:'قرب ينتهي',off:'منتهي/موقوف'}[FIL]||'')+' ✕</button>':'')+'</h2><button class="btn g" onclick="vNew()">+ موظف</button></div><div class="filters"><input id="q" placeholder="بحث بالاسم أو الجوال أو الفريق" value="'+esc(Q)+'"><select id="sortS" class="sortS"><option value="new">الأحدث</option><option value="exp">الأقرب انتهاء</option><option value="name">الاسم</option><option value="team">الفريق</option></select></div><div class="list" id="lst"></div></div>';
   h+='<div class="card"><div class="lhead"><h2>سجل الدفعات</h2></div><div id="payLst" class="plist">'+(P.length?P.slice(0,PAYN).map(p=>'<div class="prow"><b>'+esc(p.who)+'</b><span class="row" style="gap:4px"><span class="amt">'+SAR(p.a)+'</span>'+ib('trash','حذف','undoPay('+ACC.findIndex(x=>x.email===p.email)+','+p.k+')','dan')+'</span><span class="hint" style="margin:0">'+gdate(p.d)+'م'+(p.m?' · '+esc(p.m):'')+(p.n?' · '+esc(p.n):'')+'</span></div>').join('')+(P.length>PAYN?'<button class="btn s" onclick="PAYN+=20;view()">عرض المزيد</button>':''):'<p class="hint">ما سجلت أي دفعة بعد.</p>')+'</div></div>';
-  h+='<div class="card"><div class="lhead"><h2>السعر السنوي</h2></div><div class="row"><input id="prI" type="number" inputmode="numeric" value="'+PRICE+'" style="max-width:140px"><span>ريال</span><button class="btn" id="prS">حفظ</button><span class="hint" id="prM" style="margin:0"></span></div></div>';
+  h+='<div class="card"><div class="lhead"><h2>الباقات والأسعار</h2></div><div class="plans">'+PLANS.map(x=>'<div class="plrow"><label class="chk"><input type="radio" name="defp" value="'+x.k+'"'+(x.k===DEFPLAN?' checked':'')+'> '+esc(x.n)+'</label><span class="row" style="gap:6px"><input data-pp="'+x.k+'" type="number" inputmode="numeric" value="'+x.p+'" style="max-width:110px"><span>ريال</span>'+(x.until?'<span class="hint" style="margin:0">ينتهي</span><input data-pu="'+x.k+'" type="date" class="ltr" value="'+x.until+'" style="max-width:170px">':'<span class="hint" style="margin:0">'+(x.mo===12?'١٢ شهر':x.mo===6?'٦ شهور':x.mo+' شهر')+' من الدفع</span>')+'</span></div>').join('')+'</div><p class="hint">المختارة هي العرض الحالي: تطلع أول خيار في الدفعة ورسالة التذكير.</p><div class="row"><button class="btn" id="prS">حفظ</button><span class="hint" id="prM" style="margin:0"></span></div></div>';
   $('#main').innerHTML=h;$('#sortS').value=SORT;list();
   $('#q').oninput=e=>{Q=e.target.value;list()};$('#sortS').onchange=e=>{SORT=e.target.value;list()};
   document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{FIL=FIL===b.dataset.f?'all':b.dataset.f;view()});
-  $('#prS').onclick=async()=>{const v=Math.round(+$('#prI').value);if(!(v>0))return;try{await fs('PATCH','/admin/settings',F({price:v}));PRICE=v;$('#prM').textContent='انحفظ ✓';view()}catch(e){$('#prM').textContent=errTxt(e)}}}
+  $('#prS').onclick=async()=>{const L=PLANS.map(x=>Object.assign({},x));let bad='';L.forEach(x=>{const v=Math.round(+document.querySelector('[data-pp="'+x.k+'"]').value);if(!(v>0))bad='اكتب سعر '+x.n;x.p=v;const u=document.querySelector('[data-pu="'+x.k+'"]');if(u){if(!u.value)bad='اختر تاريخ نهاية العام الدراسي';x.until=u.value}});if(bad)return $('#prM').textContent=bad;
+    const d=(document.querySelector('[name=defp]:checked')||{}).value||DEFPLAN;
+    try{await fs('PATCH','/admin/settings',F({plans:JSON.stringify(L),defPlan:d,price:L.find(x=>x.k===d).p}));PLANS=L;DEFPLAN=d;PRICE=planOf(d).p;$('#prM').textContent='انحفظ ✓';view()}catch(e){$('#prM').textContent=errTxt(e)}}}
 let PAYN=10,SORT='new';
 function match(a){const s=status(a)[0],p=pay(a)[0];if(FIL==='all')return true;if(FIL==='paid'||FIL==='due')return p===FIL;if(FIL==='off')return s==='exp'||s==='off';return s===FIL}
 function list(){const q=digits(Q).trim();let L=ACC.filter(a=>match(a)&&(!q||[a.name,a.team,a.user,a.phone,a.email].join(' ').indexOf(q)>=0));
@@ -264,17 +274,20 @@ async function undoPay(i,k){const a=ACC[i],p=a.pays[k];
   const pays=a.pays.filter((x,j)=>j!==k),o={payLog:JSON.stringify(pays)};if(p.u&&p.u===a.exp&&p.prev){o.exp=new Date(p.prev);if(p.prevPlan)o.plan=p.prevPlan}
   if(await save(i,o)){a.pays=pays;if($('#scrim'))vPays(i);else view()}}
 async function vPay(i){const a=ACC[i],c=curPay(a);
-  if(c&&!await uiConfirm((a.name||a.user)+' دافع للفترة الحالية '+SAR(c.a)+' بتاريخ '+gdate(c.d)+'م، واشتراكه لين '+hdate(a.exp)+'.\nتبي تسجل دفعة ثانية تمدد له سنة زيادة؟'))return;
+  if(c&&!await uiConfirm((a.name||a.user)+' دافع للفترة الحالية '+SAR(c.a)+' بتاريخ '+gdate(c.d)+'م، واشتراكه لين '+hdate(a.exp)+'.\nتبي تسجل دفعة ثانية تمدد اشتراكه؟'))return;
   const today=new Date(Date.now()+3*36e5).toISOString().slice(0,10);let m='تحويل';
-  const ps=pay(a)[0],cur=a.plan!=='trial'&&a.exp>Date.now()&&ps==='due',until=cur?a.exp:Math.max(Date.now(),a.plan==='trial'?Date.now():a.exp||0)+365*DAY,tot=(a.pays||[]).reduce((x,p)=>x+(+p.a||0),0);
-  modal('<h2>دفعة · '+esc(a.name||a.user)+'</h2>'+(tot?'<p class="hint" style="margin-top:0">دفع قبل كذا '+SAR(tot)+' · <a href="#" onclick="closeM();vPays('+i+');return false">السجل</a></p>':'')+'<label>المبلغ (ريال)<input id="pA" type="number" inputmode="numeric" class="big-in" value="'+(+a.price||PRICE)+'"></label><label class="mt">تاريخ الدفع<input id="pD" type="date" class="ltr" value="'+today+'"></label><div class="mt"><div class="lbl">طريقة الدفع</div><div class="tg" id="pM"><button data-v="تحويل" class="on">تحويل</button><button data-v="كاش">كاش</button></div></div><label class="mt">ملاحظة (اختياري)<input id="pN" placeholder="مثال: من حساب الراجحي"></label><label class="chk mt"><input type="checkbox" id="pR" checked> '+(cur?'تغطي اشتراكه الحالي لين ':'فعّل اشتراك سنة لين ')+esc(hdate(until))+'</label><p class="err" id="pE"></p><div class="row"><button class="btn p big" id="pGo">حفظ الدفعة</button><button class="btn" onclick="closeM()">إلغاء</button></div>');
+  const ps=pay(a)[0],cur=a.plan!=='trial'&&a.exp>Date.now()&&ps==='due',tot=(a.pays||[]).reduce((x,p)=>x+(+p.a||0),0);let PL=planOf(DEFPLAN),until=0;
+  const calc=()=>{until=cur?a.exp:planUntil(PL,planBase(a));const el=$('#pUt');if(el)el.textContent=hdate(until)+' ('+gdate(until)+'م)';const w=$('#pW');if(w)w.textContent=!cur&&PL.until&&planBase(a)>=until?'تنبيه: اشتراكه الحالي يمتد بعد نهاية العام الدراسي، اختر باقة ثانية.':''};
+  modal('<h2>دفعة · '+esc(a.name||a.user)+'</h2>'+(tot?'<p class="hint" style="margin-top:0">دفع قبل كذا '+SAR(tot)+' · <a href="#" onclick="closeM();vPays('+i+');return false">السجل</a></p>':'')+(cur?'':'<div class="lbl">الباقة</div><div class="tg" id="pP">'+PLANS.map(x=>'<button data-k="'+x.k+'"'+(x.k===PL.k?' class="on"':'')+'>'+esc(x.n)+'<small style="display:block;opacity:.8">'+SAR(x.p)+'</small></button>').join('')+'</div>')+'<label class="mt">المبلغ (ريال)<input id="pA" type="number" inputmode="numeric" class="big-in" value="'+(cur?(+a.price||PRICE):PL.p)+'"></label><label class="mt">تاريخ الدفع<input id="pD" type="date" class="ltr" value="'+today+'"></label><div class="mt"><div class="lbl">طريقة الدفع</div><div class="tg" id="pM"><button data-v="تحويل" class="on">تحويل</button><button data-v="كاش">كاش</button></div></div><label class="mt">ملاحظة (اختياري)<input id="pN" placeholder="مثال: من حساب الراجحي"></label><label class="chk mt"><input type="checkbox" id="pR" checked> '+(cur?'تغطي اشتراكه الحالي لين ':'فعّل اشتراكه لين ')+'<b id="pUt"></b></label><p class="hint" id="pW" style="color:#B23A3A"></p><p class="err" id="pE"></p><div class="row"><button class="btn p big" id="pGo">حفظ الدفعة</button><button class="btn" onclick="closeM()">إلغاء</button></div>');
   document.querySelectorAll('#pM button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#pM button').forEach(x=>x.classList.toggle('on',x===b));m=b.dataset.v});
+  document.querySelectorAll('#pP button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#pP button').forEach(x=>x.classList.toggle('on',x===b));PL=planOf(b.dataset.k);$('#pA').value=PL.p;calc()});calc();
   $('#pGo').onclick=async()=>{const amt=Math.round(+$('#pA').value),d=$('#pD').value?Date.parse($('#pD').value+'T12:00:00+03:00'):Date.now(),ren=$('#pR').checked;if(!(amt>0))return $('#pE').textContent='اكتب المبلغ';
-    const exp=ren?until:a.exp,pays=(a.pays||[]).concat([{d,a:amt,m,n:$('#pN').value.trim(),u:exp,prev:a.exp,prevPlan:a.plan}]);$('#pGo').disabled=true;
+    if(ren&&!cur&&until<=Date.now())return $('#pE').textContent='تاريخ نهاية الباقة فات، عدّله من «الباقات والأسعار»';
+    const exp=ren?until:a.exp,pays=(a.pays||[]).concat([{d,a:amt,m,n:$('#pN').value.trim(),u:exp,prev:a.exp,prevPlan:a.plan,pl:cur?'':PL.k}]);$('#pGo').disabled=true;
     const o={payLog:JSON.stringify(pays),price:amt};if(ren){o.plan='paid';o.active=true;o.exp=new Date(exp)}
     if(await save(i,o,$('#pE'))){a.pays=pays;closeM();view()}else $('#pGo').disabled=false}}
 function remind(i){const a=ACC[i],s=status(a)[0],ph=(a.phone||'').replace(/^0?5/,'9665');
-  const m='السلام عليكم أستاذ '+(a.name||'')+'\n'+(a.plan==='trial'?(s==='exp'?'انتهت تجربتك المجانية لتطبيق «بطاقات التقويم».':'تجربتك المجانية لتطبيق «بطاقات التقويم» تنتهي '+hdate(a.exp)+'.'):(s==='exp'?'انتهى اشتراكك في تطبيق «بطاقات التقويم».':'اشتراكك في تطبيق «بطاقات التقويم» ينتهي '+hdate(a.exp)+'.'))+'\nقيمة الاشتراك السنوي '+SAR(+a.price||PRICE)+'، وبياناتك كلها محفوظة.\nإذا حوّلت أرسل لي صورة التحويل وأفعّله لك على طول.';
+  const m='السلام عليكم أستاذ '+(a.name||'')+'\n'+(a.plan==='trial'?(s==='exp'?'انتهت تجربتك المجانية لتطبيق «بطاقات التقويم».':'تجربتك المجانية لتطبيق «بطاقات التقويم» تنتهي '+hdate(a.exp)+'.'):(s==='exp'?'انتهى اشتراكك في تطبيق «بطاقات التقويم».':'اشتراكك في تطبيق «بطاقات التقويم» ينتهي '+hdate(a.exp)+'.'))+'\nالاشتراك: '+offerTxt()+'، وبياناتك كلها محفوظة.\nإذا حوّلت أرسل لي صورة التحويل وأفعّله لك على طول.';
   window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(m),'_blank')}
 /* ---------- إضافة موظف ---------- */
 const teams=()=>[...new Set(ACC.map(a=>a.team).filter(Boolean))];
@@ -298,7 +311,7 @@ function vNew(){const P=genPass();let role='member',plan='trial';
     $('#nGo').disabled=true;$('#nE').textContent='لحظة…';let linked=false,known=pw;
     try{await post('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+FB.key,{email,password:pw,returnSecureToken:false})}
     catch(e){if(/EMAIL_EXISTS/.test(e.code||'')){/* أي أحد يقدر يسجّل رقم قبلك، فما نربط إلا حساب تعرف إنك أنت اللي سويته */if(!await uiConfirm('«'+user+'» مسجّل في فايربيس من قبل، وأنت ما أضفته في اللوحة.\nإذا ما كنت أنت اللي سويته (مثل حساب الوالد ali)، ممكن يكون شخص سجّل الرقم قبلك. الأمان: ألغِ واستخدم اسم دخول مختلف من «خيارات أخرى».\n\nمتأكد إنه حسابك وتبي تربطه؟')){$('#nGo').disabled=false;$('#nE').textContent='هذا الرقم مسجّل من قبل. استخدم اسم دخول مختلف من «خيارات أخرى».';return}linked=true;known=normPass(await uiPrompt('إذا تعرف كلمة سره الحالية اكتبها عشان تنحفظ عندك (أو اتركها فاضية):')||'')}else{$('#nGo').disabled=false;return $('#nE').textContent=errTxt(e)}}
-    const now=Date.now(),exp=new Date(now+(plan==='trial'?7:365)*DAY);
+    const now=Date.now(),exp=new Date(plan==='trial'?now+7*DAY:planUntil(planOf(DEFPLAN),now));
     const o={name,user,role,team,phone,plan:plan==='trial'?'trial':'paid',active:true,mustChange:false,start:new Date(now),exp,created:new Date(now)};
     try{await fs('PATCH','/accounts/'+encodeURIComponent(email)+'?currentDocument.exists=false',F(o));}catch(e){$('#nGo').disabled=false;return $('#nE').textContent=errTxt(e)}
     try{await savePw(email,known)}catch(e){}
@@ -309,8 +322,8 @@ function vEdit(i){const a=ACC[i];modal('<h2>تعديل '+esc(a.name||a.user)+'</
   $('#eGo').onclick=async()=>{const x=$('#eX').value,pw=normPass($('#eP').value.trim());const o={name:$('#eN').value.trim(),team:$('#eT').value.trim(),role,free:$('#eF').checked,exp:x?new Date(x+'T23:59:00+03:00'):new Date(a.exp)};
     if(await save(i,o,$('#eE'))){if(pw){try{await savePw(a.email,pw)}catch(e){$('#eE').textContent=errTxt(e);return}}closeM()}}}
 async function save(i,o,errEl){const a=ACC[i];try{await fs('PATCH','/accounts/'+encodeURIComponent(a.email)+'?'+mask(o)+'&currentDocument.exists=true',F(o));Object.keys(o).forEach(k=>a[k]=o[k] instanceof Date?+o[k]:o[k]);view();return true}catch(e){if(errEl)errEl.textContent=errTxt(e);else uiAlert(errTxt(e));return false}}
-async function renew(i){const a=ACC[i],base=Math.max(Date.now(),a.plan==='trial'?Date.now():a.exp||0),exp=new Date(base+365*DAY);
-  if(!await uiConfirm('تفعيل سنة لـ «'+(a.name||a.user)+'»؟\nينتهي في '+hdate(+exp)+' ('+gdate(+exp)+'م)'))return;save(i,{plan:'paid',active:true,exp})}
+async function renew(i){const a=ACC[i],exp=new Date(planUntil(planOf(DEFPLAN),planBase(a)));
+  if(!await uiConfirm('تفعيل «'+planOf(DEFPLAN).n+'» لـ «'+(a.name||a.user)+'»؟\nينتهي في '+hdate(+exp)+' ('+gdate(+exp)+'م)'))return;save(i,{plan:'paid',active:true,exp})}
 function extend(i,d){const a=ACC[i];save(i,{exp:new Date(Math.max(Date.now(),a.exp||0)+d*DAY),active:true})}
 async function toggle(i){const a=ACC[i];if(a.active&&!await uiConfirm('إيقاف «'+(a.name||a.user)+'»؟ تبقى حصصه وتقييماته عنده، بس ما تنزل له حصص جديدة ولا يتزامن لين تفعّله.'))return;save(i,{active:!a.active})}
 /* حذف موظف: يشيل اشتراكه ورقمه السري، فما يقدر يدخل أبد. تقييماته المشفّرة تبقى مقفولة في مكانها */
