@@ -213,7 +213,7 @@ async function load(){$('#main').innerHTML='<div class="card">لحظة…</div>'
   try{if(!PK){const e=await fs('GET','/admin/escrow');if(!e){$('#who').innerHTML='<button class="btn s hbtn" onclick="logout()">خروج</button>';return vSetup()}PK=b64d(U(e.fields).pk)}
     const out=[];let pt='';do{const j=await fs('GET','/accounts?pageSize=300'+(pt?'&pageToken='+encodeURIComponent(pt):''));((j&&j.documents)||[]).forEach(d=>{const o=U(d.fields);o.email=decodeURIComponent(d.name.split('/').pop());out.push(o)});pt=j&&j.nextPageToken}while(pt);
     out.forEach(a=>{try{a.pays=JSON.parse(a.payLog||'[]')}catch(e){a.pays=[]}});ACC=out.sort((a,b)=>(b.created||0)-(a.created||0));
-    try{const st=await fs('GET','/admin/settings');if(st){const o=U(st.fields);if(+o.price>0)PRICE=+o.price}}catch(e){}await Promise.all([loadNews(),loadNotes()]);view()}
+    try{const st=await fs('GET','/admin/settings');if(st){const o=U(st.fields);if(+o.price>0)PRICE=+o.price}}catch(e){}await Promise.all([loadNews(),loadNotes(),loadSup()]);view()}
   catch(e){if(e.message==='LOGIN'||/INVALID_REFRESH|TOKEN_EXPIRED|USER_NOT_FOUND/.test(e.code||''))return vLogin();$('#main').innerHTML='<div class="card"><p class="err">'+esc(errTxt(e))+'</p><button class="btn" onclick="load()">إعادة المحاولة</button> <button class="btn" onclick="logout()">خروج</button></div>'}}
 /* ---------- أيقونات ---------- */
 const I=(p,extra)=>'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>';
@@ -569,15 +569,19 @@ function importVisits(o){if(!o||o.kind!=='tq-visits'||!Array.isArray(o.visits))r
 /* ================= الرسائل: رسالة للكل + ملاحظات الموظفين =================
    رسالة للكل: تنحفظ في cfg/news ويشوفها كل مشترك بأعلى التطبيق لين يضغط «تمام».
    ملاحظات الموظفين: كل موظف يرسل من التطبيق ملاحظة مقفولة بمفتاح اللوحة، ما يقرأها غيرك. */
-let NEWS=null,NOTES=null,NOTES_ERR='';
+let NEWS=null,NOTES=null,NOTES_ERR='',SUPW='';
 const NOTE_READ=()=>{try{return JSON.parse(lsGet('tq_nread')||'{}')}catch(e){return {}}};
 async function loadNews(){try{const d=await fs('GET','/cfg/news');NEWS=d?U(d.fields):{t:'',ts:0}}catch(e){NEWS={t:'',ts:0}}}
+async function loadSup(){try{const d=await fs('GET','/pub/support');SUPW=d?String(U(d.fields).wa||''):''}catch(e){}}
+function vSup(){modal('<h2>رقم التواصل واتساب</h2><p class="hint">يطلع للمشتركين زر «تواصل واتساب» في الإعدادات، وفي شاشة الاشتراك المنتهي أو الموقوف، وجنب الملاحظة. تقدر تغيّره أي وقت، ولو مسحته يختفي الزر.</p><label>رقم الجوال<input id="spW" inputmode="tel" dir="ltr" placeholder="05xxxxxxxx" value="'+esc(SUPW)+'"></label><p class="hint" id="spM"></p><div class="row mt"><button class="btn g" id="spS">حفظ</button><button class="btn" onclick="closeM()">إلغاء</button></div>');
+  $('#spS').onclick=async()=>{const w=String($('#spW').value||'').replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c)).replace(/\D/g,'');if(w&&!/^(05\d{8}|9665\d{8})$/.test(w)){$('#spM').textContent='اكتب رقم جوال سعودي صحيح، مثل 05xxxxxxxx';return}
+    try{await fs('PATCH','/pub/support',F({wa:w,ts:Date.now()}));SUPW=w;closeM();view();uiAlert(w?'تم ✓ يطلع الزر للمشتركين خلال دقايق.':'انشال الرقم، والزر اختفى.')}catch(e){uiAlert(errTxt(e))}}}
 async function loadNotes(){NOTES_ERR='';try{const d=await fs('GET','/notes?pageSize=300');NOTES=((d&&d.documents)||[]).map(x=>Object.assign(U(x.fields),{id:x.name.split('/').pop()})).sort((a,b)=>(+b.ts||0)-(+a.ts||0))}catch(e){NOTES=[];NOTES_ERR=/PERMISSION|403/.test(String(e.message||e.code||e.status))?'rules':'net'}}
 function unreadNotes(){const R=NOTE_READ();return (NOTES||[]).filter(n=>!R[n.id]).length}
 function msgsCard(){const nu=unreadNotes(),nw=NEWS&&NEWS.t;
   return '<div class="card"><div class="lhead"><h2>الرسائل</h2><span class="row" style="gap:6px">'+ib('send','رسالة للكل','vNews()')+'<button class="ib" onclick="vNotes()" title="ملاحظات الموظفين" aria-label="ملاحظات الموظفين">'+IC.edit+'<span>ملاحظاتهم'+(nu?' <b class="nbadge">'+nu+'</b>':'')+'</span></button></span></div>'+
     (nw?'<div class="newsnow"><small>الرسالة الحالية عند الكل · '+gdate(NEWS.ts)+'م</small><p>'+esc(NEWS.t)+'</p></div>':'<p class="hint" style="margin:0">ما فيه رسالة معروضة للمشتركين الحين.</p>')+
-    (NOTES_ERR==='rules'?'<p class="hint" style="color:#B23A3A">الملاحظات تحتاج تحديث قواعد فايربيس.</p>':'')+'</div>'}
+    '<div class="row" style="margin-top:10px;gap:8px;align-items:center"><span class="hint" style="margin:0">واتساب الدعم: <b dir="ltr">'+(SUPW?esc(SUPW):'ما حطيته')+'</b></span>'+ib('wa',SUPW?'تغيير الرقم':'حط رقمك','vSup()')+'</div>'+(NOTES_ERR==='rules'?'<p class="hint" style="color:#B23A3A">الملاحظات تحتاج تحديث قواعد فايربيس.</p>':'')+'</div>'}
 function vNews(){const cur=(NEWS&&NEWS.t)||'';
   modal('<h2>رسالة للكل</h2><p class="hint">تطلع لكل المشتركين بأعلى الصفحة الرئيسية في التطبيق، وتختفي عند كل واحد لما يضغط «تمام». الرسالة الجديدة تحل محل القديمة.</p><textarea id="nwT" rows="5" maxlength="600" placeholder="مثال: الأسبوع الجاي زيارة ثانوية الملك فهد، الحصص بتنزل لكم الخميس.">'+esc(cur)+'</textarea><p class="hint" id="nwM"></p><div class="row mt"><button class="btn g" id="nwS">نشر للكل</button>'+(cur?'<button class="btn dan" id="nwD">إخفاء الرسالة</button>':'')+'<button class="btn" onclick="closeM()">إلغاء</button></div>');
   $('#nwS').onclick=async()=>{const t=$('#nwT').value.trim();if(!t){$('#nwM').textContent='اكتب الرسالة';return}
