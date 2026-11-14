@@ -57,6 +57,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 
 .icons{display:flex;gap:2px;flex-wrap:wrap;justify-content:flex-end}
 .ib{font:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:50px;padding:6px 4px;border:0;border-radius:12px;background:transparent;color:var(--folio2);cursor:pointer;transition:background .12s}
 .plans{display:flex;flex-direction:column;gap:10px}.plrow{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px 12px}#pP button{line-height:1.3;padding:8px 12px}
+.dl-ok{color:#1F7A4A}.dl-err{color:#B23A3A}.dl-wait{color:#9A6B12}.dl-np,.dl-none{color:var(--mut)}[class^=dl-]{cursor:pointer;font-weight:700}
 .newsnow{background:var(--soft);border-radius:12px;padding:10px 12px}.newsnow small{color:var(--mut);font-size:12px}.newsnow p{margin:4px 0 0;white-space:pre-line;line-height:1.8}
 .nbadge{background:var(--bad);color:#fff;border-radius:99px;padding:0 6px;font-size:10px}
 .notes{display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow:auto}.note{border:1px solid var(--line);border-inline-start:4px solid var(--gold,#B8913A);border-radius:12px;padding:10px 12px}.note.rd{border-inline-start-color:var(--line);opacity:.8}.note .nhead{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.note .nhead small{color:var(--mut);font-size:12px}.note p{margin:6px 0;white-space:pre-line;line-height:1.8}
@@ -390,16 +391,28 @@ function vMatch(v){const ds=vDates(v),today=new Date(Date.now()+3*36e5).toISOStr
   if(VF.m&&!(v.mem||[]).includes(VF.m))return false;
   const q=digits(VF.q).trim();if(q&&[v.school].concat((v.mem||[]).map(nm)).join(' ').indexOf(q)<0)return false;return true}
 const recv=e=>{const a=ACC.find(x=>x.email===e);return a&&SD.pub[e]&&(+a.seen||0)>=SD.pub[e]};
+/* حالة توصيل الحصص لكل عضو: انتشرت / نزلت عنده / تعذّر مع السبب الفعلي اللي بلّغ عنه جهازه */
+const agoTxt=t=>{const m=Math.round((Date.now()-t)/6e4);return m<1?'الحين':m<60?'قبل '+m+' د':m<1440?'قبل '+Math.round(m/60)+' س':'قبل '+Math.round(m/1440)+' يوم'};
+function dlv(e){const a=ACC.find(x=>x.email===e);if(!a)return {k:'none',s:'بدون حساب',t:'ما عنده حساب، فما توصله الحصص في التطبيق'};const p=SD.pub&&SD.pub[e];
+  if(!p)return {k:'np',s:'ما انتشرت له',t:'ما نشرت له حصص للحين'};const seen=+a.seen||0,at=+a.inAt||0;let er=null;try{er=a.inErr?JSON.parse(a.inErr):null}catch(x){}
+  const when=t=>gdate(t)+'م '+new Date(t).toLocaleTimeString('ar-SA-u-nu-latn',{hour:'numeric',minute:'2-digit'});
+  if(seen>=p)return {k:'ok',s:'✓ نزلت عنده',t:'نزلت الحصص في جهازه'+(at?' · آخر تحقق '+when(at):'')};
+  if(er&&at>=p)return {k:'err',s:'✗ تعذّر',t:'تعذّر التنزيل: '+er.m+(er.d?' · الجهاز: '+er.d:'')+' · '+when(at)};
+  const st=status(a)[0];if(st==='exp')return {k:'err',s:'✗ اشتراكه منتهي',t:'اشتراكه منتهي، فالحصص ما تنزل لين يتجدد'};if(st==='off')return {k:'err',s:'✗ موقوف',t:'حسابه موقوف، فالحصص ما تنزل'};
+  return {k:'wait',s:'⏳ انتشرت',t:'انتشرت '+when(p)+' وما فتح التطبيق بعدها'+(at?' · آخر مرة فتح التطبيق '+agoTxt(at):' · ما فتح التطبيق أبد')}}
+function dlvChip(e){const d=dlv(e);return ' <b class="dl-'+d.k+'" title="'+esc(d.t)+'" onclick="event.stopPropagation();uiAlert(\''+esc(nm(e)).replace(/'/g,'')+'\\n'+esc(d.t).replace(/'/g,'')+'\')">'+d.s+'</b>'}
+async function refreshAcc(){try{const out=[];let pt='';do{const j=await fs('GET','/accounts?pageSize=300'+(pt?'&pageToken='+encodeURIComponent(pt):''));((j&&j.documents)||[]).forEach(d=>{const o=U(d.fields);o.email=decodeURIComponent(d.name.split('/').pop());out.push(o)});pt=j&&j.nextPageToken}while(pt);
+  out.forEach(a=>{try{a.pays=JSON.parse(a.payLog||'[]')}catch(e){a.pays=[]}});ACC=out.sort((a,b)=>(b.created||0)-(a.created||0));}catch(e){uiAlert(errTxt(e))}if(VI>=0)vSch();else vList()}
 function vList(){TAB='sch';const all=SD.visits.map((v,i)=>[v,i]).sort((a,b)=>String(vDates(b[0])[0]||'9').localeCompare(String(vDates(a[0])[0]||'9')));
   const L=all.filter(([v])=>vMatch(v)),people=[...new Set(SD.visits.flatMap(v=>v.mem||[]))].sort((a,b)=>nm(a).localeCompare(nm(b),'ar'));
   let h=tabs()+'<div class="row" style="margin-bottom:14px"><button class="btn g big addbtn" style="margin:0;flex:2" onclick="newVisit()">+ زيارة جديدة</button><button class="btn big" style="flex:1" onclick="importFile()">استيراد ملف</button></div>';
-  h+='<div class="card"><div class="lhead"><h2>الزيارات <span class="hint" style="margin:0;font-weight:500">'+L.length+' من '+all.length+'</span></h2><span class="hint" id="svM" style="margin:0"></span></div>';
+  h+='<div class="card"><div class="lhead"><h2>الزيارات <span class="hint" style="margin:0;font-weight:500">'+L.length+' من '+all.length+'</span></h2><span class="hint" id="svM" style="margin:0"></span>'+ib('play','تحديث الحالة','refreshAcc()')+'</div>';
   h+='<div class="vfil"><input id="vq" placeholder="بحث باسم المدرسة أو الموظف" value="'+esc(VF.q)+'"><select id="vm"><option value="">كل الموظفين</option>'+people.map(e=>'<option value="'+esc(e)+'"'+(VF.m===e?' selected':'')+'>'+esc(nm(e))+(e.indexOf('x:')===0?' (بدون حساب)':'')+'</option>').join('')+'</select></div>';
   h+='<div class="chips mt">'+[['all','الكل'],['this','هذا الأسبوع'],['next','الأسبوع الجاي'],['up','الجاية'],['past','السابقة']].map(([k,t])=>'<button class="chipb'+(VF.w===k?' on':'')+'" data-w="'+k+'">'+t+'</button>').join('')+'</div>';
   h+='<div class="list mt">'+(L.length?L.map(([v,i])=>{const ds=vDates(v),n=v.days.reduce((x,d)=>x+d.rows.filter(r=>r.t==='v').length,0),un=v.days.reduce((x,d)=>x+d.rows.filter(r=>r.t==='v'&&!(r.m||[]).length).length,0);
       /* نعرض بس اللي لهم حصص فعلاً في هالزيارة، وإشارة الاستلام للمشتركين منهم */
       const ppl=(v.mem||[]).map(e=>{const sub=e.indexOf('x:')!==0,cnt=v.days.reduce((x,d)=>x+d.rows.filter(r=>r.t==='v'&&(r.m||[]).includes(e)).length,0);if(!cnt)return '';
-        return '<span class="pchip'+(sub?' sub-p':'')+'">'+esc(nm(e))+' · '+cnt+(sub&&v.pubAt?(recv(e)?' <b class="okc" title="استلم حصصه في التطبيق">✓ استلم</b>':' <b class="wc" title="ما فتح التطبيق بعد النشر">⏳ ما استلم</b>'):'')+'</span>'}).join('');
+        return '<span class="pchip'+(sub?' sub-p':'')+'">'+esc(nm(e))+' · '+cnt+(sub&&v.pubAt?dlvChip(e):'')+'</span>'}).join('');
       return '<div class="vcard" onclick="openVisit('+i+')"><div class="vtop"><b>'+esc(v.school||'زيارة بدون اسم')+'</b>'+(v.pubAt?(v.dirty?'<span class="tag t-bad">فيها تعديل ما انتشر</span>':'<span class="tag t-ok">منشورة</span>'):'<span class="tag t-trial">ما انتشرت</span>')+'</div><div class="meta">'+(ds.length?esc(ds.map(g=>dayName(g)+' '+hTxt(g)).join('، '))+'هـ':'بدون تاريخ')+' · '+n+' حصة'+(un?' · <span style="color:var(--bad)">'+un+' بدون عضو</span>':'')+'</div><div class="pchips">'+ppl+'</div></div>'}).join(''):'<p class="hint">ما فيه زيارات'+(all.length?' بهالفلتر':'. اضغط «+ زيارة جديدة».')+'</p>')+'</div></div>';
   $('#main').innerHTML=h;
   $('#vq').oninput=e=>{VF.q=e.target.value;clearTimeout(window.__vqt);window.__vqt=setTimeout(()=>{vList();const x=$('#vq');x.focus();x.setSelectionRange(x.value.length,x.value.length)},250)};
