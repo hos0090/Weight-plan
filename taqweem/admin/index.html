@@ -600,7 +600,7 @@ function chgApply(){if(!SD||!SK||!NOTES)return 0;SD.chg=SD.chg||{};let n=0;const
     if(mm){const date=mm[1]+'/'+mm[2]+'/'+mm[3],per=mm[4],key=mm[5];const C=[];
       SD.visits.forEach(v=>v.days.forEach(d=>{if(hTxt(d.g)!==date)return;d.rows.forEach(r=>{if(r.t==='v'&&r.p===per)C.push({v,d,r})})}));
       const mine=x=>{const m=x.r.m||[];return m.includes(nt.from)||(m.includes('*')&&(x.v.mem||[]).includes(nt.from)&&!(x.d.absent||[]).includes(nt.from))};
-      let hit=C.find(x=>((x.r.nid||'').trim()||normA(x.r.teacher))===key);if(!hit){const M=C.filter(mine);if(M.length===1)hit=M[0]}
+      const M=C.filter(mine);let hit=M.find(x=>((x.r.nid||'').trim()||normA(x.r.teacher))===key);if(!hit&&M.length===1)hit=M[0];o.teacher=String(o.teacher||'').trim().slice(0,80);o.nid=String(o.nid||'').replace(/[^0-9٠-٩]/g,'').slice(0,15);if(!o.teacher)hit=null;
       if(hit){if(hit.r.teacher!==o.teacher||(hit.r.nid||'')!==o.nid){hit.r.teacher=o.teacher;hit.r.nid=o.nid;hit.v.dirty=1;n++}res='ok'}}
     SD.chg[nt.id]={r:res,at:Date.now()};R[nt.id]=1});
   lsSet('tq_nread',JSON.stringify(R));if(Object.keys(SD.chg).length)saveSD(true);return n}
