@@ -335,7 +335,7 @@ function showPw(i){const a=ACC[i];askPhrase(async()=>{modal('<h2>'+esc(a.name||a
     if(!pw)return modal('<h2>'+esc(a.name||a.user)+'</h2><p>ما انحفظ رقمه السري عندك بعد.</p><p class="hint">ينحفظ لحاله أول ما يدخل التطبيق، أو تقدر تكتبه من «تعديل».</p><div class="row"><button class="btn" onclick="closeM()">تم</button></div>');
     shareTo(a,pw,false)}catch(e){modal('<p class="err">'+esc(errTxt(e))+'</p><button class="btn" onclick="closeM()">تم</button>')}})}
 /* ---------- رسالة الدخول ---------- */
-function msgFor(a,pass){return 'السلام عليكم أستاذ '+(a.name||'')+'\nهذا رابط تطبيق «بطاقات التقويم»:\n'+APP_URL+'#k='+APP_PIN+'\n\nاسم الدخول: '+a.user+'\nالرقم السري: '+(pass||'(اللي عندك)')+'\n\n'+(a.plan==='trial'?'اشتراكك: تجربة مجانية لين '+hdate(a.exp)+'.':'اشتراكك سنوي لين '+hdate(a.exp)+'.')+'\n\nعشان يصير تطبيق على جوالك:\n• أندرويد: افتح الرابط من كروم واضغط «تثبيت التطبيق».\n• آيفون: افتحه من سفاري، ثم زر المشاركة، ثم «إضافة إلى الشاشة الرئيسية».\nإذا طلب رقم فتح التطبيق: '+APP_PIN}
+function msgFor(a,pass){return 'السلام عليكم أستاذ '+(a.name||'')+'\nهذا رابط تطبيق «بطاقات التقويم»:\n'+APP_URL+'#k='+APP_PIN+'\n\nاسم الدخول: '+a.user+'\nالرقم السري: '+(pass||'(اللي عندك)')+'\n\n'+(a.plan==='trial'?'اشتراكك: تجربة مجانية لين '+hdate(a.exp)+'.':'اشتراكك سنوي لين '+hdate(a.exp)+'.')+'\n\nعشان يصير تطبيق على جوالك، وشرح الاستخدام بالفيديو:\nhttps://hos0090.github.io/Weight-plan/taqweem/start.html\n\nوجدول زيارتك صوّره وأرسله لي هنا، وتنزل حصصك في التطبيق كاملة.\nإذا طلب رقم فتح التطبيق: '+APP_PIN}
 function share(i){const a=ACC[i];askPhrase(async()=>{let pw='';try{const d=await fs('GET','/vault/'+encodeURIComponent(a.email));pw=d?openPw(U(d.fields).c)||'':''}catch(e){}shareTo(a,pw,false)})}
 function shareTo(a,pass,isNew){const m=msgFor(a,pass),ph=(a.phone||'').replace(/^0?5/,'9665');
   modal('<h2>'+(isNew?'انضاف ✓ ':'')+esc(a.name||a.user)+'</h2><div class="cred"><div><span>اسم الدخول</span><b class="ltr">'+esc(a.user)+'</b></div><div><span>الرقم السري</span><b class="ltr">'+esc(pass?grp(pass):'—')+'</b></div></div><p class="hint">أرسل له الرسالة:</p><div class="msg" id="mT">'+esc(m)+'</div><div class="row">'+(/^9665\d{8}$/.test(ph)?'<a class="btn g big" target="_blank" rel="noopener" href="https://wa.me/'+ph+'?text='+encodeURIComponent(m)+'">إرسال واتساب</a>':'<a class="btn g big" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(m)+'">واتساب</a>')+'<button class="btn" id="mC">نسخ</button><button class="btn" onclick="closeM()">تم</button></div>');
@@ -564,7 +564,7 @@ async function publishTo(to){modal('<h2>نشر الحصص</h2><div id="pubL" cla
   for(const e of to){const sp=line(nm(e));sp.textContent='لحظة…';
     try{const K=await deliveryKey(),pl=payloadFor(e),n=pl.d.reduce((x,d)=>x+d[3].length,0);
       const nn=nacl.randomBytes(24),c=b64e(cat(nn,nacl.secretbox(enc(JSON.stringify(pl)),nn,K)));
-      const ts=Date.now();await fs('PATCH','/inbox/'+encodeURIComponent(e),F({c,ts,n,v:2}));SD.pub[e]=ts;sp.textContent='وصلته '+n+' حصة من كل زياراته ✓';sp.className='ok'}
+      const ts=Date.now();await fs('PATCH','/inbox/'+encodeURIComponent(e),F({c,ts,n,v:2}));SD.pub[e]=ts;sp.textContent='وصلته '+(n===1?'حصة وحدة':n===2?'حصتين':n+(n<=10?' حصص':' حصة'))+' من كل زياراته ✓';sp.className='ok'}
     catch(x){sp.textContent=errTxt(x);sp.className='err'}}
   saveSD(true)}
 
