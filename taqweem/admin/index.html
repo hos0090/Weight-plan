@@ -308,7 +308,7 @@ function vNew(){const P=genPass();let role='member',plan='trial';
     const user=custom?normUser(custom):phone;if(!user)return $('#nE').textContent='اكتب رقم الجوال';
     if(custom&&!/^[a-z0-9][a-z0-9._-]{2,29}$/.test(user))return $('#nE').textContent='اسم الدخول: حروف إنجليزية صغيرة وأرقام، من ٣ خانات';
     const pw=pc||pass;if(pw.length<6)return $('#nE').textContent='الرقم السري ٦ خانات على الأقل';
-    const email=emailOf(user);if(ACC.some(a=>a.email===email))return $('#nE').textContent='هذا '+(custom?'الاسم':'الرقم')+' موجود في القائمة';
+    const email=emailOf(user);if(ACC.some(a=>a.email===email))return $('#nE').textContent='هذا '+(custom?'الاسم':'الرقم')+' موجود في القائمة';{const dup=ACC.find(a=>a.phone&&digits(a.phone)===digits(user));if(dup)return $('#nE').textContent='هذا رقم جوال «'+(dup.name||dup.user)+'»، وحسابه موجود (يدخل فيه بهالرقم)'};
     $('#nGo').disabled=true;$('#nE').textContent='لحظة…';let linked=false,known=pw;
     try{await post('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+FB.key,{email,password:pw,returnSecureToken:false})}
     catch(e){if(/EMAIL_EXISTS/.test(e.code||'')){/* أي أحد يقدر يسجّل رقم قبلك، فما نربط إلا حساب تعرف إنك أنت اللي سويته */if(!await uiConfirm('«'+user+'» مسجّل في فايربيس من قبل، وأنت ما أضفته في اللوحة.\nإذا ما كنت أنت اللي سويته (مثل حساب الوالد ali)، ممكن يكون شخص سجّل الرقم قبلك. الأمان: ألغِ واستخدم اسم دخول مختلف من «خيارات أخرى».\n\nمتأكد إنه حسابك وتبي تربطه؟')){$('#nGo').disabled=false;$('#nE').textContent='هذا الرقم مسجّل من قبل. استخدم اسم دخول مختلف من «خيارات أخرى».';return}linked=true;known=normPass(await uiPrompt('إذا تعرف كلمة سره الحالية اكتبها عشان تنحفظ عندك (أو اتركها فاضية):')||'')}else{$('#nGo').disabled=false;return $('#nE').textContent=errTxt(e)}}
